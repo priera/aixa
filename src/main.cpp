@@ -1,14 +1,17 @@
 
-#include "AlsaExamples.h"
+//#include "AlsaExamples.h"
 
-/*
- *  This small demo sends a simple sinusoidal wave to your speakers.
- */
-
+#include <QCoreApplication>
 
 
 int main(int argc, char *argv[]) {
-    AlsaExamples examples(argc, argv);
-    examples.run();
+  /*  AlsaExamples examples(argc, argv);
+    examples.run(); */
+
+  QCoreApplication app(argc, argv);
+
+  int ret = app.exec();
+
+  return ret;
 }
 
