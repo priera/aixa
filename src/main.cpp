@@ -1,17 +1,23 @@
 
 //#include "AlsaExamples.h"
 
-#include <QCoreApplication>
+#include <QApplication>
 
+#include "MainWindow.h"
+#include "MainEventFilter.h"
 
 int main(int argc, char *argv[]) {
   /*  AlsaExamples examples(argc, argv);
     examples.run(); */
 
-  QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-  int ret = app.exec();
+    MainEventFilter mainEventFilter;
+    app.installEventFilter(&mainEventFilter);
 
-  return ret;
+    MainWindow mainWindow;
+    mainWindow.show();
+
+    return app.exec();
 }
 

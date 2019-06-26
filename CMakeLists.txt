@@ -15,6 +15,6 @@ set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
 add_subdirectory(src)
