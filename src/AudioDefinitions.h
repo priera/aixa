@@ -25,6 +25,9 @@ struct AlsaEnvironment {
     snd_pcm_sw_params_t *swparams;
     snd_output_t *output;
 
+    signed short *samples;
+    snd_pcm_channel_area_t *areas;
+
     snd_pcm_sframes_t buffer_size;
     snd_pcm_sframes_t period_size;
 };

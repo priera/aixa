@@ -189,21 +189,27 @@ int AudioBuilder::setSwParams(AlsaEnvironment &environment,
 }
 
 void AudioBuilder::setupMemory(AlsaEnvironment &environment,
-        const AudioParameters & parameters) {
+        const AudioParameters &parameters) {
 
-    samples = malloc((period_size * parameters.channels * snd_pcm_format_physical_width(format)) / 8);
-    if (samples == nullptr) {
+    auto samplesBuffers = malloc((environment.period_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
+
+    if (samplesBuffers == nullptr) {
         throw std::bad_alloc();
     }
 
-    areas = calloc(channels, sizeof(snd_pcm_channel_area_t));
-    if (areas == nullptr) {
+    auto areas_p = calloc(parameters.channels, sizeof(snd_pcm_channel_area_t));
+    if (areas_p == nullptr) {
         throw std::bad_alloc();
     }
+
+    snd_pcm_channel_area_t *areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
 
     for (unsigned int chn = 0; chn < parameters.channels; chn++) {
-        areas[chn].addr = samples;
-        areas[chn].first = chn * snd_pcm_format_physical_width(format);
-        areas[chn].step = channels * snd_pcm_format_physical_width(format);
+        areas[chn].addr = samplesBuffers;
+        areas[chn].first = chn * snd_pcm_format_physical_width(parameters.format);
+        areas[chn].step = parameters.channels * snd_pcm_format_physical_width(parameters.format);
     }
+
+    environment.samples = static_cast<signed short*>(samplesBuffers);
+    environment.areas = areas;
 }
