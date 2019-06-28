@@ -7,13 +7,16 @@
 
 #include <iostream>
 
+#include "audio/Commands.h"
+
 static void generate_sine(const snd_pcm_channel_area_t *areas,
                           snd_pcm_uframes_t offset,
                           int count,
                           double *_phase,
                           double freq,
                           double rate,
-                          unsigned int channels) {
+                          unsigned int channels,
+                          unsigned int scaleFactor) {
     //count (period size) = 4410
     static double max_phase = 2. * M_PI;
     double phase = *_phase;
@@ -22,7 +25,7 @@ static void generate_sine(const snd_pcm_channel_area_t *areas,
     int steps[channels];
     unsigned int chn;
     int format_bits = snd_pcm_format_width(SND_PCM_FORMAT_S16); // 16
-    unsigned int maxval = (1 << (format_bits - 1)) - 1; // 32767
+    //unsigned int maxval = (1 << (format_bits - 1)) - 1; // 32767
     int bps = format_bits / 8;  /* bytes per sample */
     int phys_bps = snd_pcm_format_physical_width(SND_PCM_FORMAT_S16) / 8;
     int big_endian = snd_pcm_format_big_endian(SND_PCM_FORMAT_S16) == 1;
@@ -30,7 +33,6 @@ static void generate_sine(const snd_pcm_channel_area_t *areas,
     //int is_float = (SND_PCM_FORMAT_S16 == SND_PCM_FORMAT_FLOAT_LE ||
     //        SND_PCM_FORMAT_S16 == SND_PCM_FORMAT_FLOAT_BE);
 
-    //std::cout << big_endian << " " << bps << std::endl;
     /* verify and prepare the contents of areas */
     for (chn = 0; chn < channels; chn++) {
         if ((areas[chn].first % 8) != 0) {
@@ -50,7 +52,7 @@ static void generate_sine(const snd_pcm_channel_area_t *areas,
     while (count-- > 0) {
         int res, i;
 
-        res = sin(phase) * maxval;
+        res = sin(phase) * scaleFactor;
 
         if (to_unsigned)
             res ^= 1U << (format_bits - 1);
@@ -98,8 +100,33 @@ static int xrun_recovery(snd_pcm_t *handle, int err) {
 AudioWorker::AudioWorker(const AudioParameters &params, std::unique_ptr<AlsaEnvironment> &environment) :
     params(params),
     environment(std::move(environment)),
+    volume(MAX_VOLUME/3),
     stopValue(false)
-    {}
+{
+    auto volumeUp = new VolumeUp(*this);
+    auto volumeDown = new VolumeDown(*this);
+
+    myCommands.insert(std::make_pair(volumeUp->getName(), volumeUp));
+    myCommands.insert(std::make_pair(volumeDown->getName(), volumeDown));
+}
+
+void AudioWorker::increaseVolume() {
+    volume += VOLUME_STEP;
+    if (volume > MAX_VOLUME) volume = MAX_VOLUME;
+}
+
+void AudioWorker::decreaseVolume() {
+    unsigned int newVolume = volume - VOLUME_STEP;
+
+    if (newVolume >= MAX_VOLUME) //overflow condition
+        volume = MIN_VOLUME;
+    else
+        volume = newVolume;
+}
+
+CommandCollection AudioWorker::buildCommandCollection() {
+    return myCommands;
+}
 
 void AudioWorker::start() {
     while (!stopValue) {
@@ -125,7 +152,8 @@ void AudioWorker::writeLoop() {
             &phase,
             freq,
             rate,
-            params.channels);
+            params.channels,
+            volume);
 
     cptr = environment->period_size;
 

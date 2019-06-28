@@ -6,6 +6,8 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS})
 
 add_executable(alsaPlayground ${SRC})
 
+target_include_directories(alsaPlayground PUBLIC .)
+
 target_link_libraries(alsaPlayground
         asound
         Qt5::Core

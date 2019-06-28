@@ -1,5 +1,5 @@
 
-//#include "AlsaExamples.h"
+//#include "examples/AlsaExamples.h"
 
 #include <thread>
 #include <memory>
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     auto environment = std::unique_ptr<AlsaEnvironment>(environment_p);
     AudioWorker worker(basicParameters, environment);
 
-    MainEventFilter mainEventFilter;
+    MainEventFilter mainEventFilter(worker.buildCommandCollection());
     app.installEventFilter(&mainEventFilter);
 
     MainWindow mainWindow;

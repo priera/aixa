@@ -21,5 +21,4 @@ private:
         const AudioParameters & parameters);
 };
 
-
 #endif //ALSAPLAYGROUND_AUDIOBUILDER_H
