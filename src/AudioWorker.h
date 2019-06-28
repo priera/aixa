@@ -3,39 +3,25 @@
 
 #include <atomic>
 #include <string>
+#include <memory>
 
 #include <alsa/asoundlib.h>
+#include "AudioDefinitions.h"
 
 class AudioWorker {
 public:
-    AudioWorker();
+    AudioWorker(const AudioParameters &params, std::unique_ptr<AlsaEnvironment> &environment);
 
     void start();
     void stop();
 
 private:
-    void setup();
+    void writeLoop();
 
-    int setHwParams(snd_pcm_t *handle,
-                     snd_pcm_hw_params_t *params,
-                     snd_pcm_access_t access);
-
-    int setSwParams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
+    AudioParameters params;
+    std::unique_ptr<AlsaEnvironment> environment;
 
     std::atomic<bool> stopValue;
-
-    const std::string device;   /* playback device */
-    snd_pcm_format_t format;    /* sample format */
-    unsigned int rate;          /* stream rate */
-    unsigned int channels;      /* count of channels */
-    unsigned int buffer_time;   /* ring buffer length in us */
-    unsigned int period_time;   /* period time in us */
-    double freq;
-
-    snd_pcm_t *handle;
-    snd_pcm_hw_params_t *hwparams;
-    snd_pcm_sw_params_t *swparams;
-    snd_output_t *output;
 };
 
 

@@ -1,13 +1,16 @@
 
 //#include "AlsaExamples.h"
 
-#include <QApplication>
 #include <thread>
+#include <memory>
+
+#include <QApplication>
 
 #include "MainWindow.h"
 #include "MainEventFilter.h"
 
 #include "AudioWorker.h"
+#include "AudioBuilder.h"
 
 std::thread * buildAudioThread(AudioWorker & worker)
 {
@@ -24,7 +27,11 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    AudioWorker worker;
+    AudioBuilder audioBuilder;
+    auto basicParameters = getDefaultAudioParameters();
+    auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
+    auto environment = std::unique_ptr<AlsaEnvironment>(environment_p);
+    AudioWorker worker(basicParameters, environment);
 
     MainEventFilter mainEventFilter;
     app.installEventFilter(&mainEventFilter);
@@ -36,6 +43,7 @@ int main(int argc, char *argv[]) {
 
     int ret = app.exec();
 
+    worker.stop();
     audioThread->join();
 
     return ret;

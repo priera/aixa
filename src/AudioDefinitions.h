@@ -16,10 +16,12 @@ struct AudioParameters {
 };
 
 inline AudioParameters getDefaultAudioParameters() {
-    return { "default", SND_PCM_FORMAT_S16, 44100, 1, 500000, 100000 };
+    return { "default", SND_PCM_FORMAT_S16, 44100, 1, 500000, 100000, 400 };
 }
 
 struct AlsaEnvironment {
+    //TODO: fix memory leaks
+
     snd_pcm_t *handle;
     snd_pcm_hw_params_t *hwparams;
     snd_pcm_sw_params_t *swparams;
