@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <alsa/asoundlib.h>
+
 #include "AudioDefinitions.h"
 
 class AudioWorker {

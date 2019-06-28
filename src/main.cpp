@@ -6,11 +6,11 @@
 
 #include <QApplication>
 
-#include "MainWindow.h"
-#include "MainEventFilter.h"
+#include "gui/MainWindow.h"
+#include "gui/MainEventFilter.h"
 
-#include "AudioWorker.h"
-#include "AudioBuilder.h"
+#include "audio/AudioWorker.h"
+#include "audio/AudioBuilder.h"
 
 std::thread * buildAudioThread(AudioWorker & worker)
 {
