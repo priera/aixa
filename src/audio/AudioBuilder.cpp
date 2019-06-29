@@ -36,14 +36,9 @@ AudioEnvironment *AudioBuilder::setupAudioEnvironment(const AudioParameters &par
 
     snd_pcm_dump(environment.handle, environment.output);
 
-    //setupMemory(, parameters);
+    Buffers buffers(parameters.channels, environment.frame_size, parameters.format);
 
-    auto buffers = buildBuffers(environment, parameters);
-
-    auto ret = new AudioEnvironment;
-    ret->params = parameters;
-    ret->platform = environment;
-    ret->buffers = buffers;
+    auto ret = new AudioEnvironment(parameters, environment, buffers);
     return ret;
 }
 
@@ -191,82 +186,4 @@ int AudioBuilder::setSwParams(AlsaEnvironment &environment,
         return err;
     }
     return 0;
-}
-
-/*void AudioBuilder::setupMemory(AlsaEnvironment &environment,
-        const AudioParameters &parameters) {
-
-    auto samplesBuffer = malloc((environment.frame_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
-
-    if (samplesBuffer == nullptr) {
-        throw std::bad_alloc();
-    }
-
-    auto areas_p = calloc(parameters.channels, sizeof(snd_pcm_channel_area_t));
-    if (areas_p == nullptr) {
-        throw std::bad_alloc();
-    }
-
-    auto areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
-
-    for (unsigned int chn = 0; chn < parameters.channels; chn++) {
-        areas[chn].addr = samplesBuffer;
-        areas[chn].first = chn * snd_pcm_format_physical_width(parameters.format);
-        areas[chn].step = parameters.channels * snd_pcm_format_physical_width(parameters.format);
-    }
-
-    environment.samples = static_cast<signed short*>(samplesBuffer);
-    environment.areas = areas;
-} */
-
-AudioBuffers AudioBuilder::buildBuffers(AlsaEnvironment &environment,
-                          const AudioParameters & parameters) {
-    AudioBuffers ret;
-    ret.channels = parameters.channels;
-
-    auto samplesBuffer = malloc((environment.frame_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
-
-    if (samplesBuffer == nullptr) {
-        throw std::bad_alloc();
-    }
-
-    auto areas_p = calloc(parameters.channels, sizeof(snd_pcm_channel_area_t));
-    if (areas_p == nullptr) {
-        throw std::bad_alloc();
-    }
-
-    auto areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
-
-    for (unsigned int chn = 0; chn < parameters.channels; chn++) {
-        areas[chn].addr = samplesBuffer;
-        areas[chn].first = chn * snd_pcm_format_physical_width(parameters.format);
-        areas[chn].step = parameters.channels * snd_pcm_format_physical_width(parameters.format);
-    }
-
-    ret.ptrToChanelSample.resize(parameters.channels, 0);
-    ret.steps.resize(parameters.channels, 0);
-
-    /* verify and prepare the contents of areas */
-    for (int chn = 0; chn < parameters.channels; chn++) {
-        if ((areas[chn].first % 8) != 0) {
-            std::stringstream s;
-            s << "areas[" << chn << "].first == " << areas[chn].first << ". Not a multiple of a byte";
-            throw std::runtime_error(s.str());
-        }
-
-        ret.ptrToChanelSample[chn] = (((unsigned char *) areas[chn].addr) + (areas[chn].first / 8));
-
-        if ((areas[chn].step % 16) != 0) {
-            std::stringstream s;
-            s << "areas[" << chn << "].step == " << areas[chn].step << ". Not a multiple of 2 bytes";
-            throw std::runtime_error(s.str());
-        }
-
-        ret.steps[chn] = areas[chn].step / 8;
-    }
-
-    ret.samples = static_cast<signed short*>(samplesBuffer);
-    ret.areas = areas;
-
-    return ret;
 }

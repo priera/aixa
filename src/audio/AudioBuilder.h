@@ -16,12 +16,6 @@ private:
 
     int setSwParams(AlsaEnvironment &environment,
                     const AudioParameters &parameters);
-
-    /*void setupMemory(AlsaEnvironment &environment,
-        const AudioParameters & parameters); */
-
-    AudioBuffers buildBuffers(AlsaEnvironment &environment,
-                              const AudioParameters & parameters);
 };
 
 #endif //ALSAPLAYGROUND_AUDIOBUILDER_H

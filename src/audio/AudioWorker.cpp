@@ -10,53 +10,32 @@
 #include "audio/Commands.h"
 #include "audio/NoteSetter.h"
 
-static void generate_sine(std::vector<unsigned char *> byteSamples,
-                          const std::vector<int> &steps,
-                          int frame_size,
-                          double &_phase,
-                          double freq,
-                          double rate,
-                          unsigned int channels,
-                          unsigned int scaleFactor) {
+
+static void generate_sine(
+        Buffers &buffers,
+        int frame_size,
+        double &_phase,
+        double freq,
+        double rate,
+        unsigned int scaleFactor) {
     static double max_phase = 2. * M_PI;
     double phase = _phase;
 
     double step = max_phase * freq / rate;
-    unsigned int chn;
-    int format_bits = snd_pcm_format_width(SND_PCM_FORMAT_S16); // 16
 
-    int bps = format_bits / 8;  /* bytes per sample */
-    int phys_bps = snd_pcm_format_physical_width(SND_PCM_FORMAT_S16) / 8;
-    int big_endian = snd_pcm_format_big_endian(SND_PCM_FORMAT_S16) == 1;
-    int to_unsigned = snd_pcm_format_unsigned(SND_PCM_FORMAT_S16) == 1;
+    buffers.startNewFrame();
 
-    /* fill the channel areas */
     while (frame_size-- > 0) {
-        int res, i;
+        int res;
 
         res = sin(phase) * scaleFactor;
-
-        if (to_unsigned)
-            res ^= 1U << (format_bits - 1);
-        for (chn = 0; chn < channels; chn++) {
-            /* Generate data in native endian format */
-            if (big_endian) {
-                for (i = 0; i < bps; i++)
-                    *(byteSamples[chn] + phys_bps - 1 - i) = (res >> i * 8) & 0xff;
-            } else {
-                for (i = 0; i < bps; i++)
-                    *(byteSamples[chn] + i) = (res >> i * 8) & 0xff;
-            }
-
-            byteSamples[chn] += steps[chn];
-        }
+        buffers.storeNextSample(res);
 
         phase += step;
         if (phase >= max_phase) {
             phase -= max_phase;
         }
     }
-
 
     _phase = phase;
 }
@@ -141,19 +120,17 @@ void AudioWorker::writeLoop() {
 
     double rate = environment->params.rate;
 
-    generate_sine(environment->buffers.ptrToChanelSample,
-            environment->buffers.steps,
+    generate_sine(environment->buffers,
             environment->platform.frame_size,
             phase,
             freq,
             rate,
-            environment->params.channels,
             volume);
 
     cptr = environment->platform.frame_size;
 
     while (cptr > 0) {
-        err = snd_pcm_writei(environment->platform.handle, environment->buffers.samples, cptr);
+        err = snd_pcm_writei(environment->platform.handle, environment->buffers.frame(), cptr);
         if (err == -EAGAIN)
             continue;
 

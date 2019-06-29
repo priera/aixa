@@ -6,6 +6,8 @@
 
 #include <alsa/asoundlib.h>
 
+#include "audio/Buffers.h"
+
 struct AudioParameters {
     std::string device;   /* playback device */
     snd_pcm_format_t format;    /* sample format */
@@ -28,25 +30,19 @@ struct AlsaEnvironment {
     snd_pcm_sw_params_t *swparams;
     snd_output_t *output;
 
-    /*signed short *samples;
-    snd_pcm_channel_area_t *areas; */
-
     snd_pcm_sframes_t buffer_size;
     snd_pcm_sframes_t frame_size;
 };
 
-struct AudioBuffers {
-    int channels;
-    signed short *samples; //sizeof(short) == 2
-    std::vector<unsigned char *> ptrToChanelSample;
-    snd_pcm_channel_area_t *areas;
-    std::vector<int> steps;
-};
-
 struct AudioEnvironment {
+    AudioEnvironment(const AudioParameters &parameters, AlsaEnvironment &environment, Buffers &buffers) :
+        params(parameters),
+        platform(environment),
+        buffers(buffers) {}
+
     AudioParameters params;
     AlsaEnvironment platform;
-    AudioBuffers buffers;
+    Buffers buffers;
 };
 
 #endif //ALSAPLAYGROUND_AUDIODEFINITIONS_H
