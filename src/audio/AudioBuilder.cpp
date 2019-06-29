@@ -243,7 +243,7 @@ AudioBuffers AudioBuilder::buildBuffers(AlsaEnvironment &environment,
         areas[chn].step = parameters.channels * snd_pcm_format_physical_width(parameters.format);
     }
 
-    ret.byteSamples.resize(parameters.channels, 0);
+    ret.ptrToChanelSample.resize(parameters.channels, 0);
     ret.steps.resize(parameters.channels, 0);
 
     /* verify and prepare the contents of areas */
@@ -254,7 +254,7 @@ AudioBuffers AudioBuilder::buildBuffers(AlsaEnvironment &environment,
             throw std::runtime_error(s.str());
         }
 
-        ret.byteSamples[chn] = (((unsigned char *) areas[chn].addr) + (areas[chn].first / 8));
+        ret.ptrToChanelSample[chn] = (((unsigned char *) areas[chn].addr) + (areas[chn].first / 8));
 
         if ((areas[chn].step % 16) != 0) {
             std::stringstream s;
@@ -268,5 +268,5 @@ AudioBuffers AudioBuilder::buildBuffers(AlsaEnvironment &environment,
     ret.samples = static_cast<signed short*>(samplesBuffer);
     ret.areas = areas;
 
-    return std::move(ret);
+    return ret;
 }

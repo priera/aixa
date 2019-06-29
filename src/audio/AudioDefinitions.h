@@ -38,7 +38,7 @@ struct AlsaEnvironment {
 struct AudioBuffers {
     int channels;
     signed short *samples; //sizeof(short) == 2
-    std::vector<unsigned char *> byteSamples;
+    std::vector<unsigned char *> ptrToChanelSample;
     snd_pcm_channel_area_t *areas;
     std::vector<int> steps;
 };
