@@ -15,7 +15,7 @@ class NoteSetter;
 
 class AudioWorker : public CommandBuilder {
 public:
-    AudioWorker(const AudioParameters &params, std::unique_ptr<AlsaEnvironment> &environment);
+    AudioWorker(std::unique_ptr<AudioEnvironment> &environment);
 
     CommandCollection buildCommandCollection() override;
 
@@ -38,8 +38,7 @@ private:
 
     void writeLoop();
 
-    AudioParameters params;
-    std::unique_ptr<AlsaEnvironment> environment;
+    std::unique_ptr<AudioEnvironment> environment;
 
     std::atomic<unsigned int> volume;
     std::atomic<double> freq;

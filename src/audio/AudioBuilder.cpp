@@ -3,11 +3,10 @@
 #include <iostream>
 #include <sstream>
 
-AlsaEnvironment * AudioBuilder::setupAudioEnvironment(const AudioParameters &parameters) {
-    auto ret = new AlsaEnvironment();
-
-    snd_pcm_hw_params_alloca(&ret->hwparams);
-    snd_pcm_sw_params_alloca(&ret->swparams);
+AudioEnvironment *AudioBuilder::setupAudioEnvironment(const AudioParameters &parameters) {
+    AlsaEnvironment environment;
+    snd_pcm_hw_params_alloca(&environment.hwparams);
+    snd_pcm_sw_params_alloca(&environment.swparams);
 
     std::cout << "Playback device is " << parameters.device << "\n";
     std::cout << "Stream parameters are " << parameters.rate << "Hz, " << snd_pcm_format_name(parameters.format) << ", " << parameters.channels << " channels\n";
@@ -16,29 +15,35 @@ AlsaEnvironment * AudioBuilder::setupAudioEnvironment(const AudioParameters &par
     int err;
     std::stringstream s;
 
-    if ((err = snd_output_stdio_attach(&ret->output, stdout, 0)) < 0) {
+    if ((err = snd_output_stdio_attach(&environment.output, stdout, 0)) < 0) {
         s << "Output failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
 
-    if ((err = snd_pcm_open(&ret->handle, parameters.device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    if ((err = snd_pcm_open(&environment.handle, parameters.device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
         s << "Playback open error: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
 
-    if ((err = setHwParams(*ret, SND_PCM_ACCESS_RW_INTERLEAVED, parameters)) < 0) {
+    if ((err = setHwParams(environment, SND_PCM_ACCESS_RW_INTERLEAVED, parameters)) < 0) {
         s << "Setting of hwparams failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
-    if ((err = setSwParams(*ret, parameters)) < 0) {
+    if ((err = setSwParams(environment, parameters)) < 0) {
         s << "Setting of swparams failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
 
-    snd_pcm_dump(ret->handle, ret->output);
+    snd_pcm_dump(environment.handle, environment.output);
 
-    setupMemory(*ret, parameters);
+    //setupMemory(, parameters);
 
+    auto buffers = buildBuffers(environment, parameters);
+
+    auto ret = new AudioEnvironment;
+    ret->params = parameters;
+    ret->platform = environment;
+    ret->buffers = buffers;
     return ret;
 }
 
@@ -188,12 +193,12 @@ int AudioBuilder::setSwParams(AlsaEnvironment &environment,
     return 0;
 }
 
-void AudioBuilder::setupMemory(AlsaEnvironment &environment,
+/*void AudioBuilder::setupMemory(AlsaEnvironment &environment,
         const AudioParameters &parameters) {
 
-    auto samplesBuffers = malloc((environment.frame_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
+    auto samplesBuffer = malloc((environment.frame_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
 
-    if (samplesBuffers == nullptr) {
+    if (samplesBuffer == nullptr) {
         throw std::bad_alloc();
     }
 
@@ -205,11 +210,63 @@ void AudioBuilder::setupMemory(AlsaEnvironment &environment,
     auto areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
 
     for (unsigned int chn = 0; chn < parameters.channels; chn++) {
-        areas[chn].addr = samplesBuffers;
+        areas[chn].addr = samplesBuffer;
         areas[chn].first = chn * snd_pcm_format_physical_width(parameters.format);
         areas[chn].step = parameters.channels * snd_pcm_format_physical_width(parameters.format);
     }
 
-    environment.samples = static_cast<signed short*>(samplesBuffers);
+    environment.samples = static_cast<signed short*>(samplesBuffer);
     environment.areas = areas;
+} */
+
+AudioBuffers AudioBuilder::buildBuffers(AlsaEnvironment &environment,
+                          const AudioParameters & parameters) {
+    AudioBuffers ret;
+    ret.channels = parameters.channels;
+
+    auto samplesBuffer = malloc((environment.frame_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
+
+    if (samplesBuffer == nullptr) {
+        throw std::bad_alloc();
+    }
+
+    auto areas_p = calloc(parameters.channels, sizeof(snd_pcm_channel_area_t));
+    if (areas_p == nullptr) {
+        throw std::bad_alloc();
+    }
+
+    auto areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
+
+    for (unsigned int chn = 0; chn < parameters.channels; chn++) {
+        areas[chn].addr = samplesBuffer;
+        areas[chn].first = chn * snd_pcm_format_physical_width(parameters.format);
+        areas[chn].step = parameters.channels * snd_pcm_format_physical_width(parameters.format);
+    }
+
+    ret.byteSamples.resize(parameters.channels, 0);
+    ret.steps.resize(parameters.channels, 0);
+
+    /* verify and prepare the contents of areas */
+    for (int chn = 0; chn < parameters.channels; chn++) {
+        if ((areas[chn].first % 8) != 0) {
+            std::stringstream s;
+            s << "areas[" << chn << "].first == " << areas[chn].first << ". Not a multiple of a byte";
+            throw std::runtime_error(s.str());
+        }
+
+        ret.byteSamples[chn] = (((unsigned char *) areas[chn].addr) + (areas[chn].first / 8));
+
+        if ((areas[chn].step % 16) != 0) {
+            std::stringstream s;
+            s << "areas[" << chn << "].step == " << areas[chn].step << ". Not a multiple of 2 bytes";
+            throw std::runtime_error(s.str());
+        }
+
+        ret.steps[chn] = areas[chn].step / 8;
+    }
+
+    ret.samples = static_cast<signed short*>(samplesBuffer);
+    ret.areas = areas;
+
+    return std::move(ret);
 }

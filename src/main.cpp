@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
     AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
-    auto environment = std::unique_ptr<AlsaEnvironment>(environment_p);
-    AudioWorker worker(basicParameters, environment);
+    auto environment = std::unique_ptr<AudioEnvironment>(environment_p);
+    AudioWorker worker(environment);
     auto commandCollection = worker.buildCommandCollection();
     auto noteSetter = worker.getNoteSetter();
 
