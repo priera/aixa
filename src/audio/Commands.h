@@ -13,7 +13,7 @@ public:
     std::string getName() const override;
 
 private:
-    AudioWorker * worker;
+    AudioWorker *worker;
 };
 
 
@@ -25,7 +25,7 @@ public:
     std::string getName() const override;
 
 private:
-    AudioWorker * worker;
+    AudioWorker *worker;
 };
 
 #endif //ALSAPLAYGROUND_COMMANDS_H

@@ -11,6 +11,7 @@
 
 #include "audio/AudioWorker.h"
 #include "audio/AudioBuilder.h"
+#include "audio/NoteSetter.h"
 
 std::thread * buildAudioThread(AudioWorker & worker)
 {
@@ -32,8 +33,10 @@ int main(int argc, char *argv[]) {
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
     auto environment = std::unique_ptr<AlsaEnvironment>(environment_p);
     AudioWorker worker(basicParameters, environment);
+    auto commandCollection = worker.buildCommandCollection();
+    auto noteSetter = worker.getNoteSetter();
 
-    MainEventFilter mainEventFilter(worker.buildCommandCollection());
+    MainEventFilter mainEventFilter(commandCollection, *noteSetter);
     app.installEventFilter(&mainEventFilter);
 
     MainWindow mainWindow;

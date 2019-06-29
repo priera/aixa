@@ -128,7 +128,7 @@ int AudioBuilder::setHwParams(AlsaEnvironment &environment,
         return err;
     }
 
-    environment.period_size = size;
+    environment.frame_size = size;
 
     /* write the parameters to device */
     err = snd_pcm_hw_params(handle, params);
@@ -155,15 +155,15 @@ int AudioBuilder::setSwParams(AlsaEnvironment &environment,
 
     /* start the transfer when the buffer is almost full: */
     /* (buffer_size / avail_min) * avail_min */
-    err = snd_pcm_sw_params_set_start_threshold(handle, swparams, (environment.buffer_size / environment.period_size) * environment.period_size);
+    err = snd_pcm_sw_params_set_start_threshold(handle, swparams, (environment.buffer_size / environment.frame_size) * environment.frame_size);
     if (err < 0) {
         printf("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
         return err;
     }
 
-    /* allow the transfer when at least period_size samples can be processed */
+    /* allow the transfer when at least frame_size samples can be processed */
     /* or disable this mechanism when period event is enabled (aka interrupt like style processing) */
-    err = snd_pcm_sw_params_set_avail_min(handle, swparams, environment.period_size);
+    err = snd_pcm_sw_params_set_avail_min(handle, swparams, environment.frame_size);
     if (err < 0) {
         printf("Unable to set avail min for playback: %s\n", snd_strerror(err));
         return err;
@@ -191,7 +191,7 @@ int AudioBuilder::setSwParams(AlsaEnvironment &environment,
 void AudioBuilder::setupMemory(AlsaEnvironment &environment,
         const AudioParameters &parameters) {
 
-    auto samplesBuffers = malloc((environment.period_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
+    auto samplesBuffers = malloc((environment.frame_size * parameters.channels * snd_pcm_format_physical_width(parameters.format)) / 8);
 
     if (samplesBuffers == nullptr) {
         throw std::bad_alloc();
@@ -202,7 +202,7 @@ void AudioBuilder::setupMemory(AlsaEnvironment &environment,
         throw std::bad_alloc();
     }
 
-    snd_pcm_channel_area_t *areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
+    auto areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
 
     for (unsigned int chn = 0; chn < parameters.channels; chn++) {
         areas[chn].addr = samplesBuffers;

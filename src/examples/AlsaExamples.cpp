@@ -215,7 +215,7 @@ int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams) {
         printf("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
         return err;
     }
-    /* allow the transfer when at least period_size samples can be processed */
+    /* allow the transfer when at least frame_size samples can be processed */
     /* or disable this mechanism when period event is enabled (aka interrupt like style processing) */
     err = snd_pcm_sw_params_set_avail_min(handle, swparams, period_event ? buffer_size : period_size);
     if (err < 0) {

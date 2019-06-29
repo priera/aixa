@@ -16,7 +16,7 @@ struct AudioParameters {
 };
 
 inline AudioParameters getDefaultAudioParameters() {
-    return { "default", SND_PCM_FORMAT_S16, 44100, 1, 500000, 100000, 400 };
+    return { "default", SND_PCM_FORMAT_S16, 44100, 2, 500000, 100000, 440 };
 }
 
 struct AlsaEnvironment {
@@ -31,7 +31,7 @@ struct AlsaEnvironment {
     snd_pcm_channel_area_t *areas;
 
     snd_pcm_sframes_t buffer_size;
-    snd_pcm_sframes_t period_size;
+    snd_pcm_sframes_t frame_size;
 };
 
 #endif //ALSAPLAYGROUND_AUDIODEFINITIONS_H

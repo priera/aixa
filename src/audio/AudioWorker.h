@@ -7,9 +7,11 @@
 
 #include <alsa/asoundlib.h>
 
+#include "CommandBuilder.h"
+
 #include "audio/AudioDefinitions.h"
 
-#include "CommandBuilder.h"
+class NoteSetter;
 
 class AudioWorker : public CommandBuilder {
 public:
@@ -17,11 +19,15 @@ public:
 
     CommandCollection buildCommandCollection() override;
 
+    NoteSetter *getNoteSetter() const;
+
     void start();
     void stop();
 
     void increaseVolume();
     void decreaseVolume();
+
+    void setFrequency(double freq);
 
 private:
     static constexpr unsigned int MIN_VOLUME = 0;
@@ -36,8 +42,10 @@ private:
     std::unique_ptr<AlsaEnvironment> environment;
 
     std::atomic<unsigned int> volume;
+    std::atomic<double> freq;
 
     CommandCollection myCommands;
+    std::unique_ptr<NoteSetter> noteSetter;
 
     std::atomic<bool> stopValue;
 };
