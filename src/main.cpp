@@ -13,12 +13,6 @@
 #include "mainlib/audio/AudioBuilder.h"
 #include "mainlib/audio/NoteSetter.h"
 
-//for tests these ones
-/*#include "audio/SineGenerator.h"
-#include "audio/Buffers.h"
-#include "audio/utils.h"
-*/
-
 std::thread * buildAudioThread(AudioWorker & worker)
 {
     auto f = [&worker](){
@@ -28,26 +22,9 @@ std::thread * buildAudioThread(AudioWorker & worker)
     return new std::thread(f);
 }
 
-/*static void runTests() {
-    Buffers b(1, 4410, SND_PCM_FORMAT_S16);
-    SineGenerator g(b, 4410, 44100);
-
-    g.fillFrame(622.25, 100);
-
-    QJsonArray samples;
-    audioUtils::dumpSignal(b, samples);
-    audioUtils::writeSamplesTo(samples, "G.json");
-} */
-
 int main(int argc, char *argv[]) {
   /*  AlsaExamples examples(argc, argv);
     examples.run(); */
-
-    /*runTests();
-
-    return 0; */
-
-    pedroFunction();
 
     QApplication app(argc, argv);
 
