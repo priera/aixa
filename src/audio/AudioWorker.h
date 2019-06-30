@@ -12,10 +12,12 @@
 #include "audio/AudioDefinitions.h"
 
 class NoteSetter;
+class SineGenerator;
 
 class AudioWorker : public CommandBuilder {
 public:
-    AudioWorker(std::unique_ptr<AudioEnvironment> &environment);
+    AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment);
+    virtual ~AudioWorker();
 
     CommandCollection buildCommandCollection() override;
 
@@ -47,6 +49,8 @@ private:
     std::unique_ptr<NoteSetter> noteSetter;
 
     std::atomic<bool> stopValue;
+
+    std::unique_ptr<SineGenerator> sineGenerator;
 };
 
 

@@ -9,36 +9,7 @@
 
 #include "audio/Commands.h"
 #include "audio/NoteSetter.h"
-
-
-static void generate_sine(
-        Buffers &buffers,
-        int frame_size,
-        double &_phase,
-        double freq,
-        double rate,
-        unsigned int scaleFactor) {
-    static double max_phase = 2. * M_PI;
-    double phase = _phase;
-
-    double step = max_phase * freq / rate;
-
-    buffers.startNewFrame();
-
-    while (frame_size-- > 0) {
-        int res;
-
-        res = sin(phase) * scaleFactor;
-        buffers.storeNextSample(res);
-
-        phase += step;
-        if (phase >= max_phase) {
-            phase -= max_phase;
-        }
-    }
-
-    _phase = phase;
-}
+#include "audio/SineGenerator.h"
 
 static int xrun_recovery(snd_pcm_t *handle, int err) {
     std::cout << "stream recovery\n";
@@ -61,20 +32,25 @@ static int xrun_recovery(snd_pcm_t *handle, int err) {
     return err;
 }
 
-AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &environment) :
+AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     freq(0),
     noteSetter(std::make_unique<NoteSetter>(*this)),
-    environment(std::move(environment)),
+    environment(std::move(paramEnvironment)),
     volume(MAX_VOLUME/3),
     stopValue(false)
 {
-    freq = this->environment->params.freq;
+    freq = environment->params.freq;
 
     auto volumeUp = new VolumeUp(*this);
     auto volumeDown = new VolumeDown(*this);
 
     myCommands.insert(std::make_pair(volumeUp->getName(), volumeUp));
     myCommands.insert(std::make_pair(volumeDown->getName(), volumeDown));
+
+    sineGenerator = std::make_unique<SineGenerator>(environment->buffers, environment->platform.frame_size, environment->params.rate);
+}
+
+AudioWorker::~AudioWorker(){
 }
 
 void AudioWorker::increaseVolume() {
@@ -114,18 +90,10 @@ void AudioWorker::stop() {
 }
 
 void AudioWorker::writeLoop() {
-    double phase = 0;
     signed short *ptr;
     int err, cptr;
 
-    double rate = environment->params.rate;
-
-    generate_sine(environment->buffers,
-            environment->platform.frame_size,
-            phase,
-            freq,
-            rate,
-            volume);
+    sineGenerator->fillFrame(freq, volume);
 
     cptr = environment->platform.frame_size;
 
