@@ -7,9 +7,9 @@
 
 #include <iostream>
 
-#include "audio/Commands.h"
-#include "audio/NoteSetter.h"
-#include "audio/SineGenerator.h"
+#include "Commands.h"
+#include "NoteSetter.h"
+#include "SineGenerator.h"
 
 static int xrun_recovery(snd_pcm_t *handle, int err) {
     std::cout << "stream recovery\n";

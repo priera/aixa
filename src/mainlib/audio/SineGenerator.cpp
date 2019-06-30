@@ -1,6 +1,6 @@
 #include "SineGenerator.h"
 
-#include "audio/Buffers.h"
+#include "Buffers.h"
 
 SineGenerator::SineGenerator(Buffers &buffers, int frameSize, double rate) :
     buffers(&buffers),

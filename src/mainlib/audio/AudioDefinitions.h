@@ -6,7 +6,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include "audio/Buffers.h"
+#include "Buffers.h"
 
 struct AudioParameters {
     std::string device;   /* playback device */

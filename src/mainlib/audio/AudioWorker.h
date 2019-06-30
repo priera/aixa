@@ -7,9 +7,9 @@
 
 #include <alsa/asoundlib.h>
 
-#include "CommandBuilder.h"
+#include "mainlib/CommandBuilder.h"
 
-#include "audio/AudioDefinitions.h"
+#include "AudioDefinitions.h"
 
 class NoteSetter;
 class SineGenerator;

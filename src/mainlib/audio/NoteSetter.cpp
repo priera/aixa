@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "audio/AudioWorker.h"
+#include "mainlib/audio/AudioWorker.h"
 
 void NoteSetter::setNote(float steps) {
     static constexpr double BASE_FREQ = 440;

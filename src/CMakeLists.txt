@@ -1,9 +1,14 @@
-file(GLOB_RECURSE SRC "*.cpp" "*.h")
+set(ROOT_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-add_executable(alsaPlayground ${SRC})
+add_subdirectory(mainlib)
 
-target_include_directories(alsaPlayground PUBLIC . ${QT_INCLUDES})
+set(TARGET_NAME alsaPlayground)
 
-target_link_libraries(alsaPlayground
+add_executable(${TARGET_NAME} main.cpp)
+
+target_include_directories(${TARGET_NAME} PUBLIC ${ROOT_INCLUDE_DIR} ${QT_INCLUDES})
+
+target_link_libraries(${TARGET_NAME}
+        mainlib
         asound
         ${QT_LIBS})

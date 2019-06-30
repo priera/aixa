@@ -6,17 +6,18 @@
 
 #include <QApplication>
 
-#include "gui/MainWindow.h"
-#include "gui/MainEventFilter.h"
+#include "mainlib/gui/MainWindow.h"
+#include "mainlib/gui/MainEventFilter.h"
 
-#include "audio/AudioWorker.h"
-#include "audio/AudioBuilder.h"
-#include "audio/NoteSetter.h"
+#include "mainlib/audio/AudioWorker.h"
+#include "mainlib/audio/AudioBuilder.h"
+#include "mainlib/audio/NoteSetter.h"
 
 //for tests these ones
-#include "audio/SineGenerator.h"
+/*#include "audio/SineGenerator.h"
 #include "audio/Buffers.h"
 #include "audio/utils.h"
+*/
 
 std::thread * buildAudioThread(AudioWorker & worker)
 {
@@ -27,7 +28,7 @@ std::thread * buildAudioThread(AudioWorker & worker)
     return new std::thread(f);
 }
 
-static void runTests() {
+/*static void runTests() {
     Buffers b(1, 4410, SND_PCM_FORMAT_S16);
     SineGenerator g(b, 4410, 44100);
 
@@ -36,7 +37,7 @@ static void runTests() {
     QJsonArray samples;
     audioUtils::dumpSignal(b, samples);
     audioUtils::writeSamplesTo(samples, "G.json");
-}
+} */
 
 int main(int argc, char *argv[]) {
   /*  AlsaExamples examples(argc, argv);

@@ -3,7 +3,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 
-#include "audio/NoteSetter.h"
+#include "mainlib/audio/NoteSetter.h"
 
 MainEventFilter::MainEventFilter(const CommandCollection &commandCollection, NoteSetter &noteSetter) :
     QObject(),

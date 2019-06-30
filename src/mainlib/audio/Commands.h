@@ -1,7 +1,7 @@
 #ifndef ALSAPLAYGROUND_COMMANDS_H
 #define ALSAPLAYGROUND_COMMANDS_H
 
-#include "Command.h"
+#include "mainlib/Command.h"
 
 #include "AudioWorker.h"
 
