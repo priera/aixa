@@ -50,7 +50,7 @@ AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     sineGenerator = std::make_unique<SineGenerator>(environment->buffers, environment->platform.frame_size, environment->params.rate);
 }
 
-AudioWorker::~AudioWorker(){
+AudioWorker::~AudioWorker() {
 }
 
 void AudioWorker::increaseVolume() {

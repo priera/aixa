@@ -12,10 +12,13 @@ public:
     void startNewFrame();
     void storeNextSample(short sample);
 
-    void *frame() { return samples; }
+    void *frame() const { return samples; }
+    size_t dataSize() const { return frameSize * channels * bps; }
 
 private:
     int channels;
+    snd_pcm_sframes_t frameSize;
+
     signed short *samples; //sizeof(short) == 2
     std::vector<unsigned char *> ptrToChanelSample;
     snd_pcm_channel_area_t *areas;

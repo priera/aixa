@@ -3,7 +3,8 @@
 #include <sstream>
 
 Buffers::Buffers(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format) :
-    channels(channels) {
+    channels(channels),
+    frameSize(frame_size) {
 
     format_bits = snd_pcm_format_width(SND_PCM_FORMAT_S16); // 16
     bps = format_bits / 8;
@@ -11,8 +12,7 @@ Buffers::Buffers(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t fo
     big_endian = snd_pcm_format_big_endian(SND_PCM_FORMAT_S16) == 1;
     to_unsigned = snd_pcm_format_unsigned(SND_PCM_FORMAT_S16) == 1;
 
-    auto samplesBuffer = malloc((frame_size * channels * snd_pcm_format_physical_width(format)) / 8);
-
+    auto samplesBuffer = malloc(frameSize * channels * bps);
     if (samplesBuffer == nullptr) {
         throw std::bad_alloc();
     }
