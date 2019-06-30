@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
+
     AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
