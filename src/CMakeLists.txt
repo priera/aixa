@@ -12,3 +12,4 @@ target_link_libraries(${TARGET_NAME}
         mainlib
         asound
         ${QT_LIBS})
+

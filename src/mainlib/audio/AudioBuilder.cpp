@@ -3,6 +3,10 @@
 #include <iostream>
 #include <sstream>
 
+void pedroFunction() {
+
+}
+
 AudioEnvironment *AudioBuilder::setupAudioEnvironment(const AudioParameters &parameters) {
     AlsaEnvironment environment;
     snd_pcm_hw_params_alloca(&environment.hwparams);

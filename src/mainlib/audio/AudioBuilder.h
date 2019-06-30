@@ -3,6 +3,8 @@
 
 #include "AudioDefinitions.h"
 
+void pedroFunction();
+
 class AudioBuilder {
 public:
     AudioBuilder() = default;

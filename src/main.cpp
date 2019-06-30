@@ -47,6 +47,8 @@ int main(int argc, char *argv[]) {
 
     return 0; */
 
+    pedroFunction();
+
     QApplication app(argc, argv);
 
     AudioBuilder audioBuilder;
