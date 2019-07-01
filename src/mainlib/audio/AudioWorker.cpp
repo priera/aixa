@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "Commands.h"
-#include "NoteSetter.h"
 #include "SineGenerator.h"
 
 static int xrun_recovery(snd_pcm_t *handle, int err) {
@@ -34,7 +33,6 @@ static int xrun_recovery(snd_pcm_t *handle, int err) {
 
 AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     freq(0),
-    noteSetter(std::make_unique<NoteSetter>(*this)),
     environment(std::move(paramEnvironment)),
     volume(MAX_VOLUME/3),
     stopValue(false)
@@ -73,10 +71,6 @@ void AudioWorker::setFrequency(double freq) {
 
 CommandCollection AudioWorker::buildCommandCollection() {
     return myCommands;
-}
-
-NoteSetter *AudioWorker::getNoteSetter() const {
-    return noteSetter.get();
 }
 
 void AudioWorker::start() {

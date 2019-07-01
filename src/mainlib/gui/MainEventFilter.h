@@ -12,7 +12,7 @@ class QEvent;
 class MainEventFilter : public QObject {
 Q_OBJECT
 public:
-    MainEventFilter(const CommandCollection &commandCollection, NoteSetter &noteSetter);
+    MainEventFilter(const CommandCollection &commandCollection);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

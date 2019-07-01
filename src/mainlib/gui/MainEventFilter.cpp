@@ -3,11 +3,10 @@
 #include <QApplication>
 #include <QKeyEvent>
 
-#include "mainlib/audio/NoteSetter.h"
+#include "mainlib/audio/note/NoteSetter.h"
 
-MainEventFilter::MainEventFilter(const CommandCollection &commandCollection, NoteSetter &noteSetter) :
+MainEventFilter::MainEventFilter(const CommandCollection &commandCollection) :
     QObject(),
-    noteSetter(&noteSetter),
     volumeUp(nullptr),
     volumeDown(nullptr)
 {
@@ -35,10 +34,10 @@ bool MainEventFilter::eventFilter(QObject *obj, QEvent *event) {
         } else if (key == Qt::Key_Down) {
             volumeDown->execute();
 
-        } else if (key & noteKeys) {
+        } /*else if (key & noteKeys) {
             auto steps = key - Qt::Key_A;
             noteSetter->setNote(steps);
-        }
+        } */
 
         return true;
     } else {

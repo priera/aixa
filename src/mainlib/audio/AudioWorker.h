@@ -11,7 +11,6 @@
 
 #include "AudioDefinitions.h"
 
-class NoteSetter;
 class SineGenerator;
 
 class AudioWorker : public CommandBuilder {
@@ -20,8 +19,6 @@ public:
     virtual ~AudioWorker();
 
     CommandCollection buildCommandCollection() override;
-
-    NoteSetter *getNoteSetter() const;
 
     void start();
     void stop();
@@ -46,7 +43,6 @@ private:
     std::atomic<double> freq;
 
     CommandCollection myCommands;
-    std::unique_ptr<NoteSetter> noteSetter;
 
     std::atomic<bool> stopValue;
 
