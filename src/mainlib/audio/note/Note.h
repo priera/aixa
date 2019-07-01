@@ -6,14 +6,14 @@
 struct Note {
     static constexpr int VALID_PITCHES = 8;
 
-    enum class Pitch {
-        A = 0,
-        B,
-        C,
-        D,
-        E,
-        F,
-        G,
+    enum class Pitch : unsigned char {
+        C = 0,
+        D = 2,
+        E = 3,
+        F = 5,
+        G = 7,
+        A = 9,
+        B = 11,
         NONE
     };
 
@@ -30,7 +30,7 @@ struct Note {
     Modifier modifier;
 };
 
-
+double computeFrequency(const Note &n);
 
 using NotesBuffer = CircularBuffer<Note>;
 

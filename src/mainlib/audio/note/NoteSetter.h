@@ -3,19 +3,15 @@
 
 #include "Note.h"
 
-class AudioWorker;
-
 class NoteSetter {
 public:
-    NoteSetter(NotesBuffer &notesBuffer, AudioWorker &audioWorker);
+    NoteSetter(NotesBuffer &notesBuffer);
 
-    void setNote(float steps);
-    void setPitch(unsigned int pitch);
+    void setPitch(Note::Pitch pitch);
 
 private:
     static constexpr int DEFAULT_OCTAVE = 4;
 
-    AudioWorker *worker;
     NotesBuffer  *buffer;
 
     bool noteSeen;

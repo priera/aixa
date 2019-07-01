@@ -5,12 +5,21 @@
 
 #include "mainlib/audio/note/NoteSetter.h"
 
-MainEventFilter::MainEventFilter(const CommandCollection &commandCollection) :
+MainEventFilter::MainEventFilter(const CommandCollection &commandCollection, NoteSetter &noteSetter) :
     QObject(),
     volumeUp(nullptr),
-    volumeDown(nullptr)
+    volumeDown(nullptr),
+    noteSetter(&noteSetter)
 {
-    noteKeys = Qt::Key_A | Qt::Key_B | Qt::Key_C | Qt::Key_D | Qt::Key_E | Qt::Key_F | Qt::Key_G;
+    keysToPitchMap = {
+        {Qt::Key_A, Note::Pitch::A },
+        {Qt::Key_B, Note::Pitch::B },
+        {Qt::Key_C, Note::Pitch::C },
+        {Qt::Key_D, Note::Pitch::D },
+        {Qt::Key_E, Note::Pitch::E },
+        {Qt::Key_F, Note::Pitch::F },
+        {Qt::Key_G, Note::Pitch::G }
+    };
 
     auto it = commandCollection.find("VolumeUp");
     if (it != commandCollection.end()) volumeUp = it->second;
@@ -24,6 +33,9 @@ bool MainEventFilter::eventFilter(QObject *obj, QEvent *event) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         int key = keyEvent->key();
 
+        auto noteIt = keysToPitchMap.find(key);
+        bool keyIsNote = noteIt != keysToPitchMap.end();
+
         if (key == Qt::Key_Q) {
             auto app = QApplication::instance();
             if (app) app->quit();
@@ -34,10 +46,9 @@ bool MainEventFilter::eventFilter(QObject *obj, QEvent *event) {
         } else if (key == Qt::Key_Down) {
             volumeDown->execute();
 
-        } /*else if (key & noteKeys) {
-            auto steps = key - Qt::Key_A;
-            noteSetter->setNote(steps);
-        } */
+        } else if (keyIsNote) {
+            noteSetter->setPitch(noteIt->second);
+        }
 
         return true;
     } else {
