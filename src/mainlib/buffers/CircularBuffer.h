@@ -16,6 +16,10 @@ public:
         time_t pts;
     };
 
+    static double timeDiffInMs(const time_t &pts1, const time_t &pts2) {
+        return (pts1 - pts2) * CLOCK_PERIOD * 1000;
+    }
+
     CircularBuffer(size_t size)  :
             readPos(0),
             writePos(0),
@@ -45,8 +49,6 @@ public:
         el.value = v;
         el.pts = pts;
 
-        std::cout << pts << std::endl;
-
         writePos = (writePos + 1) % size;
     }
 
@@ -70,6 +72,8 @@ public:
     }
 
 private:
+    static constexpr double CLOCK_PERIOD = ((double)std::chrono::steady_clock::period::num ) /std::chrono::steady_clock::period::den;
+
     std::vector<Elem> buf;
 
     size_t writePos, readPos;

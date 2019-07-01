@@ -21,6 +21,7 @@ private:
     std::atomic<bool> stopVariable;
     
     Note lastNote;
+    time_t previousPts;
 };
 
 

@@ -14,6 +14,8 @@
 
 #include "mainlib/audio/note/NotesProcessor.h"
 
+#include "mainlib/buffers/CircularBuffer.h"
+
 std::thread * buildAudioThread(AudioWorker & worker)
 {
     auto f = [&worker](){
@@ -28,7 +30,6 @@ int main(int argc, char *argv[]) {
     examples.run(); */
 
     QApplication app(argc, argv);
-
 
     AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();

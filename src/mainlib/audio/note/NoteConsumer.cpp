@@ -22,9 +22,10 @@ void NoteConsumer::start() {
             continue;
         }
 
-        double freq = computeFrequency(n);
+        auto diff = NotesBuffer::timeDiffInMs(pts, previousPts);
+        previousPts = pts;
 
-        std::cout << "Setting freq to: " << freq << " with note " << static_cast<unsigned char>(n.pitch) << std::endl;
+        double freq = computeFrequency(n);
 
         worker->setFrequency(freq);
 
