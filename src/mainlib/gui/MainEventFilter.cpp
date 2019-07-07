@@ -13,12 +13,12 @@ MainEventFilter::MainEventFilter(const CommandCollection &commandCollection, Not
 {
     keysToPitchMap = {
         {Qt::Key_A, Note::Pitch::A },
-        {Qt::Key_B, Note::Pitch::B },
-        {Qt::Key_C, Note::Pitch::C },
-        {Qt::Key_D, Note::Pitch::D },
-        {Qt::Key_E, Note::Pitch::E },
-        {Qt::Key_F, Note::Pitch::F },
-        {Qt::Key_G, Note::Pitch::G }
+        {Qt::Key_S, Note::Pitch::B },
+        {Qt::Key_D, Note::Pitch::C },
+        {Qt::Key_F, Note::Pitch::D },
+        {Qt::Key_G, Note::Pitch::E },
+        {Qt::Key_H, Note::Pitch::F },
+        {Qt::Key_J, Note::Pitch::G }
     };
 
     auto it = commandCollection.find("VolumeUp");
