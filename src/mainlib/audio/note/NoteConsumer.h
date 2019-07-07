@@ -15,12 +15,15 @@ public:
     void stop();
 
 private:
+    void mergeNewNote(const Note &incomingNote);
+
     AudioWorker *worker;
     NotesBuffer *buffer;
 
     std::atomic<bool> stopVariable;
     
     Note lastNote;
+    bool noteSeen;
     time_t previousPts;
 };
 

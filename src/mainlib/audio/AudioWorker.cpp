@@ -37,8 +37,6 @@ AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     volume(MAX_VOLUME/3),
     stopValue(false)
 {
-    freq = environment->params.freq;
-
     auto volumeUp = new VolumeUp(*this);
     auto volumeDown = new VolumeDown(*this);
 

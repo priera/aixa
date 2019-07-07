@@ -20,3 +20,22 @@ void NoteSetter::setPitch(Note::Pitch pitch) {
 
     noteSeen = true;
 }
+
+void NoteSetter::setOctave(int octave) {
+    if (!noteSeen) return;
+    if (!(octave >= 0 && octave < 9)) return;
+
+    Note n;
+    n.octave = octave;
+
+    buffer->insert(n);
+}
+
+void NoteSetter::setModifier(Note::Modifier modifier) {
+    if (!noteSeen) return;
+
+    Note n;
+    n.modifier = modifier;
+
+    buffer->insert(n);
+}

@@ -9,6 +9,10 @@ public:
 
     void setPitch(Note::Pitch pitch);
 
+    void setOctave(int octave);
+
+    void setModifier(Note::Modifier modifier);
+
 private:
     static constexpr int DEFAULT_OCTAVE = 4;
 

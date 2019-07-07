@@ -22,6 +22,10 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
+    bool checkNote(int key, Note::Pitch &pitch);
+    bool checkOctave(int key, int &octave);
+    bool checkModifier(int key, Note::Modifier & modifier);
+
     Command *volumeUp;
     Command *volumeDown;
 

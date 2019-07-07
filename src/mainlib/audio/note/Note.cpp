@@ -10,6 +10,9 @@ double computeFrequency(const Note &n) {
     float noteSemis = static_cast<unsigned char>(n.pitch) + (n.octave * SEMITONES);
     float steps = noteSemis - CONCERT_A_SEMIS;
 
+    if (n.modifier != Note::Modifier::NONE)
+        steps += (n.modifier == Note::Modifier::SHARP) ? 1 : -1;
+
     double newFreq = std::pow(2, steps / SEMITONES) * BASE_FREQ;
 
     return newFreq;
