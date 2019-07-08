@@ -1,16 +1,16 @@
-#ifndef ALSAPLAYGROUND_OPENGLWINDOW2_H
-#define ALSAPLAYGROUND_OPENGLWINDOW2_H
+#ifndef ALSAPLAYGROUND_OPENGLWINDOW_H
+#define ALSAPLAYGROUND_OPENGLWINDOW_H
 
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
 
 class QOpenGLShaderProgram;
 
-class OpenGLWindow2 : public QOpenGLWindow, protected QOpenGLFunctions {
+class OpenGLWindow : public QOpenGLWindow, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow2();
+    explicit OpenGLWindow();
 
     void setAnimating(bool moving) { m_moving = moving; }
 
@@ -33,4 +33,4 @@ private:
 };
 
 
-#endif //ALSAPLAYGROUND_OPENGLWINDOW2_H
+#endif //ALSAPLAYGROUND_OPENGLWINDOW_H

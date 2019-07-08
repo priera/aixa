@@ -1,4 +1,4 @@
-#include "mainlib/gui/OpenGLWindow2.h"
+#include "mainlib/gui/OpenGLWindow.h"
 
 #include <QOpenGLShaderProgram>
 
@@ -21,12 +21,12 @@ static const char *fragmentShaderSource =
         "   gl_FragColor = col;\n"
         "}\n";
 
-OpenGLWindow2::OpenGLWindow2() : QOpenGLWindow(),
+OpenGLWindow::OpenGLWindow() : QOpenGLWindow(),
     m_program(0)
     , m_frame(0)
     , m_moving(false) {}
 
-bool OpenGLWindow2::event(QEvent *event)
+bool OpenGLWindow::event(QEvent *event)
 {
     switch (event->type()) {
         case QEvent::UpdateRequest:
@@ -37,7 +37,7 @@ bool OpenGLWindow2::event(QEvent *event)
     }
 }
 
-void OpenGLWindow2::initializeGL() {
+void OpenGLWindow::initializeGL() {
     initializeOpenGLFunctions();
 
     m_program = new QOpenGLShaderProgram(this);
@@ -49,7 +49,7 @@ void OpenGLWindow2::initializeGL() {
     m_matrixUniform = m_program->uniformLocation("matrix");
 }
 
-void OpenGLWindow2::paintGL() {
+void OpenGLWindow::paintGL() {
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
@@ -100,7 +100,7 @@ void OpenGLWindow2::paintGL() {
         update();
 }
 
-void OpenGLWindow2::resizeGL(int w, int h) {
+void OpenGLWindow::resizeGL(int w, int h) {
     setWidth(w);
     setHeight(h);
 }

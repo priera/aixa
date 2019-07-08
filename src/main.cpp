@@ -8,7 +8,7 @@
 
 #include "mainlib/gui/MainWindow.h"
 #include "mainlib/gui/MainEventFilter.h"
-#include "mainlib/gui/OpenGLWindow2.h"
+#include "mainlib/gui/OpenGLWindow.h"
 
 #include "mainlib/audio/AudioWorker.h"
 #include "mainlib/audio/AudioBuilder.h"
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setSamples(16);
 
-    OpenGLWindow2 window;
+    OpenGLWindow window;
     window.setFormat(format);
     window.resize(1920 / 3, 1080 / 3);
     window.show();
