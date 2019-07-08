@@ -8,7 +8,7 @@
 
 #include "mainlib/gui/MainWindow.h"
 #include "mainlib/gui/MainEventFilter.h"
-#include "mainlib/gui/TriangleWindow.h"
+#include "mainlib/gui/OpenGLWindow2.h"
 
 #include "mainlib/audio/AudioWorker.h"
 #include "mainlib/audio/AudioBuilder.h"
@@ -35,14 +35,15 @@ int main(int argc, char *argv[]) {
     QSurfaceFormat format;
     format.setSamples(16);
 
-    TriangleWindow window;
+    OpenGLWindow2 window;
     window.setFormat(format);
-    window.resize(640, 480);
+    window.resize(1920 / 3, 1080 / 3);
     window.show();
 
     window.setAnimating(true);
 
-/*    AudioBuilder audioBuilder;
+    /*
+    AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
     auto environment = std::unique_ptr<AudioEnvironment>(environment_p);

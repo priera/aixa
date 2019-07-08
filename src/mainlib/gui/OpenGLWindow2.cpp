@@ -1,8 +1,9 @@
-#include "mainlib/gui/TriangleWindow.h"
+#include "mainlib/gui/OpenGLWindow2.h"
 
-#include <QtGui/QOpenGLShaderProgram>
+#include <QOpenGLShaderProgram>
+
 #include <QtGui/QScreen>
-#include <QtGui/QMatrix4x4>
+
 
 static const char *vertexShaderSource =
         "attribute highp vec4 posAttr;\n"
@@ -20,14 +21,25 @@ static const char *fragmentShaderSource =
         "   gl_FragColor = col;\n"
         "}\n";
 
-TriangleWindow::TriangleWindow()
-        : m_program(0)
-        , m_frame(0)
+OpenGLWindow2::OpenGLWindow2() : QOpenGLWindow(),
+    m_program(0)
+    , m_frame(0)
+    , m_moving(false) {}
+
+bool OpenGLWindow2::event(QEvent *event)
 {
+    switch (event->type()) {
+        case QEvent::UpdateRequest:
+            paintGL();
+            return true;
+        default:
+            return QWindow::event(event);
+    }
 }
 
-void TriangleWindow::initialize()
-{
+void OpenGLWindow2::initializeGL() {
+    initializeOpenGLFunctions();
+
     m_program = new QOpenGLShaderProgram(this);
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
@@ -37,8 +49,7 @@ void TriangleWindow::initialize()
     m_matrixUniform = m_program->uniformLocation("matrix");
 }
 
-void TriangleWindow::render()
-{
+void OpenGLWindow2::paintGL() {
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
@@ -78,5 +89,18 @@ void TriangleWindow::render()
 
     m_program->release();
 
+    int i = format().swapInterval();
+    auto p = format().version();
+
     ++m_frame;
+
+    context()->swapBuffers(this);
+
+    if (m_moving)
+        update();
+}
+
+void OpenGLWindow2::resizeGL(int w, int h) {
+    setWidth(w);
+    setHeight(h);
 }
