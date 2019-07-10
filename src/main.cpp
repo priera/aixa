@@ -6,7 +6,6 @@
 
 #include <QApplication>
 
-#include "mainlib/gui/MainWindow.h"
 #include "mainlib/gui/MainEventFilter.h"
 
 #include "mainlib/gui/OpenGLTask.h"
@@ -42,10 +41,6 @@ int main(int argc, char *argv[]) {
     OpenGLTask openGLTask(format);
     openGLTask.start();
 
-    auto window = openGLTask.getWindow();
-    window->show();
-
-    /*
     AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
@@ -54,24 +49,25 @@ int main(int argc, char *argv[]) {
     AudioWorker worker(environment);
     auto commandCollection = worker.buildCommandCollection();
 
-    NotesProcessor notesProcesor(worker);
-    notesProcesor.start();
+    NotesProcessor notesProcessor(worker);
+    notesProcessor.start();
 
-    MainEventFilter mainEventFilter(commandCollection, *notesProcesor.getNoteSetter());
+    MainEventFilter mainEventFilter(commandCollection, *notesProcessor.getNoteSetter());
     app.installEventFilter(&mainEventFilter);
 
-    MainWindow mainWindow;
-    mainWindow.show();
+    auto audioThread = buildAudioThread(worker);
 
-    auto audioThread = buildAudioThread(worker); */
+    //Show the window just right before the application starts
+    auto window = openGLTask.getWindow();
+    window->show();
 
     int ret = app.exec();
 
     openGLTask.stop();
 
-    /*notesProcesor.stop();
+    notesProcessor.stop();
     worker.stop();
-    audioThread->join(); */
+    audioThread->join();
 
     return ret;
 }
