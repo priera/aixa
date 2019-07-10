@@ -8,6 +8,8 @@
 
 #include "mainlib/gui/MainWindow.h"
 #include "mainlib/gui/MainEventFilter.h"
+
+#include "mainlib/gui/OpenGLTask.h"
 #include "mainlib/gui/OpenGLWindow.h"
 
 #include "mainlib/audio/AudioWorker.h"
@@ -34,13 +36,14 @@ int main(int argc, char *argv[]) {
 
     QSurfaceFormat format;
     format.setSamples(16);
+    format.setMajorVersion(3);
+    format.setMinorVersion(3);
 
-    OpenGLWindow window;
-    window.setFormat(format);
-    window.resize(1920 / 3, 1080 / 3);
-    window.show();
+    OpenGLTask openGLTask(format);
+    openGLTask.start();
 
-    window.setAnimating(true);
+    auto window = openGLTask.getWindow();
+    window->show();
 
     /*
     AudioBuilder audioBuilder;
@@ -63,6 +66,8 @@ int main(int argc, char *argv[]) {
     auto audioThread = buildAudioThread(worker); */
 
     int ret = app.exec();
+
+    openGLTask.stop();
 
     /*notesProcesor.stop();
     worker.stop();

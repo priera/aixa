@@ -6,30 +6,37 @@
 
 class QOpenGLShaderProgram;
 
-class OpenGLWindow : public QOpenGLWindow, protected QOpenGLFunctions {
+class OpenGLWorker;
+
+class OpenGLWindow : public QOpenGLWindow {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow();
+    explicit OpenGLWindow(OpenGLWorker &worker, QOpenGLContext *context);
 
-    void setAnimating(bool moving) { m_moving = moving; }
+    //void setAnimating(bool moving) { m_moving = moving; }
+
+signals:
+    void readyGL();
 
 protected:
-    bool event(QEvent *event) override;
+    //bool event(QEvent *event) override;
 
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
 private:
-    GLuint m_posAttr;
+    /*GLuint m_posAttr;
     GLuint m_colAttr;
     GLuint m_matrixUniform;
 
     QOpenGLShaderProgram *m_program;
     int m_frame;
 
-    bool m_moving;
+    bool m_moving; */
+
+    OpenGLWorker *worker;
 };
 
 
