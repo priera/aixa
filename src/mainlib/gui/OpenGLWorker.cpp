@@ -2,25 +2,27 @@
 
 #include <QtGui/QOpenGLShaderProgram>
 
+#include <iostream>
+
 static const char *vertexShaderSource =
-        "attribute highp vec4 posAttr;\n"
-        "attribute lowp vec4 colAttr;\n"
-        "varying lowp vec4 col;\n"
-        "uniform highp mat4 matrix;\n"
-        "void main() {\n"
-        "   col = colAttr;\n"
-        "   gl_Position = matrix * posAttr;\n"
-        "}\n";
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "}\0";
 
 static const char *fragmentShaderSource =
-        "varying lowp vec4 col;\n"
-        "void main() {\n"
-        "   gl_FragColor = col;\n"
-        "}\n";
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+        "void main()\n"
+        "{\n"
+        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "}\n\0";
 
 
 OpenGLWorker::OpenGLWorker(QOpenGLContext &context) :
-    QOpenGLFunctions(),
+    QOpenGLExtraFunctions(),
     context(&context),
     surface(nullptr),
     w(0),
@@ -44,25 +46,62 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
 
     m_program->link();
 
-    m_posAttr = m_program->attributeLocation("posAttr");
+    /*m_posAttr = m_program->attributeLocation("posAttr");
     m_colAttr = m_program->attributeLocation("colAttr");
-    m_matrixUniform = m_program->uniformLocation("matrix");
+    m_matrixUniform = m_program->uniformLocation("matrix"); */
+
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    vertices = {
+            0.5f,  0.5f, 0.0f,  // top right
+            0.5f, -0.5f, 0.0f,  // bottom right
+            -0.5f, -0.5f, 0.0f,  // bottom left
+            -0.5f,  0.5f, 0.0f   // top left
+    };
+
+    indices = {
+            0, 1, 3,   // first triangle
+            1, 2, 3    // second triangle
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindVertexArray(0);
+
+
+    glViewport(0, 0, w, h);
 }
 
 void OpenGLWorker::setSize(int w, int h) {
     this->w = w;
     this->h = h;
+
+    glViewport(0, 0, w, h);
 }
 
 
 void OpenGLWorker::draw() {
-    glViewport(0, 0, w, h);
-
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     m_program->bind();
 
-    QMatrix4x4 matrix;
+    /*QMatrix4x4 matrix;
     matrix.perspective(60.0f, 4.0f/3.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -2);
     matrix.rotate(100.0f * m_frame / 60, 0, 1, 0);
@@ -90,7 +129,13 @@ void OpenGLWorker::draw() {
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(0); */
+
+    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
 
     m_program->release();
 

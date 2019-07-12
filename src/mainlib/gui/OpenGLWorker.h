@@ -3,14 +3,15 @@
 
 #include <atomic>
 #include <memory>
+#include <vector>
 
-#include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QSurfaceFormat>
 
 class QOpenGLShaderProgram;
 class QOpenGLContext;
 
-class OpenGLWorker : protected QOpenGLFunctions {
+class OpenGLWorker : protected QOpenGLExtraFunctions {
 public:
 
     OpenGLWorker(QOpenGLContext &context);
@@ -36,6 +37,12 @@ private:
 
     std::unique_ptr<QOpenGLShaderProgram> m_program;
     int m_frame;
+
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    unsigned int VBO, VAO, EBO;
+
 };
 
 
