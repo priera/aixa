@@ -31,17 +31,12 @@ private:
     std::atomic<int> w;
     std::atomic<int> h;
 
-    GLuint m_posAttr;
-    GLuint m_colAttr;
-    GLuint m_matrixUniform;
-
-    std::unique_ptr<QOpenGLShaderProgram> m_program;
+    std::unique_ptr<QOpenGLShaderProgram> program;
     int m_frame;
 
     std::vector<float> vertices;
-    std::vector<unsigned int> indices;
 
-    unsigned int VBO, VAO, EBO;
+    unsigned int VBO, VAO;
 
 };
 
