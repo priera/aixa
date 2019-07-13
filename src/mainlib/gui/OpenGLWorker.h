@@ -8,6 +8,8 @@
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QSurfaceFormat>
 
+
+class QImage;
 class QOpenGLShaderProgram;
 class QOpenGLContext;
 
@@ -35,9 +37,13 @@ private:
     int m_frame;
 
     std::vector<float> vertices;
+    std::vector<int> indices;
 
-    unsigned int VBO, VAO;
+    unsigned int VBO, VAO, EBO;
+    std::vector<unsigned int> textures;
 
+    std::unique_ptr<QImage> textureImage;
+    std::unique_ptr<QImage> happyImage;
 };
 
 
