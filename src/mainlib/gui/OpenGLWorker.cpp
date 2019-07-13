@@ -30,7 +30,7 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     program->addCacheableShaderFromSourceFile(QOpenGLShader::Vertex, "./src/mainlib/gui/shaders/vertex.glsl");
     program->addCacheableShaderFromSourceFile(QOpenGLShader::Fragment, "./src/mainlib/gui/shaders/fragment.glsl");
 
-    program->link();    
+    program->link();
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

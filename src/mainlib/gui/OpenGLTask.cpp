@@ -1,12 +1,17 @@
 #include "mainlib/gui/OpenGLTask.h"
 
+#include <chrono>
+#include <thread>
+
 #include <QtGui/QOpenGLWindow>
+#include <iostream>
 
 #include "mainlib/gui/OpenGLWorker.h"
 #include "mainlib/gui/OpenGLWindow.h"
 
 OpenGLTask::OpenGLTask(const QSurfaceFormat &format) :
     format(format),
+    frameRate(60), //TODO make this dependent on actual screen configuration
     running(false),
     runningThread(nullptr)
 {}
@@ -39,8 +44,26 @@ void OpenGLTask::stop() {
 void OpenGLTask::runningLoop() {
     initWorkerThreadObjects();
 
+    long int iterationTimeus = (1 / ((float)frameRate)) * 1000000;
+
+    std::chrono::microseconds durationRender(iterationTimeus);
+    auto ticksRender = durationRender.count();
+
     while (running) {
+        auto start = std::chrono::steady_clock::now();
+
         worker->draw();
+
+        auto end = std::chrono::steady_clock::now();
+        auto renderTimeus = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+        auto timeToWait = ticksRender - renderTimeus;
+
+        if (timeToWait > 0) {
+            std::chrono::microseconds us(timeToWait);
+            std::this_thread::sleep_for(us);
+        }
+
     }
 }
 

@@ -34,6 +34,8 @@ private:
 
     QSurfaceFormat format;
 
+    int frameRate;
+
     std::atomic<bool> running;
     std::unique_ptr<OpenGLWorker> worker;
     std::unique_ptr<std::thread> runningThread;
