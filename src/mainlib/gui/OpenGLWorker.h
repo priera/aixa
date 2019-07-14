@@ -8,7 +8,6 @@
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QSurfaceFormat>
 
-
 class QImage;
 class QOpenGLShaderProgram;
 class QOpenGLContext;
