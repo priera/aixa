@@ -13,12 +13,19 @@ OpenGLWorker::OpenGLWorker(QOpenGLContext &context) :
     context(&context),
     surface(nullptr),
     w(0),
-    h(0) {
+    h(0),
+    aspectRatio(0) {
     QImage original("./data/container.jpg");
     textureImage = std::make_unique<QImage>(original.convertToFormat(QImage::Format_RGB888));
 
     QImage original2("./data/awesomeface.png");
     happyImage = std::make_unique<QImage>(original2.convertToFormat(QImage::Format_RGB888).mirrored(false, true));
+
+
+    //model.rotate(-55.0f, 1.0, 0.0, 0.0f);
+
+    view.translate(0.0f, 0.0f, -3.0f);
+
 }
 
 OpenGLWorker::~OpenGLWorker() { }
@@ -27,10 +34,15 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     this->surface = surface;
     this->w = w;
     this->h = h;
+    this->aspectRatio = ((float)w) / h;
+
+    projection.perspective(45.0f, aspectRatio, 0.1f, 100.0f);
 
     context->makeCurrent(surface);
 
     initializeOpenGLFunctions();
+
+    glEnable(GL_DEPTH_TEST);
 
     program = std::make_unique<QOpenGLShaderProgram>();
     
@@ -43,10 +55,47 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
 
     vertices = {
         // positions           // texture coords
-            0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-            0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
     indices = {
@@ -116,30 +165,62 @@ void OpenGLWorker::setSize(int w, int h) {
     this->w = w;
     this->h = h;
 
+    float newAspectRatio =((float)w) / h;
+
+    if (std::abs(aspectRatio - newAspectRatio) > 0.1) {
+        aspectRatio = newAspectRatio;
+        projection.setToIdentity();
+        projection.perspective(45.0f, aspectRatio, 0.1f, 100.0f);
+    }
+
     glViewport(0, 0, w, h);
 }
 
 
 void OpenGLWorker::draw() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textures[1]);
 
+    std::vector<QVector3D> cubePositions = {
+            {0.0f, 0.0f, 0.0f},
+            {2.0f, 5.0f, -15.0f},
+            {-1.5f, -2.2f, -2.5f},
+            {-3.8f, -2.0f, -12.3f},
+            {2.4, -0.4f, -3.5f},
+            {-1.7f, 3.0f, -7.5f}
+    };
+
     program->bind();
 
-    QMatrix4x4 transform;
-    transform.translate(0.5f, -0.5f, 0.0f);
-    transform.rotate((float)m_frame, 0.0f, 0.0f, 1.0f);
+    const float angle = ((50. * m_frame) / 180) * M_PI;
+    model.setToIdentity();
+    model.rotate(m_frame, 0.5f, 1.0f, 0.0f);
 
-    program->setUniformValue("transform", transform);
+
+    program->setUniformValue("view", view);
+    program->setUniformValue("projection", projection);
 
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    for(unsigned int i = 0; i < 6; i++)
+    {
+
+        model.setToIdentity();
+        model.translate(cubePositions[i]);
+        float angle = 20.0f * i;
+        model.rotate(angle, 1.0f, 0.3f, 0.5f);
+
+        program->setUniformValue("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
+    //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);

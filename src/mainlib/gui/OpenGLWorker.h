@@ -7,6 +7,7 @@
 
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QSurfaceFormat>
+#include <QtGui/QMatrix4x4>
 
 class QImage;
 class QOpenGLShaderProgram;
@@ -31,6 +32,7 @@ private:
 
     std::atomic<int> w;
     std::atomic<int> h;
+    std::atomic<float> aspectRatio;
 
     std::unique_ptr<QOpenGLShaderProgram> program;
     int m_frame;
@@ -43,6 +45,9 @@ private:
 
     std::unique_ptr<QImage> textureImage;
     std::unique_ptr<QImage> happyImage;
+
+    QMatrix4x4 model, view, projection;
+
 };
 
 
