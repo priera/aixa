@@ -4,9 +4,11 @@
 #include <QtGui/QImage>
 #include <QtGui/QMatrix4x4>
 
-#include <iostream>
 #include <chrono>
 #include <cmath>
+#include <iostream>
+#include <QtGui/QOpenGLFunctions_3_3_Core>
+
 
 OpenGLWorker::OpenGLWorker(QOpenGLContext &context) :
     QOpenGLExtraFunctions(),
@@ -15,17 +17,6 @@ OpenGLWorker::OpenGLWorker(QOpenGLContext &context) :
     w(0),
     h(0),
     aspectRatio(0) {
-    QImage original("./data/container.jpg");
-    textureImage = std::make_unique<QImage>(original.convertToFormat(QImage::Format_RGB888));
-
-    QImage original2("./data/awesomeface.png");
-    happyImage = std::make_unique<QImage>(original2.convertToFormat(QImage::Format_RGB888).mirrored(false, true));
-
-
-    //model.rotate(-55.0f, 1.0, 0.0, 0.0f);
-
-    view.translate(0.0f, 0.0f, -3.0f);
-
 }
 
 OpenGLWorker::~OpenGLWorker() { }
@@ -39,123 +30,107 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     projection.perspective(45.0f, aspectRatio, 0.1f, 100.0f);
 
     context->makeCurrent(surface);
+    auto funcs = context->versionFunctions<QOpenGLFunctions_3_3_Core>();
+    if (!funcs) {
+        std::cout << "Could not get functions" << std::endl;
+    }
 
-    initializeOpenGLFunctions();
+    //initializeOpenGLFunctions();
 
-    glEnable(GL_DEPTH_TEST);
+    bool a1 = hasOpenGLFeature(QOpenGLFunctions::BlendColor);
+    bool a2 = hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats);
+    bool a3 = hasOpenGLFeature(QOpenGLFunctions::BlendSubtract);
+
+    //glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    QMatrix4x4 projection;
+    projection.ortho(QRect(0.0f, 0.0f, w, h));
 
     program = std::make_unique<QOpenGLShaderProgram>();
-    
+
     program->addCacheableShaderFromSourceFile(QOpenGLShader::Vertex, "./src/mainlib/gui/shaders/vertex.glsl");
     program->addCacheableShaderFromSourceFile(QOpenGLShader::Fragment, "./src/mainlib/gui/shaders/fragment.glsl");
 
     program->link();
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    vertices = {
-        // positions           // texture coords
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    indices = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
-    textures.resize(2);
-    glGenTextures(2, &textures[0]);
-
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureImage->width(), textureImage->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, textureImage->constBits());
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, happyImage->width(), happyImage->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, happyImage->constBits());
-    glGenerateMipmap(GL_TEXTURE_2D);
-
     program->bind();
 
-    glUniform1i(program->uniformLocation("texture1"), 0);
-    glUniform1i(program->uniformLocation("texture2"), 1);
+    program->setUniformValue("projection", projection);
 
     program->release();
 
+    // All functions return a value different than 0 whenever an error occurred
+    if (FT_Init_FreeType(&ft))
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+
+    // Load font as face
+    FT_Face face;
+    if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 0, &face))
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+
+    // Set size to load glyphs as
+    FT_Set_Pixel_Sizes(face, 0, 48);
+
+    // Disable byte-alignment restriction
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    for (GLubyte c = 0; c < 128; c++)
+    {
+        // Load character glyph
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            continue;
+        }
+
+        // Generate texture
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RED,
+                face->glyph->bitmap.width,
+                face->glyph->bitmap.rows,
+                0,
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                face->glyph->bitmap.buffer
+        );
+        // Set texture options
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // Now store character for later use
+        Character character = {
+                texture,
+                {face->glyph->bitmap.width, face->glyph->bitmap.rows},
+                {face->glyph->bitmap_left, face->glyph->bitmap_top},
+                face->glyph->advance.x
+        };
+        characters.insert(std::pair<GLchar, Character>(c, character));
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // Destroy FreeType once we're finished
+    FT_Done_Face(face);
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER,  sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     glBindVertexArray(0);
 
     glViewport(0, 0, w, h);
@@ -165,13 +140,6 @@ void OpenGLWorker::setSize(int w, int h) {
     this->w = w;
     this->h = h;
 
-    float newAspectRatio =((float)w) / h;
-
-    if (std::abs(aspectRatio - newAspectRatio) > 0.1) {
-        aspectRatio = newAspectRatio;
-        projection.setToIdentity();
-        projection.perspective(45.0f, aspectRatio, 0.1f, 100.0f);
-    }
 
     glViewport(0, 0, w, h);
 }
@@ -179,55 +147,75 @@ void OpenGLWorker::setSize(int w, int h) {
 
 void OpenGLWorker::draw() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-    std::vector<QVector3D> cubePositions = {
-            {0.0f, 0.0f, 0.0f},
-            {2.0f, 5.0f, -15.0f},
-            {-1.5f, -2.2f, -2.5f},
-            {-3.8f, -2.0f, -12.3f},
-            {2.4, -0.4f, -3.5f},
-            {-1.7f, 3.0f, -7.5f}
-    };
+    glClear(GL_COLOR_BUFFER_BIT);
 
     program->bind();
 
-    const float angle = ((50. * m_frame) / 180) * M_PI;
-    model.setToIdentity();
-    model.rotate(m_frame, 0.5f, 1.0f, 0.0f);
-
-
-    program->setUniformValue("view", view);
-    program->setUniformValue("projection", projection);
-
-    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-
-    for(unsigned int i = 0; i < 6; i++)
-    {
-
-        model.setToIdentity();
-        model.translate(cubePositions[i]);
-        float angle = 20.0f * i;
-        model.rotate(angle, 1.0f, 0.3f, 0.5f);
-
-        program->setUniformValue("model", model);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-    //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    renderText("T", 25.0f, 25.0f, 1.0f, {1, 1.f, 1.f });
+    //renderText("This is sample text", 25.0f, 25.0f, 1.0f, {0.5, 0.8f, 0.2f });
+    //renderText("(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, {0.3, 0.7f, 0.9f});
 
     program->release();
 
     ++m_frame;
 
     context->swapBuffers(surface);
+}
+
+void OpenGLWorker::renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, QVector3D color) {
+
+    program->setUniformValue("textColor", color);
+
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++)
+    {
+        Character ch = characters[*c];
+
+        GLfloat xpos = x + ch.bearing[0] * scale;
+        GLfloat ypos = y - (ch.size[1] - ch.bearing[1]) * scale;
+
+        //ch.size[0] = w [1]=h
+        GLfloat w = ch.size[0] * scale;
+        GLfloat h = ch.size[1] * scale;
+        // Update VBO for each character
+        GLfloat vertices[6][4] = {
+                { xpos,     ypos + h,   0.0, 0.0 },
+                { xpos,     ypos,       0.0, 1.0 },
+                { xpos + w, ypos,       1.0, 1.0 },
+
+                { xpos,     ypos + h,   0.0, 0.0 },
+                { xpos + w, ypos,       1.0, 1.0 },
+                { xpos + w, ypos + h,   1.0, 0.0 }
+        };
+
+
+        /*std::cout << ch.size[0] << " " << ch.size[1] << " " << ch.bearing[0] << " " << ch.bearing[1] << std::endl;
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 4; j++ ) {
+                std::cout << vertices[i][j] << " ";
+            }
+
+            std::cout << "\n";
+        }
+        std::cout << "\n";
+*/
+        // Render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.textureID);
+        // Update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
+
+        //glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

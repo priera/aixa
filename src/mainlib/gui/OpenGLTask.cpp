@@ -96,7 +96,8 @@ void OpenGLTask::buildWindow() {
 
     window = std::make_unique<OpenGLWindow>(*worker.get(), context.get());
     window->setFormat(format);
-    window->resize(1920 / 3, 1080 / 3);
+    //window->resize(1920 / 3, 1080 / 3);
+    window->resize(800, 600);
 
     QObject::connect(window.get(), &OpenGLWindow::readyGL, [this](){
         {

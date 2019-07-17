@@ -8,6 +8,10 @@
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QMatrix4x4>
+#include <QtGui/QVector2D>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 class QImage;
 class QOpenGLShaderProgram;
@@ -15,6 +19,12 @@ class QOpenGLContext;
 
 class OpenGLWorker : protected QOpenGLExtraFunctions {
 public:
+    struct Character {
+        GLuint textureID;   // ID handle of the glyph texture
+        std::vector<unsigned int> size;    // Size of glyph
+        std::vector<int> bearing;  // Offset from baseline to left/top of glyph
+        long int advance;    // Horizontal offset to advance to next glyph
+    };
 
     OpenGLWorker(QOpenGLContext &context);
     virtual ~OpenGLWorker();
@@ -26,6 +36,7 @@ public:
     void setSize(int w, int h);
 
 private:
+    void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, QVector3D color);
 
     QOpenGLContext *context;
     QSurface *surface;
@@ -34,20 +45,18 @@ private:
     std::atomic<int> h;
     std::atomic<float> aspectRatio;
 
+
+
     std::unique_ptr<QOpenGLShaderProgram> program;
     int m_frame;
 
-    std::vector<float> vertices;
-    std::vector<int> indices;
+    unsigned int VBO, VAO;
 
-    unsigned int VBO, VAO, EBO;
-    std::vector<unsigned int> textures;
+    QMatrix4x4 view, projection;
 
-    std::unique_ptr<QImage> textureImage;
-    std::unique_ptr<QImage> happyImage;
 
-    QMatrix4x4 model, view, projection;
-
+    std::map<GLchar, Character> characters;
+    FT_Library ft;
 };
 
 
