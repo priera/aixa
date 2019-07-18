@@ -30,24 +30,16 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     projection.perspective(45.0f, aspectRatio, 0.1f, 100.0f);
 
     context->makeCurrent(surface);
-    auto funcs = context->versionFunctions<QOpenGLFunctions_3_3_Core>();
-    if (!funcs) {
-        std::cout << "Could not get functions" << std::endl;
-    }
 
-    //initializeOpenGLFunctions();
-
-    bool a1 = hasOpenGLFeature(QOpenGLFunctions::BlendColor);
-    bool a2 = hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats);
-    bool a3 = hasOpenGLFeature(QOpenGLFunctions::BlendSubtract);
+    initializeOpenGLFunctions();
 
     //glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     QMatrix4x4 projection;
-    projection.ortho(QRect(0.0f, 0.0f, w, h));
+    projection.ortho(0.0f, w, 0.0f, h, -1, 1);
 
     program = std::make_unique<QOpenGLShaderProgram>();
 
@@ -151,9 +143,8 @@ void OpenGLWorker::draw() {
 
     program->bind();
 
-    renderText("T", 25.0f, 25.0f, 1.0f, {1, 1.f, 1.f });
-    //renderText("This is sample text", 25.0f, 25.0f, 1.0f, {0.5, 0.8f, 0.2f });
-    //renderText("(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, {0.3, 0.7f, 0.9f});
+    renderText("This is sample text", 25.0f, 25.0f, 1.0f, {0.5, 0.8f, 0.2f });
+    renderText("(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, {0.3, 0.7f, 0.9f});
 
     program->release();
 
@@ -192,17 +183,6 @@ void OpenGLWorker::renderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
                 { xpos + w, ypos + h,   1.0, 0.0 }
         };
 
-
-        /*std::cout << ch.size[0] << " " << ch.size[1] << " " << ch.bearing[0] << " " << ch.bearing[1] << std::endl;
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 4; j++ ) {
-                std::cout << vertices[i][j] << " ";
-            }
-
-            std::cout << "\n";
-        }
-        std::cout << "\n";
-*/
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, ch.textureID);
         // Update content of VBO memory

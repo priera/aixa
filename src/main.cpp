@@ -37,6 +37,8 @@ int main(int argc, char *argv[]) {
     format.setSamples(16);
     format.setMajorVersion(3);
     format.setMinorVersion(3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    format.setRenderableType(QSurfaceFormat::OpenGL);
 
     OpenGLTask openGLTask(format);
     openGLTask.start();
