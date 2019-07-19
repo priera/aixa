@@ -22,7 +22,7 @@ FreeTypeCharacterBitmapProvider::~FreeTypeCharacterBitmapProvider() {
     FT_Done_FreeType(ft);
 }
 
-FreeTypeCharacterBitmapProvider::Character FreeTypeCharacterBitmapProvider::getCharacter(char c) {
+CharacterBitmapProvider::Character FreeTypeCharacterBitmapProvider::getCharacter(char c) {
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
         throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
 

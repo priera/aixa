@@ -8,12 +8,9 @@
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QMatrix4x4>
-#include <QtGui/QVector2D>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include "mainlib/gui/NoteDrawer.h"
 
-class QImage;
 class QOpenGLShaderProgram;
 class QOpenGLContext;
 
@@ -36,24 +33,25 @@ public:
     void setSize(int w, int h);
 
 private:
-    void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, QVector3D color);
+    //void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, QVector3D color);
 
     QOpenGLContext *context;
     QSurface *surface;
 
     std::atomic<int> w;
     std::atomic<int> h;
-    std::atomic<float> aspectRatio;
 
-    std::unique_ptr<QOpenGLShaderProgram> program;
+    //std::unique_ptr<QOpenGLShaderProgram> program;
     unsigned int m_frame;
 
-    unsigned int VBO, VAO;
+    //unsigned int VBO, VAO;
 
     QMatrix4x4 projection;
 
-    std::map<GLchar, Character> characters;
-    FT_Library ft;
+    //std::map<GLchar, Character> characters;
+    //FT_Library ft;
+
+    NoteDrawer noteDrawer;
 };
 
 

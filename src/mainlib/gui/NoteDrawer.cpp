@@ -7,8 +7,9 @@
 
 #include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
 
-
 void NoteDrawer::init() {
+    initializeOpenGLFunctions();
+
     FreeTypeCharacterBitmapProvider provider;
 
     std::set<char> pitchChars = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
@@ -19,6 +20,8 @@ void NoteDrawer::init() {
     program->addCacheableShaderFromSourceFile(QOpenGLShader::Fragment, "./src/mainlib/gui/shaders/fragment.glsl");
 
     program->link();
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     for (auto &p: pitchChars) {
         auto bitmapData = provider.getCharacter(p);
@@ -67,7 +70,6 @@ void NoteDrawer::init() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
 
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
@@ -85,11 +87,13 @@ void NoteDrawer::drawNote(char note, const QMatrix4x4 &projection) {
 
     program->setUniformValue("projection", projection);
 
+    program->setUniformValue("textColor", {0.5, 0.8f, 0.2f });
+
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 
     GLfloat xpos = ch.bearing[0];
-    GLfloat ypos = (ch.size[1] - ch.bearing[1]);
+    GLfloat ypos = -(ch.size[1] - ch.bearing[1]);
 
     GLfloat w = ch.size[0];
     GLfloat h = ch.size[1];
