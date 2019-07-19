@@ -6,8 +6,10 @@
 
 #include <QApplication>
 
-#include "mainlib/gui/MainWindow.h"
 #include "mainlib/gui/MainEventFilter.h"
+
+#include "mainlib/gui/OpenGLTask.h"
+#include "mainlib/gui/OpenGLWindow.h"
 
 #include "mainlib/audio/AudioWorker.h"
 #include "mainlib/audio/AudioBuilder.h"
@@ -31,6 +33,16 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
+    QSurfaceFormat format;
+    format.setSamples(16);
+    format.setMajorVersion(3);
+    format.setMinorVersion(3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    format.setRenderableType(QSurfaceFormat::OpenGL);
+
+    OpenGLTask openGLTask(format);
+    openGLTask.start();
+
     AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
@@ -39,20 +51,23 @@ int main(int argc, char *argv[]) {
     AudioWorker worker(environment);
     auto commandCollection = worker.buildCommandCollection();
 
-    NotesProcessor notesProcesor(worker);
-    notesProcesor.start();
+    NotesProcessor notesProcessor(worker);
+    notesProcessor.start();
 
-    MainEventFilter mainEventFilter(commandCollection, *notesProcesor.getNoteSetter());
+    MainEventFilter mainEventFilter(commandCollection, *notesProcessor.getNoteSetter());
     app.installEventFilter(&mainEventFilter);
-
-    MainWindow mainWindow;
-    mainWindow.show();
 
     auto audioThread = buildAudioThread(worker);
 
+    //Show the window just right before the application starts
+    auto window = openGLTask.getWindow();
+    window->show();
+
     int ret = app.exec();
 
-    notesProcesor.stop();
+    openGLTask.stop();
+
+    notesProcessor.stop();
     worker.stop();
     audioThread->join();
 

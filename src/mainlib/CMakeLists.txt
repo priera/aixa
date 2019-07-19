@@ -5,8 +5,14 @@ set(TARGET_NAME mainlib)
 
 add_library(${TARGET_NAME} SHARED ${SRCS})
 
-target_include_directories(${TARGET_NAME} PUBLIC ${ROOT_INCLUDE_DIR} ${QT_INCLUDES})
+target_include_directories(${TARGET_NAME} PUBLIC
+        ${ROOT_INCLUDE_DIR}
+        ${QT_INCLUDES}
+        ${FREETYPE_INCLUDE_DIRS})
 
-target_link_libraries(${TARGET_NAME} asound ${QT_LIBS})
+target_link_libraries(${TARGET_NAME}
+        asound
+        ${QT_LIBS}
+        freetype)
 
 add_subdirectory(audio/test)
