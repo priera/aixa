@@ -45,15 +45,12 @@ private:
     std::atomic<int> h;
     std::atomic<float> aspectRatio;
 
-
-
     std::unique_ptr<QOpenGLShaderProgram> program;
-    int m_frame;
+    unsigned int m_frame;
 
     unsigned int VBO, VAO;
 
-    QMatrix4x4 view, projection;
-
+    QMatrix4x4 projection;
 
     std::map<GLchar, Character> characters;
     FT_Library ft;

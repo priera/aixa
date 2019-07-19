@@ -25,20 +25,16 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     this->surface = surface;
     this->w = w;
     this->h = h;
-    this->aspectRatio = ((float)w) / h;
-
-    projection.perspective(45.0f, aspectRatio, 0.1f, 100.0f);
 
     context->makeCurrent(surface);
 
     initializeOpenGLFunctions();
 
     //glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    QMatrix4x4 projection;
     projection.ortho(0.0f, w, 0.0f, h, -1, 1);
 
     program = std::make_unique<QOpenGLShaderProgram>();
@@ -143,7 +139,7 @@ void OpenGLWorker::draw() {
 
     program->bind();
 
-    renderText("This is sample text", 25.0f, 25.0f, 1.0f, {0.5, 0.8f, 0.2f });
+    renderText("This is sample text#", 25.0f, 25.0f, 1.0f, {0.5, 0.8f, 0.2f });
     renderText("(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, {0.3, 0.7f, 0.9f});
 
     program->release();
@@ -173,14 +169,15 @@ void OpenGLWorker::renderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
         GLfloat w = ch.size[0] * scale;
         GLfloat h = ch.size[1] * scale;
         // Update VBO for each character
+
         GLfloat vertices[6][4] = {
+                { xpos + w, ypos,       1.0, 1.0 },
                 { xpos,     ypos + h,   0.0, 0.0 },
                 { xpos,     ypos,       0.0, 1.0 },
-                { xpos + w, ypos,       1.0, 1.0 },
 
-                { xpos,     ypos + h,   0.0, 0.0 },
                 { xpos + w, ypos,       1.0, 1.0 },
-                { xpos + w, ypos + h,   1.0, 0.0 }
+                { xpos + w, ypos + h,   1.0, 0.0 },
+                { xpos,     ypos + h,   0.0, 0.0 }
         };
 
         // Render glyph texture over quad
