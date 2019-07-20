@@ -26,18 +26,23 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     this->w = w;
     this->h = h;
     this->object = nullptr;
+    this->angle = 0;
 
     context->makeCurrent(surface);
 
     initializeOpenGLFunctions();
 
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     projection.ortho(0.0f, w, 0.0f, h, -1, 1);
     projection.translate((float)w / 2, (float)h / 2);
+    //projection.perspective(10.0f, 800.0f / 600.0f, 0.1f, 100.0f);
+    //projection.translate((float)w / 2, (float)h / 2);
 
     glViewport(0, 0, w, h);
 }
@@ -58,7 +63,14 @@ void OpenGLWorker::draw() {
         object = noteProvider.generateNote('F');
     }
 
-    if (object) object->render();
+    angle += 0.5;
+
+    if (angle >= 360) angle = 0.0;
+
+    object->rotate(angle);
+    object->moveCenterAt(0, 0);
+
+    object->render();
 
     ++m_frame;
 

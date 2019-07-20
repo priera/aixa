@@ -41,8 +41,8 @@ void RenderableObject::render() {
     modelMatrix.setToIdentity();
 }
 
-void RenderableObject::moveAt(float x, float y) {
-    modelMatrix.translate(x, y);
+void RenderableObject::moveCenterAt(float x, float y) {
+    modelMatrix.translate(x - w/2, y - h/2);
 }
 
 void RenderableObject::rotate(float degrees) {

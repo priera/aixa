@@ -5,6 +5,9 @@ NoteRenderable::NoteRenderable(Character & character, const QMatrix4x4 &projecti
     RenderableObject(projectionMatrix, "./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl"),
     character(character)
 {
+    w = character.size[0];
+    h = character.size[1];
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -28,10 +31,7 @@ void NoteRenderable::doMyRender() {
     GLfloat xpos = character.bearing[0];
     GLfloat ypos = -(character.size[1] - character.bearing[1]);
 
-    GLfloat w = character.size[0];
-    GLfloat h = character.size[1];
     // Update VBO for each character
-
     GLfloat vertices[6][4] = {
             { xpos + w, ypos,       1.0, 1.0 },
             { xpos,     ypos + h,   0.0, 0.0 },
@@ -41,8 +41,6 @@ void NoteRenderable::doMyRender() {
             { xpos + w, ypos + h,   1.0, 0.0 },
             { xpos,     ypos + h,   0.0, 0.0 }
     };
-
-    //std::cout << xpos << " " << ypos << " " << w << " " << h << " " << character.textureID << std::endl;
 
     // Render glyph texture over quad
     glBindTexture(GL_TEXTURE_2D, character.textureID);

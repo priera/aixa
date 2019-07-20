@@ -44,6 +44,7 @@ private:
     QMatrix4x4 projection;
 
     RenderableObject *object;
+    float angle;
 };
 
 

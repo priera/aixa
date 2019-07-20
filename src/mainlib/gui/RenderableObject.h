@@ -15,13 +15,14 @@ public:
 
     void render();
 
-    void moveAt(float x, float y);
+    void moveCenterAt(float x, float y);
     void rotate(float degrees);
 
 protected:
     virtual void doMyRender()= 0;
 
     std::unique_ptr<QOpenGLShaderProgram> program;
+    float w, h;
 
 private:
     QMatrix4x4 projectionMatrix;

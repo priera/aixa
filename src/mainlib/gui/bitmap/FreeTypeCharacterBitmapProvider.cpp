@@ -12,8 +12,7 @@ FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
 
     // Set size to load glyphs as
-    FT_Set_Pixel_Sizes(face, 0, 48);
-
+    FT_Set_Pixel_Sizes(face, 0, 100);
 }
 
 
