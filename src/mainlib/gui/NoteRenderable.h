@@ -22,6 +22,7 @@ protected:
 
 private:
     Character character;
+    float charw, charh, charPixelRatio;
     unsigned int VBO, VAO;
 };
 

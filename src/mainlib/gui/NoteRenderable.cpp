@@ -1,12 +1,18 @@
-#include <iostream>
 #include "mainlib/gui/NoteRenderable.h"
+
+#include <iostream>
 
 NoteRenderable::NoteRenderable(Character & character, const QMatrix4x4 &projectionMatrix) :
     RenderableObject(projectionMatrix, "./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl"),
     character(character)
 {
-    w = character.size[0];
-    h = character.size[1];
+    charw = character.size[0];
+    charh = character.size[1];
+
+    charPixelRatio = (float)charw / (float)charh;
+
+    w = 1.0;
+    h = w / charPixelRatio;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -28,18 +34,16 @@ void NoteRenderable::doMyRender() {
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 
-    GLfloat xpos = character.bearing[0];
-    GLfloat ypos = -(character.size[1] - character.bearing[1]);
+    float triangleHeight = w / charPixelRatio;
 
-    // Update VBO for each character
     GLfloat vertices[6][4] = {
-            { xpos + w, ypos,       1.0, 1.0 },
-            { xpos,     ypos + h,   0.0, 0.0 },
-            { xpos,     ypos,       0.0, 1.0 },
+            { w, 0.0,               1.0, 1.0 },
+            { 0.0, triangleHeight,  0.0, 0.0 },
+            { 0.0, 0.0,             0.0, 1.0 },
 
-            { xpos + w, ypos,       1.0, 1.0 },
-            { xpos + w, ypos + h,   1.0, 0.0 },
-            { xpos,     ypos + h,   0.0, 0.0 }
+            { w, 0.0,               1.0, 1.0 },
+            { w, triangleHeight,    1.0, 0.0 },
+            { 0.0, triangleHeight,  0.0, 0.0 }
     };
 
     // Render glyph texture over quad

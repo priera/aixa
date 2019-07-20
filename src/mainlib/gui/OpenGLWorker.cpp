@@ -34,15 +34,17 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
 
     //glEnable(GL_CULL_FACE);
 
+    glEnable(GL_DEPTH_TEST);
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    projection.ortho(0.0f, w, 0.0f, h, -1, 1);
-    projection.translate((float)w / 2, (float)h / 2);
-    //projection.perspective(10.0f, 800.0f / 600.0f, 0.1f, 100.0f);
-    //projection.translate((float)w / 2, (float)h / 2);
+    projection.perspective(45.0f,  (float) w / (float)h, 0.1f, 100.0f);
+    QMatrix4x4 view;
+    view.lookAt({0.0f, 0.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+    projection *= view;
 
     glViewport(0, 0, w, h);
 }
@@ -56,16 +58,16 @@ void OpenGLWorker::setSize(int w, int h) {
 
 void OpenGLWorker::draw() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (!object) {
         NoteProvider noteProvider(projection);
-        object = noteProvider.generateNote('F');
+        object = noteProvider.generateNote('G');
     }
 
-    angle += 0.5;
+    angle -= 0.5;
 
-    if (angle >= 360) angle = 0.0;
+    if (angle <= -360) angle = 0.0;
 
     object->rotate(angle);
     object->moveCenterAt(0, 0);
