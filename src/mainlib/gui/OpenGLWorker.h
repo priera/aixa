@@ -9,10 +9,10 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QMatrix4x4>
 
-#include "mainlib/gui/NoteDrawer.h"
-
 class QOpenGLShaderProgram;
 class QOpenGLContext;
+
+class RenderableObject;
 
 class OpenGLWorker : protected QOpenGLExtraFunctions {
 public:
@@ -33,25 +33,17 @@ public:
     void setSize(int w, int h);
 
 private:
-    //void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, QVector3D color);
-
     QOpenGLContext *context;
     QSurface *surface;
 
     std::atomic<int> w;
     std::atomic<int> h;
 
-    //std::unique_ptr<QOpenGLShaderProgram> program;
     unsigned int m_frame;
-
-    //unsigned int VBO, VAO;
 
     QMatrix4x4 projection;
 
-    //std::map<GLchar, Character> characters;
-    //FT_Library ft;
-
-    NoteDrawer noteDrawer;
+    RenderableObject *object;
 };
 
 
