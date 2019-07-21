@@ -9,11 +9,13 @@
 
 #include "mainlib/CommandBuilder.h"
 
+#include "mainlib/audio/note/Note.h"
+
 #include "AudioDefinitions.h"
 
 class SineGenerator;
 
-class AudioWorker : public CommandBuilder {
+class AudioWorker : public CommandBuilder, public NotesListener {
 public:
     AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment);
     virtual ~AudioWorker();
@@ -26,7 +28,7 @@ public:
     void increaseVolume();
     void decreaseVolume();
 
-    void setFrequency(double freq);
+    void notifyNewValue(const Note& newNote) override;
 
 private:
     static constexpr unsigned int MIN_VOLUME = 0;

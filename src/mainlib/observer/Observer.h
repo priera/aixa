@@ -3,6 +3,7 @@
 
 template <class Entity>
 class Observer {
+public:
     virtual void notifyNewValue(const Entity &e) = 0;
 };
 
