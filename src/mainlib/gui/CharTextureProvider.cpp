@@ -1,21 +1,19 @@
-#include "mainlib/gui/NoteProvider.h"
+#include "mainlib/gui/CharTextureProvider.h"
 
 #include <set>
 
 #include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
 
-NoteProvider::NoteProvider(const QMatrix4x4 &projectionMatrix) :
-    projectionMatrix(projectionMatrix)
-{
+CharTextureProvider::CharTextureProvider() {
     initializeOpenGLFunctions();
 
     FreeTypeCharacterBitmapProvider provider;
 
-    std::set<char> pitchChars = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
+    std::set<char> chars = { ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    for (auto &p: pitchChars) {
+    for (auto &p: chars) {
         auto bitmapData = provider.getCharacter(p);
 
         GLuint texture;
@@ -43,7 +41,7 @@ NoteProvider::NoteProvider(const QMatrix4x4 &projectionMatrix) :
         glGenerateMipmap(GL_TEXTURE_2D);
 
         // Now store character for later use
-        NoteRenderable::Character character = {
+        Character character = {
                 texture,
                 {bitmapData.width, bitmapData.rows},
                 {bitmapData.bitmap_left, bitmapData.bitmap_top}
@@ -55,14 +53,12 @@ NoteProvider::NoteProvider(const QMatrix4x4 &projectionMatrix) :
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-RenderableObject *NoteProvider::generateNote(char note) {
-    char upperNote = toupper(note);
+CharTextureProvider::Character CharTextureProvider::generateChar(char c) {
+    char upperChar = toupper(c);
 
-    auto it = characters.find(upperNote);
+    auto it = characters.find(upperChar);
     if (it == characters.end())
-        return nullptr;
+        return characters[' '];
 
-    auto & ch = it->second;
-
-    return new NoteRenderable(ch, projectionMatrix);
+    return it->second;
 }

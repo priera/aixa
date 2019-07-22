@@ -2,13 +2,65 @@
 
 #include <cmath>
 #include <cassert>
+#include <chrono>
 
 #include "mainlib/audio/note/Note.h"
 
 
-NoteSetter::NoteSetter(NotesBuffer &notesBuffer) :
-    buffer(&notesBuffer),
-    noteSeen(false) { }
+using namespace std::chrono_literals;
+
+NoteSetter::NoteSetter() :
+    buffer(std::make_unique<NotesBuffer>(10)),
+    noteSeen(false),
+    stopWorker(false) {
+
+    mergerThread = std::thread([this]() {
+        workerLoop();
+    });
+}
+
+NoteSetter::~NoteSetter() {
+    stopWorker = true;
+    mergerThread.join();
+}
+
+void NoteSetter::workerLoop() {
+    while (!stopWorker) {
+        Note n;
+        time_t pts;
+
+        if (!buffer->read(n, pts)) {
+            std::this_thread::sleep_for(100ms);
+            continue;
+        }
+
+        mergeNewNote(n);
+        //auto diff = NotesBuffer::timeDiffInMs(pts, previousPts);
+
+        previousPts = pts;
+
+        notifyObservers(lastNote);
+    }
+}
+
+void NoteSetter::mergeNewNote(const Note &incomingNote) {
+    if (!noteSeen) {
+        noteSeen = true;
+        lastNote = incomingNote;
+        if (lastNote.octave == 0)
+            lastNote.octave = 4;
+        return;
+    }
+
+    if (incomingNote.pitch != Note::Pitch::NONE)
+        lastNote.pitch = incomingNote.pitch;
+
+    if (incomingNote.octave != 0) {
+        lastNote.octave = incomingNote.octave;
+    }
+
+    lastNote.modifier = incomingNote.modifier;
+}
 
 void NoteSetter::setPitch(Note::Pitch pitch) {
     Note n;

@@ -3,6 +3,8 @@
 
 #include "mainlib/buffers/CircularBuffer.h"
 
+#include "mainlib/observer/Observer.h"
+
 struct Note {
     static constexpr int VALID_PITCHES = 8;
 
@@ -33,5 +35,6 @@ struct Note {
 double computeFrequency(const Note &n);
 
 using NotesBuffer = CircularBuffer<Note>;
+using NotesListener = Observer<Note>;
 
 #endif //ALSAPLAYGROUND_NOTE_H

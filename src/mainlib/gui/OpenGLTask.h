@@ -14,6 +14,7 @@ class QOpenGLContext;
 class OpenGLWindow;
 
 class OpenGLWorker;
+class CentralNoteManager;
 
 class OpenGLTask {
 public:
@@ -25,6 +26,8 @@ public:
 
     OpenGLWindow *getWindow() { return window.get(); }
 
+    CentralNoteManager *getCentralNoteManager() { return noteManager.get(); }
+
 private:
     void initWorkerThreadObjects();
 
@@ -35,6 +38,8 @@ private:
     QSurfaceFormat format;
 
     int frameRate;
+
+    std::unique_ptr<CentralNoteManager> noteManager;
 
     std::atomic<bool> running;
     std::unique_ptr<OpenGLWorker> worker;

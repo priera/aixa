@@ -1,7 +1,7 @@
 #ifndef ALSAPLAYGROUND_RENDERABLEOBJECT_H
 #define ALSAPLAYGROUND_RENDERABLEOBJECT_H
 
-#include <memory>
+#include <map>
 
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QOpenGLShaderProgram>
@@ -10,19 +10,34 @@
 
 class RenderableObject : protected QOpenGLExtraFunctions {
 public:
-    RenderableObject(const QMatrix4x4 &projectionMatrix, const QString &vertexShaderPath, const QString &fragmentShaderPath);
+    RenderableObject(const QMatrix4x4 &projectionMatrix, QOpenGLShaderProgram &program);
     virtual ~RenderableObject();
 
     void render();
 
-    void moveCenterAt(float x, float y);
+    void moveCenterAt(float x, float y, float z);
     void rotate(float degrees);
 
-protected:
-    virtual void doMyRender()= 0;
+    void addChildObject(float z, RenderableObject *object);
 
-    std::unique_ptr<QOpenGLShaderProgram> program;
-    float w, h;
+protected:
+    RenderableObject(const QMatrix4x4 &projectionMatrix);
+
+    void setProgram(QOpenGLShaderProgram &program) {
+        this->program = &program;
+    }
+
+    virtual void doMyRender();
+    virtual void beforeRender();
+    virtual void afterRender();
+
+    virtual void applyChildTransformations(RenderableObject *pObject);
+
+    float w, h, d;
+
+    std::map<int, RenderableObject *> children;
+
+    QOpenGLShaderProgram *program;
 
 private:
     QMatrix4x4 projectionMatrix;

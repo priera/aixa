@@ -63,12 +63,14 @@ void AudioWorker::decreaseVolume() {
         volume = newVolume;
 }
 
-void AudioWorker::setFrequency(double freq) {
-    this->freq = freq;
-}
-
 CommandCollection AudioWorker::buildCommandCollection() {
     return myCommands;
+}
+
+void AudioWorker::notifyNewValue(const Note& newNote) {
+    freq = computeFrequency(newNote);
+
+    //std::cout << freq << std::endl;
 }
 
 void AudioWorker::start() {

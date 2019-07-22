@@ -14,9 +14,7 @@
 #include "mainlib/audio/AudioWorker.h"
 #include "mainlib/audio/AudioBuilder.h"
 
-#include "mainlib/audio/note/NotesProcessor.h"
-
-#include "mainlib/buffers/CircularBuffer.h"
+#include "mainlib/audio/note/NoteSetter.h"
 
 std::thread * buildAudioThread(AudioWorker & worker)
 {
@@ -51,10 +49,10 @@ int main(int argc, char *argv[]) {
     AudioWorker worker(environment);
     auto commandCollection = worker.buildCommandCollection();
 
-    NotesProcessor notesProcessor(worker);
-    notesProcessor.start();
+    NoteSetter noteSetter;
+    noteSetter.addObserver(worker);
 
-    MainEventFilter mainEventFilter(commandCollection, *notesProcessor.getNoteSetter());
+    MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
 
     auto audioThread = buildAudioThread(worker);
@@ -67,7 +65,6 @@ int main(int argc, char *argv[]) {
 
     openGLTask.stop();
 
-    notesProcessor.stop();
     worker.stop();
     audioThread->join();
 
