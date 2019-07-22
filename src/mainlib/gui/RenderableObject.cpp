@@ -27,13 +27,14 @@ void RenderableObject::addChildObject(float z, RenderableObject *object) {
 void RenderableObject::render() {
     beforeRender();
 
-    program->setUniformValue("model", modelMatrix);
-
     for (auto &child: children)
     {
-        std::cout << child.first << std::endl;
+        applyChildTransformations(child.second);
+
         child.second->render();
     }
+
+    program->setUniformValue("model", modelMatrix);
 
     doMyRender();
 
@@ -49,6 +50,8 @@ void RenderableObject::beforeRender() { }
 
 void RenderableObject::afterRender() { }
 
+void RenderableObject::applyChildTransformations(RenderableObject *pObject) { }
+
 void RenderableObject::moveCenterAt(float x, float y, float z) {
     modelMatrix.translate(x - w/2, y - h/2, z - d/2);
 }
@@ -56,3 +59,5 @@ void RenderableObject::moveCenterAt(float x, float y, float z) {
 void RenderableObject::rotate(float degrees) {
     modelMatrix.rotate(degrees, 0.0f, 1.0f, 0.0f);
 }
+
+

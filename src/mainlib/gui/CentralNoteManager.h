@@ -1,6 +1,8 @@
 #ifndef ALSAPLAYGROUND_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
 #define ALSAPLAYGROUND_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
 
+#include <memory>
+
 #include "mainlib/audio/note/Note.h"
 #include "mainlib/gui/ShadedRenderableObject.h"
 
@@ -16,9 +18,11 @@ public:
 protected:
     void doMyRender() override;
 
+    void applyChildTransformations(RenderableObject *pObject) override;
+
 private:
-    RenderableObject *frontNote;
-    RenderableObject *backNote;
+    std::unique_ptr<RenderableObject> frontNote;
+    std::unique_ptr<RenderableObject> backNote;
 
     float angle;
 };

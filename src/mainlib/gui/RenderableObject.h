@@ -31,6 +31,8 @@ protected:
     virtual void beforeRender();
     virtual void afterRender();
 
+    virtual void applyChildTransformations(RenderableObject *pObject);
+
     float w, h, d;
 
     std::map<int, RenderableObject *> children;
@@ -40,7 +42,6 @@ protected:
 private:
     QMatrix4x4 projectionMatrix;
     QMatrix4x4 modelMatrix;
-
 };
 
 #endif //ALSAPLAYGROUND_RENDERABLEOBJECT_H

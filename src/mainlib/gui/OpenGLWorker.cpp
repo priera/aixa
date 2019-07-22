@@ -25,7 +25,6 @@ void OpenGLWorker::bindToSurface(QSurface *surface, int w, int h) {
     this->surface = surface;
     this->w = w;
     this->h = h;
-    this->angle = 0;
 
     context->makeCurrent(surface);
 
@@ -59,21 +58,7 @@ void OpenGLWorker::draw() {
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /*if (!object) {
-        CharTextureProvider noteProvider(projection);
-        object = noteProvider.generateNote('G');
-    } */
-
     centralNoteManager->render();
-
-    angle -= 0.5;
-
-    if (angle <= -360) angle = 0.0;
-
-    //object->rotate(angle);
-    //object->moveCenterAt(0, 0, 0);
-
-    //object->render();
 
     ++m_frame;
 

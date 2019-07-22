@@ -51,7 +51,6 @@ private:
     QMatrix4x4 projection;
 
     CentralNoteManager *centralNoteManager;
-    float angle;
 };
 
 
