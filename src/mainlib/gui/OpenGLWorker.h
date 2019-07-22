@@ -13,6 +13,7 @@ class QOpenGLShaderProgram;
 class QOpenGLContext;
 
 class RenderableObject;
+class CentralNoteManager;
 
 class OpenGLWorker : protected QOpenGLExtraFunctions {
 public:
@@ -28,9 +29,15 @@ public:
 
     void bindToSurface(QSurface *surface, int w, int h);
 
+    void setNoteManager(CentralNoteManager &noteManager) {
+        this->centralNoteManager = &noteManager;
+    }
+
     void draw();
 
     void setSize(int w, int h);
+
+    QMatrix4x4 getProjectionMatrix() { return projection; }
 
 private:
     QOpenGLContext *context;
@@ -43,7 +50,7 @@ private:
 
     QMatrix4x4 projection;
 
-    RenderableObject *object;
+    CentralNoteManager *centralNoteManager;
     float angle;
 };
 

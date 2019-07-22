@@ -2,13 +2,14 @@
 #define ALSAPLAYGROUND_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
 
 #include "mainlib/audio/note/Note.h"
-#include "mainlib/gui/RenderableObject.h"
+#include "mainlib/gui/ShadedRenderableObject.h"
 
 class CentralNoteManager :
         public NotesListener,
-        public RenderableObject {
+        public ShadedRenderableObject {
 public:
     CentralNoteManager(const QMatrix4x4 &projectionMatrix);
+    ~CentralNoteManager() = default;
 
     void notifyNewValue(const Note &note) override;
 
@@ -18,6 +19,8 @@ protected:
 private:
     RenderableObject *frontNote;
     RenderableObject *backNote;
+
+    float angle;
 };
 
 

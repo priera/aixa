@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-NoteRenderable::NoteRenderable(Character & character, const QMatrix4x4 &projectionMatrix) :
-    ShadedRenderableObject(projectionMatrix, "./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl"),
+NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, const QMatrix4x4 &projectionMatrix, QOpenGLShaderProgram &program) :
+    RenderableObject(projectionMatrix, program),
     character(character)
 {
     charw = character.size[0];

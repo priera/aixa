@@ -8,6 +8,7 @@
 
 #include "mainlib/gui/OpenGLWorker.h"
 #include "mainlib/gui/OpenGLWindow.h"
+#include "mainlib/gui/CentralNoteManager.h"
 
 OpenGLTask::OpenGLTask(const QSurfaceFormat &format) :
     format(format),
@@ -88,6 +89,9 @@ void OpenGLTask::initWorkerThreadObjects() {
     int w = window->width() * retinaScale;
     int h = window->height() * retinaScale;
     worker->bindToSurface(window.get(), w, h);
+
+    noteManager = std::make_unique<CentralNoteManager>(worker->getProjectionMatrix());
+    worker->setNoteManager(*noteManager);
 }
 
 void OpenGLTask::buildWindow() {
