@@ -1,13 +1,13 @@
 #ifndef ALSAPLAYGROUND_NOTERENDERABLE_H
 #define ALSAPLAYGROUND_NOTERENDERABLE_H
 
-#include "mainlib/gui/RenderableObject.h"
-
 #include <QMatrix4x4>
+
+#include "mainlib/gui/ShadedRenderableObject.h"
 
 #include "mainlib/gui/bitmap/CharacterBitmapProvider.h"
 
-class NoteRenderable : public RenderableObject {
+class NoteRenderable : public ShadedRenderableObject {
 public:
     struct Character {
         GLuint textureID;   // ID handle of the glyph texture

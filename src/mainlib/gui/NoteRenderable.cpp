@@ -3,7 +3,7 @@
 #include <iostream>
 
 NoteRenderable::NoteRenderable(Character & character, const QMatrix4x4 &projectionMatrix) :
-    RenderableObject(projectionMatrix, "./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl"),
+    ShadedRenderableObject(projectionMatrix, "./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl"),
     character(character)
 {
     charw = character.size[0];
@@ -13,6 +13,7 @@ NoteRenderable::NoteRenderable(Character & character, const QMatrix4x4 &projecti
 
     w = 1.0;
     h = w / charPixelRatio;
+    d = 0.0;
 
     float triangleHeight = w / charPixelRatio;
 

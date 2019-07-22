@@ -70,7 +70,7 @@ void OpenGLWorker::draw() {
     if (angle <= -360) angle = 0.0;
 
     object->rotate(angle);
-    object->moveCenterAt(0, 0);
+    object->moveCenterAt(0, 0, 0);
 
     object->render();
 
