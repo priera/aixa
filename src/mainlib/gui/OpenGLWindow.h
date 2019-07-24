@@ -1,42 +1,32 @@
 #ifndef ALSAPLAYGROUND_OPENGLWINDOW_H
 #define ALSAPLAYGROUND_OPENGLWINDOW_H
 
-#include <QOpenGLWindow>
+#include <memory>
+
+#include <QWindow>
 #include <QOpenGLFunctions>
 
-class QOpenGLShaderProgram;
-
-class OpenGLWorker;
-
-class OpenGLWindow : public QOpenGLWindow {
+class OpenGLWindow : public QWindow, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow(OpenGLWorker &worker, QOpenGLContext *context);
+    explicit OpenGLWindow(std::unique_ptr<QOpenGLContext> &context);
 
-    //void setAnimating(bool moving) { m_moving = moving; }
+    virtual ~OpenGLWindow();
 
-signals:
-    void readyGL();
+public slots:
+    virtual void render();
 
 protected:
-    //bool event(QEvent *event) override;
+    bool event(QEvent *event) override;
 
-    void initializeGL() override;
-    void paintGL() override;
-    void resizeGL(int w, int h) override;
+    void exposeEvent(QExposeEvent *event) override;
 
 private:
-    /*GLuint m_posAttr;
-    GLuint m_colAttr;
-    GLuint m_matrixUniform;
+    void init();
 
-    QOpenGLShaderProgram *m_program;
-    int m_frame;
-
-    bool m_moving; */
-
-    OpenGLWorker *worker;
+    bool initialized;
+    std::unique_ptr<QOpenGLContext> context;
 };
 
 

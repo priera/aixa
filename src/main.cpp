@@ -13,6 +13,8 @@
 #include "mainlib/gui/OpenGLWindow.h"
 #include "mainlib/gui/CentralNoteManager.h"
 
+#include "mainlib/gui/gl/GLContextManager.h"
+
 #include "mainlib/audio/AudioWorker.h"
 #include "mainlib/audio/AudioBuilder.h"
 
@@ -35,7 +37,17 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    QSurfaceFormat format;
+    auto winContext_p = GLContextManager::getInstance().createContext();
+    std::unique_ptr<QOpenGLContext> winContext(winContext_p);
+
+    OpenGLWindow win(winContext);
+
+    float w = 1920 * 3.0 / 4;
+    float h = 1080 * 3.0 / 4;
+    win.resize(w, h);
+    win.show();
+
+/*    QSurfaceFormat format;
     format.setSamples(16);
     format.setMajorVersion(3);
     format.setMinorVersion(3);
@@ -65,16 +77,20 @@ int main(int argc, char *argv[]) {
     auto window = openGLTask.getWindow();
     window->show();
 
+ */
     //std::this_thread::sleep_for(50ms);
 
     //noteSetter.addObserver(openGLTask.getCentralNoteManager());
 
     int ret = app.exec();
 
-    openGLTask.stop();
+   /* openGLTask.stop();
 
     worker.stop();
     audioThread->join();
+*/
+
+    GLContextManager::getInstance().release();
 
     return ret;
 }
