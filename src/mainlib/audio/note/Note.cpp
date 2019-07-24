@@ -17,3 +17,32 @@ double computeFrequency(const Note &n) {
 
     return newFreq;
 }
+
+char getNoteChar(const Note &n) {
+    char ret = ' ';
+    switch (n.pitch) {
+        case Note::Pitch::A:
+            ret = 'A';
+            break;
+        case Note::Pitch::B:
+            ret = 'B';
+            break;
+        case Note::Pitch::C:
+            ret = 'C';
+            break;
+        case Note::Pitch::D:
+            ret = 'D';
+            break;
+        case Note::Pitch::E:
+            ret = 'E';
+            break;
+        case Note::Pitch::F:
+            ret = 'F';
+            break;
+        case Note::Pitch::G:
+            ret = 'G';
+            break;
+    }
+
+    return ret;
+}

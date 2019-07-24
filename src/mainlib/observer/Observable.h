@@ -5,13 +5,16 @@
 
 #include "mainlib/observer/Observer.h"
 
+#include <iostream>
+
 template <class Entity>
 class Observable {
 public:
     virtual ~Observable() = default;
 
-    void addObserver(Observer<Entity> &observer) {
-        observers.push_back(&observer);
+    void addObserver(Observer<Entity> * observer) {
+        if (!observer) return;
+        observers.push_back(observer);
     }
 
     void removeObserver(Observer<Entity> *observer) {
@@ -23,6 +26,7 @@ public:
     }
 
     void notifyObservers(const Entity &newValue) {
+        std::cout << observers.size() << std::endl;
         for (auto observer: observers) {
             observer->notifyNewValue(newValue);
         }

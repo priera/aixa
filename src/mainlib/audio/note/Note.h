@@ -33,6 +33,7 @@ struct Note {
 };
 
 double computeFrequency(const Note &n);
+char getNoteChar(const Note &n);
 
 using NotesBuffer = CircularBuffer<Note>;
 using NotesListener = Observer<Note>;

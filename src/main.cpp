@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <memory>
+#include <chrono>
 
 #include <QApplication>
 
@@ -10,11 +11,14 @@
 
 #include "mainlib/gui/OpenGLTask.h"
 #include "mainlib/gui/OpenGLWindow.h"
+#include "mainlib/gui/CentralNoteManager.h"
 
 #include "mainlib/audio/AudioWorker.h"
 #include "mainlib/audio/AudioBuilder.h"
 
 #include "mainlib/audio/note/NoteSetter.h"
+
+using namespace std::chrono_literals;
 
 std::thread * buildAudioThread(AudioWorker & worker)
 {
@@ -50,7 +54,7 @@ int main(int argc, char *argv[]) {
     auto commandCollection = worker.buildCommandCollection();
 
     NoteSetter noteSetter;
-    noteSetter.addObserver(worker);
+    noteSetter.addObserver(&worker);
 
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
@@ -60,6 +64,10 @@ int main(int argc, char *argv[]) {
     //Show the window just right before the application starts
     auto window = openGLTask.getWindow();
     window->show();
+
+    //std::this_thread::sleep_for(50ms);
+
+    //noteSetter.addObserver(openGLTask.getCentralNoteManager());
 
     int ret = app.exec();
 
