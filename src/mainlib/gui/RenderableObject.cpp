@@ -24,12 +24,19 @@ void RenderableObject::addChildObject(float z, RenderableObject *object) {
     children[zpos] = object;
 }
 
+void RenderableObject::update() {
+    for (auto &child: children)
+    {
+        applyChildTransformations(child.second);
+    }
+}
+
 void RenderableObject::render() {
     beforeRender();
 
     for (auto &child: children)
     {
-        applyChildTransformations(child.second);
+        //applyChildTransformations(child.second);
 
         child.second->render();
     }

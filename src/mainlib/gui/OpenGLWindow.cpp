@@ -2,6 +2,8 @@
 
 #include <QtGui/QScreen>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QResizeEvent>
+#include <iostream>
 
 #include "mainlib/gui/OpenGLWorker.h"
 
@@ -21,21 +23,34 @@ OpenGLWindow::~OpenGLWindow() {
 
 void OpenGLWindow::render()
 {
+
+    //actual rendering here
+
+
+}
+
+void OpenGLWindow::renderNow() {
     if (!initialized) {
         init();
         initialized = true;
     }
 
-    glClearColor(0.f, 1.f, 0.f, 1.0f);
+    context->makeCurrent(this);
+
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //actual rendering here
+    render();
+
+    assert(glGetError() == GL_NO_ERROR);
 
     context->swapBuffers(this);
+
+    context->doneCurrent();
 }
 
 void OpenGLWindow::init() {
-    this->context->makeCurrent(this);
+    context->makeCurrent(this);
 
     auto con = QOpenGLContext::currentContext();
 
@@ -45,6 +60,13 @@ void OpenGLWindow::init() {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //glEnable(GL_CULL_FACE);
+
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+    glViewport(0, 0, width(), height());
 }
 
 bool OpenGLWindow::event(QEvent *event)
@@ -64,4 +86,11 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 
     if (isExposed())
         render();
+}
+
+void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
+    if (!initialized) return;
+
+    auto s = ev->size();
+    glViewport(0, 0, s.width(), s.height());
 }

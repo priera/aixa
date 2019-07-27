@@ -16,11 +16,13 @@ public:
 
 public slots:
     virtual void render();
+    virtual void renderNow();
 
 protected:
     bool event(QEvent *event) override;
 
     void exposeEvent(QExposeEvent *event) override;
+    void resizeEvent(QResizeEvent *ev) override;
 
 private:
     void init();

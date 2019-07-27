@@ -24,17 +24,15 @@ class CentralNoteManager;
 class OpenGLTask : public QThread {
 Q_OBJECT
 public:
-    explicit OpenGLTask(const QSurfaceFormat &format);
+    explicit OpenGLTask(OpenGLWindow &win);
     virtual ~OpenGLTask();
-
-    void start();
-    void stop();
 
     void run() override;
 
-    OpenGLWindow *getWindow() { return window.get(); }
-
     CentralNoteManager *getCentralNoteManager() { return noteManager.get(); }
+
+signals:
+    void renderLoopDone();
 
 private:
     void initWorkerThreadObjects();
@@ -49,9 +47,7 @@ private:
 
     std::unique_ptr<CentralNoteManager> noteManager;
 
-    std::atomic<bool> running;
     std::unique_ptr<OpenGLWorker> worker;
-    std::unique_ptr<std::thread> runningThread;
     std::shared_ptr<QOpenGLContext> context;
 
     bool contextCreated, windowCreated;
@@ -59,8 +55,7 @@ private:
     std::mutex contextMutex, windowMutex;
     std::condition_variable cvContext, cvWindow;
 
-    std::unique_ptr<OpenGLWindow> window;
-    std::shared_ptr<QOffscreenSurface> surface;
+    OpenGLWindow *window;
 };
 
 

@@ -13,6 +13,7 @@ public:
     RenderableObject(const QMatrix4x4 &projectionMatrix, QOpenGLShaderProgram &program);
     virtual ~RenderableObject();
 
+    void update();
     void render();
 
     void moveCenterAt(float x, float y, float z);

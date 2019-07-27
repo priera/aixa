@@ -47,6 +47,9 @@ int main(int argc, char *argv[]) {
     win.resize(w, h);
     win.show();
 
+    OpenGLTask openGLTask(win);
+    openGLTask.start();
+
 /*    QSurfaceFormat format;
     format.setSamples(16);
     format.setMajorVersion(3);
