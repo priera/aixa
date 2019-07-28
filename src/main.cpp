@@ -9,8 +9,8 @@
 
 #include "mainlib/gui/MainEventFilter.h"
 
-#include "mainlib/gui/OpenGLTask.h"
-#include "mainlib/gui/OpenGLWindow.h"
+#include "mainlib/gui/gl/OpenGLTask.h"
+#include "mainlib/gui/gl/OpenGLWindow.h"
 #include "mainlib/gui/CentralNoteManager.h"
 
 #include "mainlib/gui/gl/GLContextManager.h"
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     int ret = app.exec();
     openGLTask.quit();
 
-   /* 
+   /*
     audioThread->join();
 */
 

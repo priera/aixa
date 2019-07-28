@@ -1,4 +1,4 @@
-#include "mainlib/gui/OpenGLWindow.h"
+#include "OpenGLWindow.h"
 
 #include <QtGui/QScreen>
 #include <QtGui/QOpenGLContext>

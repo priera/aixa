@@ -1,11 +1,11 @@
-#include "mainlib/gui/OpenGLTask.h"
+#include "OpenGLTask.h"
 
 #include <chrono>
 #include <thread>
 
 #include <QtGui/QOffscreenSurface>
 
-#include "mainlib/gui/OpenGLWindow.h"
+#include "OpenGLWindow.h"
 #include "mainlib/gui/CentralNoteManager.h"
 
 #include "mainlib/gui/gl/Scene.h"
