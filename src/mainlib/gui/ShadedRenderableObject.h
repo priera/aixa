@@ -10,10 +10,10 @@
 
 class ShadedRenderableObject : public RenderableObject {
 public:
-    ShadedRenderableObject(const QMatrix4x4 &projectionMatrix, const QString &vertexShaderPath, const QString &fragmentShaderPath);
+    ShadedRenderableObject(const QString &vertexShaderPath, const QString &fragmentShaderPath);
 
 protected:
-    void beforeRender() override;
+    void beforeRender(const QMatrix4x4 & projectionMatrix) override;
     void afterRender() override;
 
 private:

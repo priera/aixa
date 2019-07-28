@@ -2,20 +2,20 @@
 
 #include "mainlib/gui/NoteRenderable.h"
 
-CentralNoteManager::CentralNoteManager(const QMatrix4x4 &projectionMatrix) :
-    ShadedRenderableObject(projectionMatrix, "./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl")
+CentralNoteManager::CentralNoteManager() :
+    ShadedRenderableObject("./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl")
     , angle(0)
     , targetAngle(-180)
 {
     charTextureProvider = std::make_unique<CharTextureProvider>();
     auto ch1 = charTextureProvider->generateChar('B');
-    //auto ch2 = charTextureProvider->generateChar('A');
+    auto ch2 = charTextureProvider->generateChar('A');
 
-    frontNote = std::make_unique<NoteRenderable>(ch1, projectionMatrix, *program);
-    //backNote = std::make_unique<NoteRenderable>(ch2, projectionMatrix, *program);
+    frontNote = std::make_unique<NoteRenderable>(ch1, *program);
+    backNote = std::make_unique<NoteRenderable>(ch2,*program);
 
     addChildObject(0.05, frontNote.get());
-    //addChildObject(-0.05, backNote.get());
+    addChildObject(-0.05, backNote.get());
 }
 
 CentralNoteManager::~CentralNoteManager() { }
@@ -29,8 +29,8 @@ void CentralNoteManager::notifyNewValue(const Note &note) {
     frontNote->setCharacter(charText);
 }
 
-void CentralNoteManager::doMyRender() {
-    if (angle > targetAngle)
+void CentralNoteManager::doMyUpdate(){
+    //if (angle > targetAngle)
         angle -= 0.5;
 }
 
