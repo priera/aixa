@@ -29,7 +29,7 @@ void OpenGLTask::run() {
 
     auto context = GLContextManager::getInstance().useNewOffscreenContext();
 
-    auto centralNoteManager = new CentralNoteManager(); //TODO obvious memory leak
+    auto centralNoteManager = std::make_unique<CentralNoteManager>();
     scene = std::make_unique<Scene>(*centralNoteManager, size.width(), size.height());
 
     emit sceneBuilt();

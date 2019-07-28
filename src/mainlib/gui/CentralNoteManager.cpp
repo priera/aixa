@@ -30,7 +30,7 @@ void CentralNoteManager::notifyNewValue(const Note &note) {
 }
 
 void CentralNoteManager::doMyUpdate(){
-    if (angle > targetAngle)
+    //if (angle > targetAngle)
         angle -= 0.5;
 }
 
