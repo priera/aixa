@@ -36,8 +36,6 @@ private:
 
     std::unique_ptr<CentralNoteManager> noteManager;
 
-    std::shared_ptr<QOpenGLContext> context;
-
     std::unique_ptr<Scene> scene;
     OpenGLWindow *window;
 

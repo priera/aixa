@@ -1,6 +1,7 @@
 #include "mainlib/gui/gl/GLContextManager.h"
 
 #include <exception>
+#include <iostream>
 
 GLContextManager GLContextManager::instance;
 
@@ -50,11 +51,11 @@ void GLContextManager::init() {
     sharedContext = new QOpenGLContext();
     sharedContext->setFormat(surface->format());
     sharedContext->create();
-    sharedContext->makeCurrent(surface);
+    //sharedContext->makeCurrent(surface);
 
     assert(glGetError() == GL_NO_ERROR);
 
-    sharedContext->doneCurrent();
+    //sharedContext->doneCurrent();
 }
 
 QOpenGLContext *GLContextManager::createContext() {
@@ -63,9 +64,9 @@ QOpenGLContext *GLContextManager::createContext() {
     context->setShareContext(sharedContext);
     QSurfaceFormat sf = context->format();
 
-    sf.setOption(QSurfaceFormat::DebugContext);
+    //sf.setOption(QSurfaceFormat::DebugContext);
 
-    context->setFormat(sf);
+    //context->setFormat(sf);
     if (!context->create()) {
         throw std::runtime_error("Error when creating OpenGLContext");
     }
@@ -75,6 +76,8 @@ QOpenGLContext *GLContextManager::createContext() {
 
 QOpenGLContext *GLContextManager::useNewOffscreenContext() {
     auto ret = createContext();
+
+    ret->create();
     ret->makeCurrent(surface);
 
     return ret;

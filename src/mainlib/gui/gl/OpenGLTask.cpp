@@ -29,8 +29,8 @@ void OpenGLTask::run() {
 
     auto context = GLContextManager::getInstance().useNewOffscreenContext();
 
-    auto centralNoteManager = std::make_unique<CentralNoteManager>();
-    scene = std::make_unique<Scene>(*centralNoteManager, size.width(), size.height());
+    noteManager = std::make_unique<CentralNoteManager>();
+    scene = std::make_unique<Scene>(*noteManager, size.width(), size.height());
 
     emit sceneBuilt();
 

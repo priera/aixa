@@ -1,7 +1,5 @@
 #include "mainlib/gui/NoteRenderable.h"
 
-#include <iostream>
-
 NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, QOpenGLShaderProgram &program) :
     RenderableObject(program),
     character(character),
@@ -11,10 +9,10 @@ NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, QOpenG
 }
 
 void NoteRenderable::updateOnCharData() {
-    charw = character.size[0];
-    charh = character.size[1];
+    float charw = character.size[0];
+    float charh = character.size[1];
 
-    charPixelRatio = (float)charw / (float)charh;
+    charPixelRatio = charw / charh;
 
     w = 1.0;
     h = w / charPixelRatio;
@@ -35,23 +33,17 @@ void NoteRenderable::doMyRender() {
         initialized = true;
     }
 
-    assert(glGetError() == GL_NO_ERROR);
-
     program->setUniformValue("textColor", {0.7f, 0.7f, 0.7f });
-    assert(glGetError() == GL_NO_ERROR);
 
     glActiveTexture(GL_TEXTURE0);
-    assert(glGetError() == GL_NO_ERROR);
 
     glBindVertexArray(VAO);
-    assert(glGetError() == GL_NO_ERROR);
 
     // Render glyph texture over quad
     glBindTexture(GL_TEXTURE_2D, character.textureID);
+
     // Update content of VBO memory
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    assert(glGetError() == GL_NO_ERROR);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -81,7 +73,7 @@ void NoteRenderable::init() {
             0.0, triangleHeight, 0.0, 0.0
     };
 
-    glBufferData(GL_ARRAY_BUFFER,  sizeof(GLfloat) * 6 * 4, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,  sizeof(GLfloat) * 6 * 4, vertices, GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);

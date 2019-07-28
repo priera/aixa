@@ -2,6 +2,7 @@
 #define ALSAPLAYGROUND_OPENGLWINDOW_H
 
 #include <memory>
+#include <atomic>
 
 #include <QWindow>
 #include <QOpenGLFunctions>
@@ -12,11 +13,13 @@ class OpenGLWindow : public QWindow, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow(std::unique_ptr<QOpenGLContext> &context);
+    explicit OpenGLWindow();
 
     virtual ~OpenGLWindow();
 
     void setScene(Scene *scene) { this->scene = scene; }
+
+    void setReady();
 
 public slots:
     virtual void render();
@@ -35,6 +38,7 @@ private:
     std::unique_ptr<QOpenGLContext> context;
 
     Scene *scene;
+    std::atomic<bool> ready;
 };
 
 

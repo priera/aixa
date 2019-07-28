@@ -8,22 +8,20 @@ CentralNoteManager::CentralNoteManager() :
     , targetAngle(-180)
 {
     charTextureProvider = std::make_unique<CharTextureProvider>();
-    auto ch1 = charTextureProvider->generateChar('B');
-    auto ch2 = charTextureProvider->generateChar('A');
+    auto ch1 = charTextureProvider->generateChar('E');
+    //auto ch2 = charTextureProvider->generateChar('G');
 
     frontNote = std::make_unique<NoteRenderable>(ch1, *program);
-    backNote = std::make_unique<NoteRenderable>(ch2,*program);
+    //backNote = std::make_unique<NoteRenderable>(ch2,*program);
 
     addChildObject(0.05, frontNote.get());
-    addChildObject(-0.05, backNote.get());
+    //addChildObject(-0.05, backNote.get());
 }
 
 CentralNoteManager::~CentralNoteManager() { }
 
 void CentralNoteManager::notifyNewValue(const Note &note) {
     auto c = getNoteChar(note);
-
-    std::cout << "hola" << static_cast<int>(note.pitch) << " " << c << std::endl;
 
     auto charText = charTextureProvider->generateChar(c);
     frontNote->setCharacter(charText);

@@ -1,7 +1,6 @@
 #include "mainlib/gui/RenderableObject.h"
 
 #include <QtGui/QOpenGLShaderProgram>
-#include <iostream>
 
 RenderableObject::RenderableObject(QOpenGLShaderProgram &program) :
   program(&program)
@@ -65,5 +64,3 @@ void RenderableObject::moveCenterAt(float x, float y, float z) {
 void RenderableObject::rotate(float degrees) {
     modelMatrix.rotate(degrees, 0.0f, 1.0f, 0.0f);
 }
-
-

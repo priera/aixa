@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "mainlib/gui/gl/Scene.h"
+#include "GLContextManager.h"
 
 GLenum glCheckError_(const char *file, int line)
 {
@@ -29,12 +30,13 @@ GLenum glCheckError_(const char *file, int line)
 }
 #define glCheckError() glCheckError_(__FILE__, __LINE__)
 
-OpenGLWindow::OpenGLWindow(std::unique_ptr<QOpenGLContext> &context) :
+OpenGLWindow::OpenGLWindow() :
     QWindow(),
     QOpenGLFunctions(),
-    context(std::move(context)),
+    context(nullptr),
     scene(nullptr),
-    initialized(false)
+    initialized(false),
+    ready(false)
 {
     setSurfaceType(QWindow::OpenGLSurface);
 }
@@ -51,6 +53,8 @@ void OpenGLWindow::render()
 }
 
 void OpenGLWindow::renderNow() {
+    if (!ready) return;
+
     if (!initialized) {
         init();
         initialized = true;
@@ -72,9 +76,12 @@ void OpenGLWindow::renderNow() {
 }
 
 void OpenGLWindow::init() {
-    context->makeCurrent(this);
+    auto context_p = GLContextManager::getInstance().createContext();
+    context = std::unique_ptr<QOpenGLContext>(context_p);
 
-    auto con = QOpenGLContext::currentContext();
+    context->setFormat(requestedFormat());
+
+    context->makeCurrent(this);
 
     initializeOpenGLFunctions();
 
@@ -89,13 +96,19 @@ void OpenGLWindow::init() {
 
 
     glViewport(0, 0, width(), height());
+
+    context->doneCurrent();
+}
+
+void OpenGLWindow::setReady() {
+    ready = true;
 }
 
 bool OpenGLWindow::event(QEvent *event)
 {
     switch (event->type()) {
         case QEvent::UpdateRequest:
-            render();
+            renderNow();
             return true;
         default:
             return QWindow::event(event);
@@ -107,7 +120,7 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
     Q_UNUSED(event);
 
     if (isExposed())
-        render();
+        renderNow();
 }
 
 void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
