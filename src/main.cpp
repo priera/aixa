@@ -50,6 +50,10 @@ int main(int argc, char *argv[]) {
     OpenGLTask openGLTask(win);
     openGLTask.start();
 
+    QObject::connect(&openGLTask, &OpenGLTask::sceneBuilt, [&win, &openGLTask]() {
+       win.setScene(openGLTask.getScene());
+    });
+
 /*    QSurfaceFormat format;
     format.setSamples(16);
     format.setMajorVersion(3);
@@ -81,17 +85,16 @@ int main(int argc, char *argv[]) {
     window->show();
 
  */
-    //std::this_thread::sleep_for(50ms);
 
     //noteSetter.addObserver(openGLTask.getCentralNoteManager());
 
     int ret = app.exec();
+    openGLTask.quit();
 
-   /* openGLTask.stop();
-
-    worker.stop();
+   /* 
     audioThread->join();
 */
+
 
     GLContextManager::getInstance().release();
 

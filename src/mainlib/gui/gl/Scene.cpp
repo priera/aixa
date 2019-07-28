@@ -16,7 +16,7 @@ void Scene::update() {
 }
 
 void Scene::draw() {
-    mainObject->render();
+    mainObject->render(projection);
 }
 
 

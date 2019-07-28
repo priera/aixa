@@ -10,11 +10,11 @@
 
 class RenderableObject : protected QOpenGLExtraFunctions {
 public:
-    RenderableObject(const QMatrix4x4 &projectionMatrix, QOpenGLShaderProgram &program);
+    RenderableObject(QOpenGLShaderProgram &program);
     virtual ~RenderableObject();
 
     void update();
-    void render();
+    void render(QMatrix4x4 & projectionMatrix);
 
     void moveCenterAt(float x, float y, float z);
     void rotate(float degrees);
@@ -22,14 +22,15 @@ public:
     void addChildObject(float z, RenderableObject *object);
 
 protected:
-    RenderableObject(const QMatrix4x4 &projectionMatrix);
+    RenderableObject();
 
     void setProgram(QOpenGLShaderProgram &program) {
         this->program = &program;
     }
 
+    virtual void doMyUpdate();
     virtual void doMyRender();
-    virtual void beforeRender();
+    virtual void beforeRender(const QMatrix4x4 & projectionMatrix);
     virtual void afterRender();
 
     virtual void applyChildTransformations(RenderableObject *pObject);
@@ -41,7 +42,7 @@ protected:
     QOpenGLShaderProgram *program;
 
 private:
-    QMatrix4x4 projectionMatrix;
+    //QMatrix4x4 projectionMatrix;
     QMatrix4x4 modelMatrix;
 };
 

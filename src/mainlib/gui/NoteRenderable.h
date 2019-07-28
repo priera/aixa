@@ -11,7 +11,7 @@
 
 class NoteRenderable : public RenderableObject {
 public:
-    NoteRenderable(CharTextureProvider::Character & character, const QMatrix4x4 &projectionMatrix, QOpenGLShaderProgram &program);
+    NoteRenderable(CharTextureProvider::Character & character, QOpenGLShaderProgram &program);
 
     void setCharacter(const CharTextureProvider::Character & character);
 
@@ -20,12 +20,15 @@ protected:
 
 private:
     void updateOnCharData();
+    void init();
 
     std::mutex charUpdateMutex;
 
     CharTextureProvider::Character character;
     float charw, charh, charPixelRatio;
     unsigned int VBO, VAO;
+
+    bool initialized;
 };
 
 

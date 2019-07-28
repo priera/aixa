@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-ShadedRenderableObject::ShadedRenderableObject(const QMatrix4x4 &projectionMatrix, const QString &vertexShaderPath, const QString &fragmentShaderPath) :
-    RenderableObject(projectionMatrix) {
+ShadedRenderableObject::ShadedRenderableObject(const QString &vertexShaderPath, const QString &fragmentShaderPath) :
+    RenderableObject() {
     programContainer = std::make_unique<QOpenGLShaderProgram>();
 
     auto program = programContainer.get();
@@ -20,14 +20,12 @@ ShadedRenderableObject::ShadedRenderableObject(const QMatrix4x4 &projectionMatri
     std::cout << program->log().toStdString() << std::endl;
 
     setProgram(*program);
-
-    program->bind();
-    program->setUniformValue("projection", projectionMatrix);
-    program->release();
 }
 
-void ShadedRenderableObject::beforeRender() {
+void ShadedRenderableObject::beforeRender(const QMatrix4x4 & projectionMatrix) {
     program->bind();
+
+    program->setUniformValue("projection", projectionMatrix);
 }
 
 void ShadedRenderableObject::afterRender() {

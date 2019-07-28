@@ -13,13 +13,13 @@ class CentralNoteManager :
         public NotesListener,
         public ShadedRenderableObject {
 public:
-    CentralNoteManager(const QMatrix4x4 &projectionMatrix);
+    CentralNoteManager();
     ~CentralNoteManager();
 
     void notifyNewValue(const Note &note) override;
 
 protected:
-    void doMyRender() override;
+    void doMyUpdate() override;
 
     void applyChildTransformations(RenderableObject *pObject) override;
 

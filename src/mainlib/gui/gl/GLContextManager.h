@@ -13,6 +13,7 @@ public:
     static void release();
 
     QOpenGLContext *createContext();
+    QOpenGLContext *useNewOffscreenContext();
 
     virtual ~GLContextManager();
 

@@ -72,3 +72,10 @@ QOpenGLContext *GLContextManager::createContext() {
 
     return context;
 }
+
+QOpenGLContext *GLContextManager::useNewOffscreenContext() {
+    auto ret = createContext();
+    ret->makeCurrent(surface);
+
+    return ret;
+}

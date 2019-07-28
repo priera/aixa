@@ -1,12 +1,6 @@
 #ifndef ALSAPLAYGROUND_OPENGLTASK_H
 #define ALSAPLAYGROUND_OPENGLTASK_H
 
-#include <mutex>
-#include <memory>
-#include <atomic>
-#include <thread>
-#include <condition_variable>
-
 #include <QtCore/QThread>
 
 #include <QtGui/QSurfaceFormat>
@@ -18,8 +12,8 @@ class QOffscreenSurface;
 
 class OpenGLWindow;
 
-class OpenGLWorker;
 class CentralNoteManager;
+class Scene;
 
 class OpenGLTask : public QThread {
 Q_OBJECT
@@ -28,34 +22,26 @@ public:
     virtual ~OpenGLTask();
 
     void run() override;
+    void quit();
 
     CentralNoteManager *getCentralNoteManager() { return noteManager.get(); }
+    Scene *getScene() { return scene.get(); }
 
 signals:
     void renderLoopDone();
+    void sceneBuilt();
 
 private:
-    void initWorkerThreadObjects();
-
-    void buildWindow();
-
-    void runningLoop();
-
-    QSurfaceFormat format;
-
     int frameRate;
 
     std::unique_ptr<CentralNoteManager> noteManager;
 
-    std::unique_ptr<OpenGLWorker> worker;
     std::shared_ptr<QOpenGLContext> context;
 
-    bool contextCreated, windowCreated;
-
-    std::mutex contextMutex, windowMutex;
-    std::condition_variable cvContext, cvWindow;
-
+    std::unique_ptr<Scene> scene;
     OpenGLWindow *window;
+
+    std::atomic<bool> stop;
 };
 
 

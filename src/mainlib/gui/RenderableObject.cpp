@@ -3,16 +3,14 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <iostream>
 
-RenderableObject::RenderableObject(const QMatrix4x4 &projectionMatrix, QOpenGLShaderProgram &program)
- : projectionMatrix(projectionMatrix)
- , program(&program)
+RenderableObject::RenderableObject(QOpenGLShaderProgram &program) :
+  program(&program)
 {
     initializeOpenGLFunctions();
 }
 
-RenderableObject::RenderableObject(const QMatrix4x4 &projectionMatrix)
-: projectionMatrix(projectionMatrix)
-, program(nullptr)
+RenderableObject::RenderableObject() :
+ program(nullptr)
 {
     initializeOpenGLFunctions();
 }
@@ -25,20 +23,20 @@ void RenderableObject::addChildObject(float z, RenderableObject *object) {
 }
 
 void RenderableObject::update() {
+    doMyUpdate();
+
     for (auto &child: children)
     {
         applyChildTransformations(child.second);
     }
 }
 
-void RenderableObject::render() {
-    beforeRender();
+void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
+    beforeRender(projectionMatrix);
 
     for (auto &child: children)
     {
-        //applyChildTransformations(child.second);
-
-        child.second->render();
+        child.second->render(projectionMatrix);
     }
 
     program->setUniformValue("model", modelMatrix);
@@ -50,10 +48,11 @@ void RenderableObject::render() {
     afterRender();
 }
 
+void RenderableObject::doMyUpdate() { }
 
 void RenderableObject::doMyRender() { }
 
-void RenderableObject::beforeRender() { }
+void RenderableObject::beforeRender(const QMatrix4x4 & projectionMatrix) { }
 
 void RenderableObject::afterRender() { }
 

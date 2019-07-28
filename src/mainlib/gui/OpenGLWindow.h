@@ -6,6 +6,8 @@
 #include <QWindow>
 #include <QOpenGLFunctions>
 
+class Scene;
+
 class OpenGLWindow : public QWindow, protected QOpenGLFunctions {
     Q_OBJECT
 
@@ -13,6 +15,8 @@ public:
     explicit OpenGLWindow(std::unique_ptr<QOpenGLContext> &context);
 
     virtual ~OpenGLWindow();
+
+    void setScene(Scene *scene) { this->scene = scene; }
 
 public slots:
     virtual void render();
@@ -29,6 +33,8 @@ private:
 
     bool initialized;
     std::unique_ptr<QOpenGLContext> context;
+
+    Scene *scene;
 };
 
 
