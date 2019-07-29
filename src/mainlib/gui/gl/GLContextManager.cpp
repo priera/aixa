@@ -67,6 +67,7 @@ QOpenGLContext *GLContextManager::createContext() {
     //sf.setOption(QSurfaceFormat::DebugContext);
 
     //context->setFormat(sf);
+
     if (!context->create()) {
         throw std::runtime_error("Error when creating OpenGLContext");
     }
@@ -77,7 +78,6 @@ QOpenGLContext *GLContextManager::createContext() {
 QOpenGLContext *GLContextManager::useNewOffscreenContext() {
     auto ret = createContext();
 
-    ret->create();
     ret->makeCurrent(surface);
 
     return ret;

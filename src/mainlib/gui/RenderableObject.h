@@ -2,6 +2,7 @@
 #define ALSAPLAYGROUND_RENDERABLEOBJECT_H
 
 #include <map>
+#include <mutex>
 
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QOpenGLShaderProgram>
@@ -42,8 +43,8 @@ protected:
     QOpenGLShaderProgram *program;
 
 private:
-    //QMatrix4x4 projectionMatrix;
     QMatrix4x4 modelMatrix;
+    std::mutex modelMatrixMutex;
 };
 
 #endif //ALSAPLAYGROUND_RENDERABLEOBJECT_H

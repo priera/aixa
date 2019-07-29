@@ -38,11 +38,13 @@ void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
         child.second->render(projectionMatrix);
     }
 
+    std::unique_lock<std::mutex> l(modelMatrixMutex);
     program->setUniformValue("model", modelMatrix);
 
     doMyRender();
 
     modelMatrix.setToIdentity();
+    l.unlock();
 
     afterRender();
 }
@@ -58,9 +60,11 @@ void RenderableObject::afterRender() { }
 void RenderableObject::applyChildTransformations(RenderableObject *pObject) { }
 
 void RenderableObject::moveCenterAt(float x, float y, float z) {
+    std::lock_guard<std::mutex> l(modelMatrixMutex);
     modelMatrix.translate(x - w/2, y - h/2, z - d/2);
 }
 
 void RenderableObject::rotate(float degrees) {
+    std::lock_guard<std::mutex> l(modelMatrixMutex);
     modelMatrix.rotate(degrees, 0.0f, 1.0f, 0.0f);
 }
