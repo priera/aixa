@@ -23,9 +23,21 @@ FreeTypeCharacterBitmapProvider::~FreeTypeCharacterBitmapProvider() {
 }
 
 CharacterBitmapProvider::Character FreeTypeCharacterBitmapProvider::getCharacter(char c) {
-    if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+    bool blankBuffer = (c == ' ');
+    char actualChar = (blankBuffer) ? 'N' : c;
+
+    if (FT_Load_Char(face, actualChar, FT_LOAD_RENDER))
         throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
 
+
+
+    if (blankBuffer) {
+        for (int row = 0; row < face->glyph->bitmap.rows; row++) {
+            for (int col = 0; col < face->glyph->bitmap.width; col++) {
+                face->glyph->bitmap.buffer[row * face->glyph->bitmap.width + col] = 0x0F;
+            }
+        }
+    }
 
     return { face->glyph->bitmap.rows,
              face->glyph->bitmap.width,

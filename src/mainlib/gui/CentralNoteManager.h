@@ -31,6 +31,8 @@ private:
 
     float angle;
     float targetAngle;
+    char frontChar;
+    char newFrontChar;
 };
 
 

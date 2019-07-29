@@ -1,6 +1,7 @@
 #include "mainlib/gui/CharTextureProvider.h"
 
 #include <set>
+#include <iostream>
 
 #include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
 
@@ -9,7 +10,7 @@ CharTextureProvider::CharTextureProvider() {
 
     FreeTypeCharacterBitmapProvider provider;
 
-    std::set<char> chars = { ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
+    std::set<char> chars = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -30,7 +31,7 @@ CharTextureProvider::CharTextureProvider() {
                 GL_UNSIGNED_BYTE,
                 bitmapData.buffer
         );
-
+        
         // Set texture options
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);

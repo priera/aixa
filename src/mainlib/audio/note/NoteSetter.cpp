@@ -30,7 +30,7 @@ void NoteSetter::workerLoop() {
         time_t pts;
 
         if (!buffer->read(n, pts)) {
-            std::this_thread::sleep_for(100ms);
+            std::this_thread::sleep_for(50ms);
             continue;
         }
 
