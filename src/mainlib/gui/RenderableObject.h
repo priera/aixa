@@ -30,6 +30,8 @@ protected:
     }
 
     virtual void doMyUpdate();
+    virtual void updateDone();
+
     virtual void doMyRender();
     virtual void beforeRender(const QMatrix4x4 & projectionMatrix);
     virtual void afterRender();
@@ -43,8 +45,10 @@ protected:
     QOpenGLShaderProgram *program;
 
 private:
-    QMatrix4x4 modelMatrix;
-    std::mutex modelMatrixMutex;
+    QMatrix4x4 updateMatrix;
+    QMatrix4x4 renderMatrix;
+
+    std::mutex updateMutex;
 };
 
 #endif //ALSAPLAYGROUND_RENDERABLEOBJECT_H
