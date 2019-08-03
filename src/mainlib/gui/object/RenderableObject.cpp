@@ -1,4 +1,4 @@
-#include "mainlib/gui/RenderableObject.h"
+#include "RenderableObject.h"
 
 #include <QtGui/QOpenGLShaderProgram>
 

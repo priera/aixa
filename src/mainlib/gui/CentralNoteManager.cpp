@@ -1,6 +1,6 @@
 #include "mainlib/gui/CentralNoteManager.h"
 
-#include "mainlib/gui/NoteRenderable.h"
+#include "mainlib/gui/object/NoteRenderable.h"
 
 CentralNoteManager::CentralNoteManager() :
     ShadedRenderableObject("./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl")

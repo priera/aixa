@@ -1,7 +1,7 @@
 #ifndef ALSAPLAYGROUND_SRC_MAINLIB_GUI_SHADEDRENDERABLEOBJECT_H
 #define ALSAPLAYGROUND_SRC_MAINLIB_GUI_SHADEDRENDERABLEOBJECT_H
 
-#include "mainlib/gui/RenderableObject.h"
+#include "RenderableObject.h"
 
 #include <memory>
 

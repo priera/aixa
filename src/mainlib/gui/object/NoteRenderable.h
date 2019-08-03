@@ -5,7 +5,7 @@
 
 #include <QMatrix4x4>
 
-#include "mainlib/gui/RenderableObject.h"
+#include "RenderableObject.h"
 #include "mainlib/gui/CharTextureProvider.h"
 
 

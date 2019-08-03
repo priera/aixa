@@ -1,4 +1,4 @@
-#include "mainlib/gui/NoteRenderable.h"
+#include "NoteRenderable.h"
 
 NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, QOpenGLShaderProgram &program) :
     RenderableObject(program),
