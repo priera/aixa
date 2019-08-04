@@ -17,6 +17,7 @@ public:
 
 protected:
     void doMyRender() override;
+    void doMyUpdate() override;
 
 private:
     void updateOnCharData();
@@ -29,6 +30,7 @@ private:
     unsigned int VBO, VAO;
 
     bool initialized;
+    float angle;
 };
 
 

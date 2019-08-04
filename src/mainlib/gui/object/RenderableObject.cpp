@@ -22,22 +22,22 @@ void RenderableObject::addChildObject(float z, RenderableObject *object) {
 }
 
 void RenderableObject::update() {
+    updateMatrix.setToIdentity();
+
     doMyUpdate();
 
     for (auto &child: children)
     {
         child.second->update();
         applyChildTransformations(child.second);
+        child.second->updateDone();
     }
 
-    updateDone();
 }
 
 void RenderableObject::updateDone() {
     std::lock_guard<std::mutex> l(updateMutex);
     renderMatrix = updateMatrix;
-
-    updateMatrix.setToIdentity();
 }
 
 void RenderableObject::render(QMatrix4x4 & projectionMatrix) {

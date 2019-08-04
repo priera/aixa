@@ -4,7 +4,6 @@
 
 CentralNoteManager::CentralNoteManager() :
     ShadedRenderableObject("./src/mainlib/gui/shaders/vertex.glsl", "./src/mainlib/gui/shaders/fragment.glsl")
-    , angle(0)
     , targetAngle(-180)
     , frontChar(' ')
     , newFrontChar(' ')
@@ -41,13 +40,9 @@ void CentralNoteManager::doMyUpdate(){
 
         frontNote->setCharacter(charText);
     }
-
-    //if (angle > targetAngle)
-    angle -= 0.5;
 }
 
 void CentralNoteManager::applyChildTransformations(RenderableObject *pObject) {
-    pObject->rotate(angle);
     float zCord = (pObject == frontNote.get()) ? 0.05 : -0.05;
 
     pObject->moveCenterAt(0, 0, zCord);

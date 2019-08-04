@@ -3,7 +3,8 @@
 NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, QOpenGLShaderProgram &program) :
     RenderableObject(program),
     character(character),
-    initialized(false)
+    initialized(false),
+    angle(0.0)
 {
     updateOnCharData();
 }
@@ -51,6 +52,11 @@ void NoteRenderable::doMyRender() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     assert(glGetError() == GL_NO_ERROR);
+}
+
+void NoteRenderable::doMyUpdate() {
+    angle -= 0.5;
+    rotate(angle);
 }
 
 void NoteRenderable::init() {

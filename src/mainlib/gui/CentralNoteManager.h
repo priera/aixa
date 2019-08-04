@@ -29,7 +29,6 @@ private:
 
     std::unique_ptr<CharTextureProvider> charTextureProvider;
 
-    float angle;
     float targetAngle;
     char frontChar;
     char newFrontChar;
