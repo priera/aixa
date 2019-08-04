@@ -1,6 +1,7 @@
 #include "RenderableObject.h"
 
 #include <QtGui/QOpenGLShaderProgram>
+#include <iostream>
 
 RenderableObject::RenderableObject(QOpenGLShaderProgram &program) :
   program(&program)
@@ -58,7 +59,44 @@ void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
     afterRender();
 }
 
-void RenderableObject::doMyUpdate() { }
+float &RenderableObject::chooseParamForAnimation(const AnimationParam param) {
+    static float dummy = 0;
+
+    switch (param) {
+        case AnimationParam::ANGLE:
+            return angle;
+            break;
+        case AnimationParam::W:
+            return w;
+            break;
+        case AnimationParam::H:
+            return h;
+            break;
+        case AnimationParam::D:
+            return d;
+            break;
+    }
+
+    return dummy;
+}
+
+void RenderableObject::doMyUpdate() {
+    auto t = std::chrono::steady_clock::now();
+
+    for (auto &animation : animations) {
+        if (animation.second.done())
+            continue;
+
+        animation.second.evaluate(t, chooseParamForAnimation(animation.first));
+    }
+
+    rotate(angle);
+}
+
+void RenderableObject::setupAnimation(AnimationParam param, std::chrono::milliseconds duration, unsigned int samples, \
+        float startValue, float endValue, const Animation::HermiteParams & params) {
+    animations[param].reset(duration, samples, startValue, endValue, params);
+}
 
 void RenderableObject::doMyRender() { }
 

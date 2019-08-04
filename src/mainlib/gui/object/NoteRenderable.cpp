@@ -1,10 +1,11 @@
 #include "NoteRenderable.h"
 
+using namespace std::chrono_literals;
+
 NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, QOpenGLShaderProgram &program) :
     RenderableObject(program),
     character(character),
-    initialized(false),
-    angle(0.0)
+    initialized(false)
 {
     updateOnCharData();
 }
@@ -18,6 +19,7 @@ void NoteRenderable::updateOnCharData() {
     w = 1.0;
     h = w / charPixelRatio;
     d = 0.0;
+    angle = 0.0;
 }
 
 void NoteRenderable::setCharacter(const CharTextureProvider::Character & character) {
@@ -25,6 +27,13 @@ void NoteRenderable::setCharacter(const CharTextureProvider::Character & charact
     this->character = character;
 
     updateOnCharData();
+
+    Animation::HermiteParams params = {
+        0.25, 0.81,
+        0.31, 0.0
+    };
+
+    setupAnimation(AnimationParam::ANGLE, 500ms, 20, -180, 0, params);
 }
 
 void NoteRenderable::doMyRender() {
@@ -52,11 +61,6 @@ void NoteRenderable::doMyRender() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     assert(glGetError() == GL_NO_ERROR);
-}
-
-void NoteRenderable::doMyUpdate() {
-    angle -= 0.5;
-    rotate(angle);
 }
 
 void NoteRenderable::init() {

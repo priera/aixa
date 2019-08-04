@@ -9,6 +9,8 @@
 
 #include <QtGui/QMatrix4x4>
 
+#include "mainlib/gui/object/Animation.h"
+
 class RenderableObject : protected QOpenGLExtraFunctions {
 public:
     RenderableObject(QOpenGLShaderProgram &program);
@@ -23,6 +25,13 @@ public:
     void addChildObject(float z, RenderableObject *object);
 
 protected:
+    enum class AnimationParam {
+        W,
+        H,
+        D,
+        ANGLE
+    };
+
     RenderableObject();
 
     void setProgram(QOpenGLShaderProgram &program) {
@@ -38,17 +47,25 @@ protected:
 
     virtual void applyChildTransformations(RenderableObject *pObject);
 
+    void setupAnimation(AnimationParam param, std::chrono::milliseconds duration, unsigned int samples, \
+        float startValue, float endValue, const Animation::HermiteParams & params);
+
     float w, h, d;
+    float angle;
 
     std::map<int, RenderableObject *> children;
 
     QOpenGLShaderProgram *program;
 
 private:
+    float &chooseParamForAnimation(const AnimationParam param);
+
     QMatrix4x4 updateMatrix;
     QMatrix4x4 renderMatrix;
 
     std::mutex updateMutex;
+
+    std::map<AnimationParam, Animation> animations;
 };
 
 #endif //ALSAPLAYGROUND_RENDERABLEOBJECT_H
