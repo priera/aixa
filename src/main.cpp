@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     AudioWorker worker(environment);
     auto commandCollection = worker.buildCommandCollection();
 
-    //noteSetter.addObserver(&worker);
+    noteSetter.addObserver(&worker);
 
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
