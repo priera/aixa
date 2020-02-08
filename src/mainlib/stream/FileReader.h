@@ -15,7 +15,8 @@ public:
     void nextChunkInfo(std::string &idTag, unsigned int &word);
     void nextIdTag(std::string &str);
     void nextWord(unsigned int &w);
-    void nextByte(char &b);
+    void nextTwoBytes(unsigned int &hw);
+    void nextByte(unsigned char &b);
 
 private:
     void check() {

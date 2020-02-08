@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "FileReader.h"
+#include "WavFormat.h"
 
 class WavReader {
 public:
@@ -18,13 +19,13 @@ private:
 
     void readFileHeader(unsigned int & fileSize);
     void readChuncks();
+    void skipUnknownTag(unsigned int size);
 
     FileReader f;
+    WavFormat format;
 
     unsigned int processedBytes;
     unsigned int fileSize;
-
-    void skipUnknownTag(unsigned int size);
 };
 
 

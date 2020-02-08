@@ -40,8 +40,16 @@ void FileReader::nextWordNoCheck(unsigned int &w) {
     w = wt.word;
 }
 
-void FileReader::nextByte(char &b) {
-    f.read(&b, 1);
+void FileReader::nextTwoBytes(unsigned int &hw) {
+    wt.word = 0;
+    f.read(&wt.bytes[0], 2);
+    hw = wt.word;
+
+    check();
+}
+
+void FileReader::nextByte(unsigned char &b) {
+    f >> b;
 
     check();
 }
