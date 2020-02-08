@@ -11,20 +11,44 @@ FileReader::~FileReader() {
     f.close();
 }
 
-bool FileReader::nextIdTag(std::string &str) {
+void FileReader::seekToBeginning() {
+    f.seekg(0);
+
+    check();
+}
+
+void FileReader::nextIdTag(std::string &str) {
+    nextIdTagNoCheck(str);
+
+    check();
+}
+
+void FileReader::nextWord(unsigned int &w) {
+    nextWordNoCheck(w);
+
+    check();
+}
+
+void FileReader::nextIdTagNoCheck(std::string &str) {
     f.read(&wt.bytes[0], 4);
     str.assign(&wt.bytes[0], 4);
 
-    return f.good();
 }
 
-bool FileReader::nextWord(unsigned int &w) {
+void FileReader::nextWordNoCheck(unsigned int &w) {
     f.read(&wt.bytes[0], 4);
     w = wt.word;
-
-    return f.good();
 }
 
-bool FileReader::nextByte(char &b) {
-    return f.read(&b, 1).good();
+void FileReader::nextByte(char &b) {
+    f.read(&b, 1);
+
+    check();
+}
+
+void FileReader::nextChunkInfo(std::string &idTag, unsigned int &word) {
+    nextIdTagNoCheck(idTag);
+    nextWordNoCheck(word);
+
+    check();
 }

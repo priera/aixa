@@ -14,7 +14,17 @@ public:
     void run();
 
 private:
+    bool probe(unsigned int & fileSize);
+
+    void readFileHeader(unsigned int & fileSize);
+    void readChuncks();
+
     FileReader f;
+
+    unsigned int processedBytes;
+    unsigned int fileSize;
+
+    void skipUnknownTag(unsigned int size);
 };
 
 

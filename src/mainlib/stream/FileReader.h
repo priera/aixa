@@ -10,12 +10,22 @@ public:
     FileReader(const std::string & path);
     virtual ~FileReader();
 
-    bool nextIdTag(std::string &str);
-    bool nextWord(unsigned int &w);
-    bool nextByte(char &b);
+    void seekToBeginning();
 
+    void nextChunkInfo(std::string &idTag, unsigned int &word);
+    void nextIdTag(std::string &str);
+    void nextWord(unsigned int &w);
+    void nextByte(char &b);
 
 private:
+    void check() {
+        if (!f.good())
+            throw std::runtime_error("Error while reading file");
+    }
+
+    void nextIdTagNoCheck(std::string &str);
+    void nextWordNoCheck(unsigned int &w);
+
     union WordType {
         unsigned int word;
         char bytes[4];
