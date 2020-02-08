@@ -41,22 +41,25 @@ void WavReader::readFileHeader(unsigned int & fileSize) {
 }
 
 void WavReader::readChuncks() {
-    std::string tag;
-    unsigned int size;
-    f.nextChunkInfo(tag, size);
-    processedBytes += 8;
+    while (processedBytes < fileSize) {
+        std::string tag;
+        unsigned int size;
 
-    if (tag == "fmt ") {
-        format = FormatExtractor::readFormat(f, size);
-    } else if (tag == "LIST") {
+        f.nextChunkInfo(tag, size);
+        processedBytes += 8;
 
-    } else if (tag == "data") {
+        if (tag == "fmt ") {
+            format = FormatExtractor::readFormat(f, size);
+        } else if (tag == "LIST") {
 
-    } else {
-        skipUnknownTag(size);
+        } else if (tag == "data") {
+
+        } else {
+            skipUnknownTag(size);
+        }
+
+        processedBytes += size;
     }
-
-    processedBytes += size;
 }
 
 void WavReader::skipUnknownTag(unsigned int size) {

@@ -13,6 +13,9 @@ WavFormat FormatExtractor::readFormat(FileReader &reader, unsigned int size) {
     reader.nextTwoBytes(ret.blockAlign);
     reader.nextTwoBytes(ret.bitsPerSample);
 
+    if (ret.compressionCode != 1) // 1 == PCM
+        throw std::runtime_error("Not supported compression code");
+
     unsigned char dummy;
     for (unsigned int toSkip = size - 16; toSkip > 0; toSkip -= 1) {
         reader.nextByte(dummy);
