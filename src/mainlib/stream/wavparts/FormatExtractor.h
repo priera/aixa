@@ -3,7 +3,7 @@
 
 
 #include "WavFormat.h"
-#include "FileReader.h"
+#include "mainlib/stream/FileReader.h"
 
 class FormatExtractor {
 public:

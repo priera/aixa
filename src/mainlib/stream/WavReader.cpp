@@ -1,5 +1,5 @@
 #include "WavReader.h"
-#include "FormatExtractor.h"
+#include "mainlib/stream/wavparts/FormatExtractor.h"
 
 WavReader::WavReader(const std::string & path) : f(path) {
     bool ok = probe(fileSize);
@@ -51,7 +51,7 @@ void WavReader::readChuncks() {
         if (tag == "fmt ") {
             format = FormatExtractor::readFormat(f, size);
         } else if (tag == "LIST") {
-
+            processedBytes = fileSize;
         } else if (tag == "data") {
 
         } else {

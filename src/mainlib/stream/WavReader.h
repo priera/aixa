@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include "FileReader.h"
-#include "WavFormat.h"
+#include "mainlib/stream/wavparts/WavFormat.h"
 
 class WavReader {
 public:
