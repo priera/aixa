@@ -17,6 +17,7 @@ public:
     void nextWord(unsigned int &w);
     void nextTwoBytes(unsigned int &hw);
     void nextByte(unsigned char &b);
+    void readString(std::string &str, unsigned int size);
 
 private:
     void check() {

@@ -54,6 +54,12 @@ void FileReader::nextByte(unsigned char &b) {
     check();
 }
 
+void FileReader::readString(std::string &str, unsigned int size) {
+    f.read(&str[0], size);
+
+    check();
+}
+
 void FileReader::nextChunkInfo(std::string &idTag, unsigned int &word) {
     nextIdTagNoCheck(idTag);
     nextWordNoCheck(word);

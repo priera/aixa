@@ -1,3 +1,4 @@
+#include <mainlib/stream/wavparts/ListProcessor.h>
 #include "WavReader.h"
 #include "mainlib/stream/wavparts/FormatExtractor.h"
 
@@ -51,7 +52,7 @@ void WavReader::readChuncks() {
         if (tag == "fmt ") {
             format = FormatExtractor::readFormat(f, size);
         } else if (tag == "LIST") {
-            processedBytes = fileSize;
+            infoData = ListProcessor::extractListData(f, size);
         } else if (tag == "data") {
 
         } else {

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <fstream>
+#include <vector>
 
 #include "FileReader.h"
 #include "mainlib/stream/wavparts/WavFormat.h"
@@ -23,6 +24,7 @@ private:
 
     FileReader f;
     WavFormat format;
+    std::vector<std::string> infoData;
 
     unsigned int processedBytes;
     unsigned int fileSize;
