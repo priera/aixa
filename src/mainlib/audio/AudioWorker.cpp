@@ -1,7 +1,5 @@
 #include "AudioWorker.h"
 
-#include <math.h>
-
 #include <sstream>
 #include <exception>
 
@@ -9,27 +7,6 @@
 
 #include "Commands.h"
 #include "SineGenerator.h"
-
-static int xrun_recovery(snd_pcm_t *handle, int err) {
-    std::cout << "stream recovery\n";
-
-    if (err == -EPIPE) {    /* under-run */
-        err = snd_pcm_prepare(handle);
-        if (err < 0)
-            printf("Can't recovery from underrun, prepare failed: %s\n", snd_strerror(err));
-        return 0;
-    } else if (err == -ESTRPIPE) {
-        while ((err = snd_pcm_resume(handle)) == -EAGAIN)
-            sleep(1);   /* wait until the suspend flag is released */
-        if (err < 0) {
-            err = snd_pcm_prepare(handle);
-            if (err < 0)
-                printf("Can't recovery from suspend, prepare failed: %s\n", snd_strerror(err));
-        }
-        return 0;
-    }
-    return err;
-}
 
 AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     freq(0),
@@ -69,8 +46,6 @@ CommandCollection AudioWorker::buildCommandCollection() {
 
 void AudioWorker::notifyNewValue(const Note& newNote) {
     freq = computeFrequency(newNote);
-
-    //std::cout << freq << std::endl;
 }
 
 void AudioWorker::start() {
@@ -84,26 +59,30 @@ void AudioWorker::stop() {
 }
 
 void AudioWorker::writeLoop() {
-    signed short *ptr;
-    int err, cptr;
+    int err, framesToWrite;
 
     sineGenerator->fillFrame(freq, volume);
 
-    cptr = environment->platform.frame_size;
+    framesToWrite = environment->platform.frame_size;
 
-    while (cptr > 0) {
-        err = snd_pcm_writei(environment->platform.handle, environment->buffers.frame(), cptr);
-        if (err == -EAGAIN)
-            continue;
+    while (framesToWrite > 0) {
+        //TODO: handle the case when there is more than one channel
+        err = snd_pcm_writei(environment->platform.handle, environment->buffers.frame(), framesToWrite);
+        if (err < 0)
+            attemptStreamRecovery(err);
 
+        framesToWrite -= err;
+    }
+}
+
+void AudioWorker::attemptStreamRecovery(int err) {
+    //Other possible error codes than under-run not considered yet
+    if (err == -EPIPE) {    /* under-run */
+        err = snd_pcm_prepare(environment->platform.handle);
         if (err < 0) {
-            if (xrun_recovery(environment->platform.handle, err) < 0) {
-                printf("Write error: %s\n", snd_strerror(err));
-                exit(EXIT_FAILURE);
-            }
-            break;
+            std::stringstream s;
+            s << snd_strerror(err);
+            throw std::runtime_error(s.str());
         }
-        ptr += err * environment->params.channels;
-        cptr -= err;
     }
 }

@@ -38,6 +38,7 @@ private:
     static constexpr unsigned int VOLUME_STEP = (MAX_VOLUME - MIN_VOLUME) / 20;
 
     void writeLoop();
+    void attemptStreamRecovery(int err);
 
     std::unique_ptr<AudioEnvironment> environment;
 

@@ -10,7 +10,7 @@
 class GLContextManager {
 public:
     static GLContextManager &getInstance();
-    static void release();
+    void release();
 
     QOpenGLContext *createContext();
     QOpenGLContext *useNewOffscreenContext();
