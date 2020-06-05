@@ -2,7 +2,7 @@ set(ROOT_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(mainlib)
 
-set(TARGET_NAME alsaPlayground)
+set(TARGET_NAME aixa)
 
 add_executable(${TARGET_NAME} main.cpp)
 

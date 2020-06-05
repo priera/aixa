@@ -4,7 +4,7 @@ cmake_policy(SET CMP0072 NEW)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-project(alsaPlayground)
+project(aixa)
 
 enable_testing()
 
