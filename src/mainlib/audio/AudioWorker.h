@@ -4,6 +4,7 @@
 #include <atomic>
 #include <string>
 #include <memory>
+#include <chrono>
 
 #include <alsa/asoundlib.h>
 
@@ -39,9 +40,10 @@ private:
 
     void writeLoop();
     void attemptStreamRecovery(int err);
+    void waitForStream();
 
     std::unique_ptr<AudioEnvironment> environment;
-
+    std::chrono::microseconds sleepTime;
     std::atomic<unsigned int> volume;
     std::atomic<double> freq;
 

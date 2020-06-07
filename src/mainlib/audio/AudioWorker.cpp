@@ -8,9 +8,12 @@
 #include "Commands.h"
 #include "SineGenerator.h"
 
+#include <thread>
+
 AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     freq(0),
     environment(std::move(paramEnvironment)),
+    sleepTime(std::chrono::microseconds(environment->params.period_time)),
     volume(MAX_VOLUME/3),
     stopValue(false)
 {
@@ -59,20 +62,24 @@ void AudioWorker::stop() {
 }
 
 void AudioWorker::writeLoop() {
-    int err, framesToWrite;
-
     sineGenerator->fillFrame(freq, volume);
 
+    waitForStream();
+
+    int err, framesToWrite;
     framesToWrite = environment->platform.frame_size;
 
     while (framesToWrite > 0) {
-        //TODO: handle the case when there is more than one channel
         err = snd_pcm_writei(environment->platform.handle, environment->buffers.frame(), framesToWrite);
-        if (err < 0)
+
+        if (err < 0) {
             attemptStreamRecovery(err);
+            break;
+        }
 
         framesToWrite -= err;
     }
+
 }
 
 void AudioWorker::attemptStreamRecovery(int err) {
@@ -85,4 +92,22 @@ void AudioWorker::attemptStreamRecovery(int err) {
             throw std::runtime_error(s.str());
         }
     }
+}
+
+void AudioWorker::waitForStream() {
+    snd_pcm_sframes_t framesAvailable, frameSize;
+
+    frameSize = environment->platform.frame_size;
+    do {
+        framesAvailable = snd_pcm_avail_update(environment->platform.handle);
+
+        if (framesAvailable < frameSize) {
+            if (framesAvailable < 0) {
+                std::cout << "Error when checking stream state: " << snd_strerror(framesAvailable) << std::endl;
+                attemptStreamRecovery(framesAvailable);
+            } else {
+                std::this_thread::sleep_for(sleepTime);
+            }
+        }
+    } while (framesAvailable < frameSize);
 }
