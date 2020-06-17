@@ -6,7 +6,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include "Buffers.h"
+#include "InterleavedBuffer.h"
 
 struct AudioParameters {
     std::string device;   /* playback device */
@@ -35,14 +35,14 @@ struct AlsaEnvironment {
 };
 
 struct AudioEnvironment {
-    AudioEnvironment(const AudioParameters &parameters, AlsaEnvironment &environment, Buffers &buffers) :
-        params(parameters),
-        platform(environment),
-        buffers(buffers) {}
+    AudioEnvironment(const AudioParameters &parameters, AlsaEnvironment &environment, InterleavedBuffer &buffer) :
+            params(parameters),
+            platform(environment),
+            buffer(buffer) {}
 
     AudioParameters params;
     AlsaEnvironment platform;
-    Buffers buffers;
+    InterleavedBuffer buffer;
 };
 
 #endif //ALSAPLAYGROUND_AUDIODEFINITIONS_H

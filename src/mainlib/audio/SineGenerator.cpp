@@ -1,9 +1,9 @@
 #include "SineGenerator.h"
 
-#include "Buffers.h"
+#include "InterleavedBuffer.h"
 
-SineGenerator::SineGenerator(Buffers &buffers, int frameSize, double rate) :
-    buffers(&buffers),
+SineGenerator::SineGenerator(InterleavedBuffer &buffer, int frameSize, double rate) :
+    buffers(&buffer),
     frameSize(frameSize),
     rate(rate),
     phase(0) {}

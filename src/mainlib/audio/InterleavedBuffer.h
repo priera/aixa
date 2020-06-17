@@ -5,9 +5,9 @@
 
 #include <alsa/asoundlib.h>
 
-class Buffers {
+class InterleavedBuffer {
 public:
-    Buffers(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format);
+    InterleavedBuffer(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format);
 
     void startNewFrame();
     void storeNextSample(short sample);

@@ -1,8 +1,8 @@
-#include "Buffers.h"
+#include "InterleavedBuffer.h"
 
 #include <sstream>
 
-Buffers::Buffers(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format) :
+InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format) :
     channels(channels),
     frameSize(frame_size) {
 
@@ -47,19 +47,20 @@ Buffers::Buffers(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t fo
             throw std::runtime_error(s.str());
         }
 
+        //Steps array is actually not necessary, since all channels have the same format (so step is the same for all)
         steps[chn] = areas[chn].step / 8;
     }
 
     samples = static_cast<signed short*>(samplesBuffer);
 }
 
-void Buffers::startNewFrame() {
+void InterleavedBuffer::startNewFrame() {
     for (int chn = 0; chn < channels; chn++) {
         ptrToChanelSample[chn] = (((unsigned char *) areas[chn].addr) + (areas[chn].first / 8));
     }
 }
 
-void Buffers::storeNextSample(short sample) {
+void InterleavedBuffer::storeNextSample(short sample) {
     if (to_unsigned)
         sample ^= 1U << (format_bits - 1);
     for (int chn = 0; chn < channels; chn++) {

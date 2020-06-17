@@ -3,10 +3,10 @@
 #include <QJsonDocument>
 #include <QFile>
 
-#include "Buffers.h"
+#include "InterleavedBuffer.h"
 
 namespace audioUtils {
-    void dumpSignal(const Buffers &buffers, QJsonArray &out) {
+    void dumpSignal(const InterleavedBuffer &buffers, QJsonArray &out) {
         short sample;
         auto data = static_cast<unsigned char*>(buffers.frame());
 

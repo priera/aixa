@@ -36,9 +36,9 @@ AudioEnvironment *AudioBuilder::setupAudioEnvironment(const AudioParameters &par
 
     snd_pcm_dump(environment.handle, environment.output);
 
-    Buffers buffers(parameters.channels, environment.frame_size, parameters.format);
+    InterleavedBuffer buffer(parameters.channels, environment.frame_size, parameters.format);
 
-    auto ret = new AudioEnvironment(parameters, environment, buffers);
+    auto ret = new AudioEnvironment(parameters, environment, buffer);
     return ret;
 }
 

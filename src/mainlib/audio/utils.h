@@ -6,10 +6,10 @@
 
 #include <QJsonArray>
 
-class Buffers;
+class InterleavedBuffer;
 
 namespace audioUtils {
-    void dumpSignal(const Buffers &buffers, QJsonArray &out);
+    void dumpSignal(const InterleavedBuffer &buffers, QJsonArray &out);
     void writeSamplesTo(const QJsonArray &samples, const std::string &filename);
 }
 

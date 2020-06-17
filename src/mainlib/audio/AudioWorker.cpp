@@ -23,7 +23,7 @@ AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     myCommands.insert(std::make_pair(volumeUp->getName(), volumeUp));
     myCommands.insert(std::make_pair(volumeDown->getName(), volumeDown));
 
-    sineGenerator = std::make_unique<SineGenerator>(environment->buffers, environment->platform.frame_size, environment->params.rate);
+    sineGenerator = std::make_unique<SineGenerator>(environment->buffer, environment->platform.frame_size, environment->params.rate);
 }
 
 AudioWorker::~AudioWorker() {
@@ -70,7 +70,7 @@ void AudioWorker::writeLoop() {
     framesToWrite = environment->platform.frame_size;
 
     while (framesToWrite > 0) {
-        err = snd_pcm_writei(environment->platform.handle, environment->buffers.frame(), framesToWrite);
+        err = snd_pcm_writei(environment->platform.handle, environment->buffer.frame(), framesToWrite);
 
         if (err < 0) {
             attemptStreamRecovery(err);

@@ -3,18 +3,18 @@
 
 #include <math.h>
 
-class Buffers;
+class InterleavedBuffer;
 
 class SineGenerator {
 public:
-    SineGenerator(Buffers &buffers, int frameSize, double rate);
+    SineGenerator(InterleavedBuffer &buffer, int frameSize, double rate);
 
     void fillFrame(double freq, unsigned int scaleFactor);
 
 private:
     static constexpr double MAX_PHASE = 2 * M_PI;
 
-    Buffers * buffers;
+    InterleavedBuffer * buffers;
     int frameSize;
     double rate;
 
