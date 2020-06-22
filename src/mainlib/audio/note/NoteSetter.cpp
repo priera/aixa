@@ -35,7 +35,6 @@ void NoteSetter::workerLoop() {
         }
 
         mergeNewNote(n);
-        //auto diff = NotesBuffer::timeDiffInMs(pts, previousPts);
 
         previousPts = pts;
 
