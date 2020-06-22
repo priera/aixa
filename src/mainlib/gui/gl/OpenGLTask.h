@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_OPENGLTASK_H
-#define ALSAPLAYGROUND_OPENGLTASK_H
+#ifndef AIXA_OPENGLTASK_H
+#define AIXA_OPENGLTASK_H
 
 #include <QtCore/QThread>
 
@@ -43,4 +43,4 @@ private:
 };
 
 
-#endif //ALSAPLAYGROUND_OPENGLTASK_H
+#endif //AIXA_OPENGLTASK_H

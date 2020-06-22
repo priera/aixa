@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_RENDERABLEOBJECT_H
-#define ALSAPLAYGROUND_RENDERABLEOBJECT_H
+#ifndef AIXA_RENDERABLEOBJECT_H
+#define AIXA_RENDERABLEOBJECT_H
 
 #include <map>
 #include <mutex>
@@ -68,4 +68,4 @@ private:
     std::map<AnimationParam, Animation> animations;
 };
 
-#endif //ALSAPLAYGROUND_RENDERABLEOBJECT_H
+#endif //AIXA_RENDERABLEOBJECT_H

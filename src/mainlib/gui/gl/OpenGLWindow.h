@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_OPENGLWINDOW_H
-#define ALSAPLAYGROUND_OPENGLWINDOW_H
+#ifndef AIXA_OPENGLWINDOW_H
+#define AIXA_OPENGLWINDOW_H
 
 #include <memory>
 #include <atomic>
@@ -42,4 +42,4 @@ private:
 };
 
 
-#endif //ALSAPLAYGROUND_OPENGLWINDOW_H
+#endif //AIXA_OPENGLWINDOW_H

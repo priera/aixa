@@ -2,8 +2,8 @@
 // Created by pedro on 24/06/19.
 //
 
-#ifndef ALSAPLAYGROUND_ALSAEXAMPLES_H
-#define ALSAPLAYGROUND_ALSAEXAMPLES_H
+#ifndef AIXA_ALSAEXAMPLES_H
+#define AIXA_ALSAEXAMPLES_H
 
 #include <vector>
 #include <string>
@@ -25,4 +25,4 @@ private:
 };
 
 
-#endif //ALSAPLAYGROUND_ALSAEXAMPLES_H
+#endif //AIXA_ALSAEXAMPLES_H

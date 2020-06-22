@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_NOTE_H
-#define ALSAPLAYGROUND_NOTE_H
+#ifndef AIXA_NOTE_H
+#define AIXA_NOTE_H
 
 #include "mainlib/buffers/CircularBuffer.h"
 
@@ -38,4 +38,4 @@ char getNoteChar(const Note &n);
 using NotesBuffer = CircularBuffer<Note>;
 using NotesListener = Observer<Note>;
 
-#endif //ALSAPLAYGROUND_NOTE_H
+#endif //AIXA_NOTE_H

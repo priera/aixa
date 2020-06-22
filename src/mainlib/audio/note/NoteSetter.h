@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_NOTESETTER_H
-#define ALSAPLAYGROUND_NOTESETTER_H
+#ifndef AIXA_NOTESETTER_H
+#define AIXA_NOTESETTER_H
 
 #include <memory>
 #include <thread>
@@ -40,4 +40,4 @@ private:
     Note lastNote;
 };
 
-#endif //ALSAPLAYGROUND_NOTESETTER_H
+#endif //AIXA_NOTESETTER_H

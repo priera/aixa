@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_COMMANDS_H
-#define ALSAPLAYGROUND_COMMANDS_H
+#ifndef AIXA_COMMANDS_H
+#define AIXA_COMMANDS_H
 
 #include "mainlib/Command.h"
 
@@ -28,4 +28,4 @@ private:
     AudioWorker *worker;
 };
 
-#endif //ALSAPLAYGROUND_COMMANDS_H
+#endif //AIXA_COMMANDS_H

@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_AUDIOBUILDER_H
-#define ALSAPLAYGROUND_AUDIOBUILDER_H
+#ifndef AIXA_AUDIOBUILDER_H
+#define AIXA_AUDIOBUILDER_H
 
 #include "AudioDefinitions.h"
 
@@ -18,4 +18,4 @@ private:
                     const AudioParameters &parameters);
 };
 
-#endif //ALSAPLAYGROUND_AUDIOBUILDER_H
+#endif //AIXA_AUDIOBUILDER_H

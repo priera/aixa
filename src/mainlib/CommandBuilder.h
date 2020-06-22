@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_COMMANDBUILDER_H
-#define ALSAPLAYGROUND_COMMANDBUILDER_H
+#ifndef AIXA_COMMANDBUILDER_H
+#define AIXA_COMMANDBUILDER_H
 
 #include "Command.h"
 
@@ -10,4 +10,4 @@ public:
     virtual CommandCollection buildCommandCollection() = 0;
 };
 
-#endif //ALSAPLAYGROUND_COMMANDBUILDER_H
+#endif //AIXA_COMMANDBUILDER_H

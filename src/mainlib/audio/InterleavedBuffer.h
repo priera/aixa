@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_BUFFERS_H
-#define ALSAPLAYGROUND_BUFFERS_H
+#ifndef AIXA_BUFFERS_H
+#define AIXA_BUFFERS_H
 
 #include <vector>
 
@@ -32,4 +32,4 @@ private:
 
 };
 
-#endif //ALSAPLAYGROUND_BUFFERS_H
+#endif //AIXA_BUFFERS_H

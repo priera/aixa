@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_CIRCULARBUFFER_H
-#define ALSAPLAYGROUND_CIRCULARBUFFER_H
+#ifndef AIXA_CIRCULARBUFFER_H
+#define AIXA_CIRCULARBUFFER_H
 
 #include <atomic>
 #include <vector>
@@ -84,4 +84,4 @@ private:
 };
 
 
-#endif //ALSAPLAYGROUND_CIRCULARBUFFER_H
+#endif //AIXA_CIRCULARBUFFER_H

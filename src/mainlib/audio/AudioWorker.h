@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_AUDIOWORKER_H
-#define ALSAPLAYGROUND_AUDIOWORKER_H
+#ifndef AIXA_AUDIOWORKER_H
+#define AIXA_AUDIOWORKER_H
 
 #include <atomic>
 #include <string>
@@ -55,4 +55,4 @@ private:
 };
 
 
-#endif //ALSAPLAYGROUND_AUDIOWORKER_H
+#endif //AIXA_AUDIOWORKER_H

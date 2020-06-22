@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_AUDIODEFINITIONS_H
-#define ALSAPLAYGROUND_AUDIODEFINITIONS_H
+#ifndef AIXA_AUDIODEFINITIONS_H
+#define AIXA_AUDIODEFINITIONS_H
 
 #include <string>
 #include <vector>
@@ -45,4 +45,4 @@ struct AudioEnvironment {
     InterleavedBuffer buffer;
 };
 
-#endif //ALSAPLAYGROUND_AUDIODEFINITIONS_H
+#endif //AIXA_AUDIODEFINITIONS_H

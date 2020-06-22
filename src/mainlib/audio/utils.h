@@ -1,6 +1,6 @@
 
-#ifndef ALSAPLAYGROUND_UTILS_H
-#define ALSAPLAYGROUND_UTILS_H
+#ifndef AIXA_UTILS_H
+#define AIXA_UTILS_H
 
 #include <string>
 
@@ -13,4 +13,4 @@ namespace audioUtils {
     void writeSamplesTo(const QJsonArray &samples, const std::string &filename);
 }
 
-#endif //ALSAPLAYGROUND_UTILS_H
+#endif //AIXA_UTILS_H
