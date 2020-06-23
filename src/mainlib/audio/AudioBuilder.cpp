@@ -1,9 +1,10 @@
 #include "AudioBuilder.h"
+#include "InterleavedBufferFactory.h"
 
 #include <iostream>
 #include <sstream>
 
-AudioEnvironment *AudioBuilder::setupAudioEnvironment(const AudioParameters &parameters) {
+AudioEnvironment *AudioBuilder::setupAudioEnvironment(AudioParameters &parameters) {
     AlsaEnvironment environment;
     snd_pcm_hw_params_alloca(&environment.hwparams);
     snd_pcm_sw_params_alloca(&environment.swparams);
@@ -36,15 +37,16 @@ AudioEnvironment *AudioBuilder::setupAudioEnvironment(const AudioParameters &par
 
     snd_pcm_dump(environment.handle, environment.output);
 
-    InterleavedBuffer buffer(parameters.channels, environment.frame_size, parameters.format);
+    auto bufferFactory = InterleavedBufferFactory(parameters.channels, environment.frame_size, parameters.format);
+    auto samplesRing = std::make_shared<SamplesRing>(10, bufferFactory.generator());
 
-    auto ret = new AudioEnvironment(parameters, environment, buffer);
+    auto ret = new AudioEnvironment(parameters, environment, samplesRing);
     return ret;
 }
 
 int AudioBuilder::setHwParams(AlsaEnvironment &environment,
                               snd_pcm_access_t access,
-                              const AudioParameters &parameters) {
+                              AudioParameters &parameters) {
 
     snd_pcm_t *handle = environment.handle;
     snd_pcm_hw_params_t * params = environment.hwparams;

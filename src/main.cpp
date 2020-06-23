@@ -36,10 +36,10 @@ int main(int argc, char *argv[]) {
   /*  AlsaExamples examples(argc, argv);
     examples.run(); */
 
-    WavReader wavReader("/home/pedro/alsaTests/amics.wav");
-    wavReader.run();
+    /*WavReader wavReader("/home/pedro/alsaTests/amics.wav");
+    wavReader.run(); */
 
-    /*QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     OpenGLWindow win;
     float w = 1920 * 3.0 / 4;
@@ -83,6 +83,6 @@ int main(int argc, char *argv[]) {
 
     GLContextManager::getInstance().release();
 
-    return ret; */
+    return ret;
 }
 

@@ -1,9 +1,11 @@
 #include "SineGenerator.h"
 
+#include <utility>
+
 #include "InterleavedBuffer.h"
 
-SineGenerator::SineGenerator(InterleavedBuffer &buffer, int frameSize, double rate) :
-    buffers(&buffer),
+SineGenerator::SineGenerator(std::shared_ptr<SamplesRing> samplesRing, int frameSize, double rate) :
+    samplesRing(std::move(samplesRing)),
     frameSize(frameSize),
     rate(rate),
     phase(0) {}
@@ -11,14 +13,16 @@ SineGenerator::SineGenerator(InterleavedBuffer &buffer, int frameSize, double ra
 void SineGenerator::fillFrame(double freq, unsigned int scaleFactor) {
     double step = MAX_PHASE * freq / rate;
 
-    buffers->startNewFrame();
+    auto buffer = samplesRing->nextWriteBuffer();
+
+    buffer->startNewFrame();
 
     int n = frameSize;
     while (n-- > 0) {
         int res;
 
         res = sin(phase) * scaleFactor;
-        buffers->storeNextSample(res);
+        buffer->storeNextSample(res);
 
         phase += step;
         if (phase >= MAX_PHASE) {

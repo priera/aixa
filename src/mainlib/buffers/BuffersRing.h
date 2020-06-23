@@ -15,6 +15,11 @@ public:
     public:
         using Done = std::function<void()>;
 
+        BuffersWatcher(std::shared_ptr<T> buff, Done done) :
+                buff(std::move(buff)),
+                done(std::move(done))
+        { }
+
         BuffersWatcher(BuffersWatcher &&other) noexcept {
             buff = other.buff;
             other.buff = nullptr;
@@ -29,16 +34,10 @@ public:
 
         T& operator*() const noexcept { return *buff; }
 
-        T* operator->() const noexcept { return buff; }
-
-    protected:
-        BuffersWatcher(T &buff, Done done) :
-            buff(&buff),
-            done(std::move(done))
-        { }
+        T* operator->() const noexcept { return buff.get(); }
 
     private:
-        T *buff;
+        std::shared_ptr<T> buff;
         Done done;
     };
 
@@ -59,8 +58,8 @@ public:
         if (readPos == writePos) {
             readHalt();
         }
-        auto &elem = elems[readPos].get();
-        BuffersWatcher ret(elem, fDoneReading);
+
+        BuffersWatcher ret(elems[readPos], fDoneReading);
 
         return std::move(ret);
     }
@@ -70,8 +69,7 @@ public:
             writeHalt();
         }
 
-        auto &elem = elems[writePos].get();
-        BuffersWatcher ret(elem, fDoneWriting);
+        BuffersWatcher ret(elems[writePos], fDoneWriting);
 
         return std::move(ret);
     }

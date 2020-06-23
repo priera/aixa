@@ -2,9 +2,11 @@
 #define AIXA_AUDIODEFINITIONS_H
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <alsa/asoundlib.h>
+#include <mainlib/buffers/BuffersRing.h>
 
 #include "InterleavedBuffer.h"
 
@@ -34,15 +36,17 @@ struct AlsaEnvironment {
     snd_pcm_sframes_t frame_size;
 };
 
+using SamplesRing = BuffersRing<InterleavedBuffer>;
+
 struct AudioEnvironment {
-    AudioEnvironment(const AudioParameters &parameters, AlsaEnvironment &environment, InterleavedBuffer &buffer) :
-            params(parameters),
+    AudioEnvironment(AudioParameters parameters, AlsaEnvironment &environment, std::shared_ptr<SamplesRing> ring) :
+            params(std::move(parameters)),
             platform(environment),
-            buffer(buffer) {}
+            samplesRing(std::move(ring)) {}
 
     AudioParameters params;
     AlsaEnvironment platform;
-    InterleavedBuffer buffer;
+    std::shared_ptr<SamplesRing> samplesRing;
 };
 
 #endif //AIXA_AUDIODEFINITIONS_H
