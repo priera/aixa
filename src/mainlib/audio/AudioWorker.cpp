@@ -66,20 +66,22 @@ void AudioWorker::writeLoop() {
 
     waitForStream();
 
-    int err, framesToWrite;
-    framesToWrite = environment->platform.frame_size;
+    {
+        int err, framesToWrite;
+        framesToWrite = environment->platform.frame_size;
 
-    auto buffer = environment->samplesRing->nextReadBuffer();
+        auto buffer = environment->samplesRing->nextReadBuffer();
 
-    while (framesToWrite > 0) {
-        err = snd_pcm_writei(environment->platform.handle, buffer->frame(), framesToWrite);
+        while (framesToWrite > 0) {
+            err = snd_pcm_writei(environment->platform.handle, buffer->frame(), framesToWrite);
 
-        if (err < 0) {
-            attemptStreamRecovery(err);
-            break;
+            if (err < 0) {
+                attemptStreamRecovery(err);
+                break;
+            }
+
+            framesToWrite -= err;
         }
-
-        framesToWrite -= err;
     }
 
 }

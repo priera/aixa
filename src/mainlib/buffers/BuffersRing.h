@@ -65,10 +65,6 @@ public:
     }
 
     BuffersWatcher nextWriteBuffer() {
-        if (state == State::RUNNING && writePos == readPos) {
-            writeHalt();
-        }
-
         BuffersWatcher ret(elems[writePos], fDoneWriting);
 
         return std::move(ret);
@@ -92,6 +88,7 @@ protected:
 
     void bufferConsumed() {
         readPos = (readPos + 1) % count;
+
         {
             std::lock_guard<std::mutex> lock(consumedMutex);
 
@@ -102,7 +99,11 @@ protected:
     void bufferWritten() {
         if (state == State::READY) state = State::RUNNING;
 
-        writePos = (writePos + 1) % count;
+        auto nextWritePos = (writePos + 1) % count;
+        if (nextWritePos == readPos)
+            writeHalt();
+
+        writePos = nextWritePos;
 
         {
             std::lock_guard<std::mutex> lock(consumedMutex);
