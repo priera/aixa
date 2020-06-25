@@ -12,6 +12,7 @@ public:
     virtual std::string getName() const = 0;
 };
 
+//FIXME: memory leaks!!!!
 using CommandCollection = std::unordered_map<std::string, Command *>;
 
 #endif //AIXA_ICOMMAND_H

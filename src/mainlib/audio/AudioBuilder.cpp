@@ -40,8 +40,7 @@ AudioEnvironment *AudioBuilder::setupAudioEnvironment(AudioParameters &parameter
     auto bufferFactory = InterleavedBufferFactory(parameters.channels, environment.frame_size, parameters.format);
     auto samplesRing = std::make_shared<SamplesRing>(10, bufferFactory.generator());
 
-    auto ret = new AudioEnvironment(parameters, environment, samplesRing);
-    return ret;
+    return new AudioEnvironment(parameters, environment, samplesRing);;
 }
 
 int AudioBuilder::setHwParams(AlsaEnvironment &environment,
