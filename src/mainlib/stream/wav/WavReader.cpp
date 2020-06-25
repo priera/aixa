@@ -1,6 +1,6 @@
-#include <mainlib/stream/wavparts/ListProcessor.h>
+#include <mainlib/stream/wav/wavparts/ListProcessor.h>
 #include "WavReader.h"
-#include "mainlib/stream/wavparts/FormatExtractor.h"
+#include "mainlib/stream/wav/wavparts/FormatExtractor.h"
 
 WavReader::WavReader(const std::string & path) : f(path) {
     bool ok = probe(fileSize);
