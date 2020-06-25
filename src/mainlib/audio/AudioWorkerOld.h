@@ -16,10 +16,10 @@
 
 class SineGenerator;
 
-class AudioWorker : public CommandBuilder, public NotesListener {
+class AudioWorkerOld : public CommandBuilder, public NotesListener {
 public:
-    AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment);
-    virtual ~AudioWorker();
+    AudioWorkerOld(std::unique_ptr<AudioEnvironment> &paramEnvironment);
+    virtual ~AudioWorkerOld();
 
     CommandCollection buildCommandCollection() override;
 

@@ -3,29 +3,29 @@
 
 #include "mainlib/Command.h"
 
-#include "AudioWorker.h"
+#include "AudioWorkerOld.h"
 
 class VolumeUp : public Command {
 public:
-    VolumeUp(AudioWorker & audioWorker) : Command(), worker(&audioWorker) {}
+    VolumeUp(AudioWorkerOld & audioWorker) : Command(), worker(&audioWorker) {}
 
     void execute() override;
     std::string getName() const override;
 
 private:
-    AudioWorker *worker;
+    AudioWorkerOld *worker;
 };
 
 
 class VolumeDown : public Command {
 public:
-    VolumeDown(AudioWorker & audioWorker) : Command(), worker(&audioWorker) {}
+    VolumeDown(AudioWorkerOld & audioWorker) : Command(), worker(&audioWorker) {}
 
     void execute() override;
     std::string getName() const override;
 
 private:
-    AudioWorker *worker;
+    AudioWorkerOld *worker;
 };
 
 #endif //AIXA_COMMANDS_H

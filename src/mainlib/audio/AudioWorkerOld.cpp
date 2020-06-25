@@ -1,4 +1,4 @@
-#include "AudioWorker.h"
+#include "AudioWorkerOld.h"
 
 #include <sstream>
 #include <exception>
@@ -10,7 +10,7 @@
 
 #include <thread>
 
-AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
+AudioWorkerOld::AudioWorkerOld(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     freq(0),
     environment(std::move(paramEnvironment)),
     sleepTime(std::chrono::microseconds(environment->params.period_time)),
@@ -26,15 +26,15 @@ AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     sineGenerator = std::make_unique<SineGenerator>(environment->samplesRing, environment->platform.frame_size, environment->params.rate);
 }
 
-AudioWorker::~AudioWorker() {
+AudioWorkerOld::~AudioWorkerOld() {
 }
 
-void AudioWorker::increaseVolume() {
+void AudioWorkerOld::increaseVolume() {
     volume += VOLUME_STEP;
     if (volume > MAX_VOLUME) volume = MAX_VOLUME;
 }
 
-void AudioWorker::decreaseVolume() {
+void AudioWorkerOld::decreaseVolume() {
     unsigned int newVolume = volume - VOLUME_STEP;
 
     if (newVolume >= MAX_VOLUME) //overflow condition
@@ -43,25 +43,25 @@ void AudioWorker::decreaseVolume() {
         volume = newVolume;
 }
 
-CommandCollection AudioWorker::buildCommandCollection() {
+CommandCollection AudioWorkerOld::buildCommandCollection() {
     return myCommands;
 }
 
-void AudioWorker::notifyNewValue(const Note& newNote) {
+void AudioWorkerOld::notifyNewValue(const Note& newNote) {
     freq = computeFrequency(newNote);
 }
 
-void AudioWorker::start() {
+void AudioWorkerOld::start() {
     while (!stopValue) {
         writeLoop();
     }
 }
 
-void AudioWorker::stop() {
+void AudioWorkerOld::stop() {
     stopValue = true;
 }
 
-void AudioWorker::writeLoop() {
+void AudioWorkerOld::writeLoop() {
     sineGenerator->fillFrame(freq, volume);
 
     waitForStream();
@@ -86,7 +86,7 @@ void AudioWorker::writeLoop() {
 
 }
 
-void AudioWorker::attemptStreamRecovery(int err) {
+void AudioWorkerOld::attemptStreamRecovery(int err) {
     //Other possible error codes than under-run not considered yet
     if (err == -EPIPE) {    /* under-run */
         err = snd_pcm_prepare(environment->platform.handle);
@@ -98,7 +98,7 @@ void AudioWorker::attemptStreamRecovery(int err) {
     }
 }
 
-void AudioWorker::waitForStream() {
+void AudioWorkerOld::waitForStream() {
     snd_pcm_sframes_t framesAvailable, frameSize;
 
     frameSize = environment->platform.frame_size;

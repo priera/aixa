@@ -16,14 +16,14 @@
 
 #include "mainlib/gui/gl/GLContextManager.h"
 
-#include "mainlib/audio/AudioWorker.h"
+#include "mainlib/audio/AudioWorkerOld.h"
 #include "mainlib/audio/AudioBuilder.h"
 
 #include "mainlib/audio/note/NoteSetter.h"
 
 using namespace std::chrono_literals;
 
-std::thread * buildAudioThread(AudioWorker & worker)
+std::thread * buildAudioThread(AudioWorkerOld & worker)
 {
     auto f = [&worker](){
         worker.start();
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
     auto environment = std::unique_ptr<AudioEnvironment>(environment_p);
 
-    AudioWorker worker(environment);
+    AudioWorkerOld worker(environment);
     auto commandCollection = worker.buildCommandCollection();
 
     noteSetter.addObserver(&worker);
