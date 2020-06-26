@@ -12,7 +12,7 @@ public:
 
     void seekToBeginning();
 
-    void nextChunkInfo(std::string &idTag, unsigned int &word);
+    void nextChunkInfo(std::string &idTag, unsigned int &chunkSize);
     void nextIdTag(std::string &str);
     void nextWord(unsigned int &w);
     void nextTwoBytes(unsigned int &hw);

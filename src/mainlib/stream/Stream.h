@@ -2,6 +2,7 @@
 #define AIXA_SRC_MAINLIB_STREAM_STREAM_H
 
 class Stream {
+public:
     virtual ~Stream() = default;
 
     virtual void read() = 0;

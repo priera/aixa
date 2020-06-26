@@ -6,10 +6,14 @@
 
 class WavStreamFactory : public StreamFactory {
 public:
-    WavStreamFactory(const std::string &streamPath);
+    WavStreamFactory(std::string streamPath) : filePath(std::move(streamPath)) {}
+
+    ~WavStreamFactory() override = default;
 
     std::shared_ptr<Stream> probe() override;
 
+private:
+    std::string filePath;
 };
 
 

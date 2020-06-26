@@ -60,9 +60,9 @@ void FileReader::readString(std::string &str, unsigned int size) {
     check();
 }
 
-void FileReader::nextChunkInfo(std::string &idTag, unsigned int &word) {
+void FileReader::nextChunkInfo(std::string &idTag, unsigned int &chunkSize) {
     nextIdTagNoCheck(idTag);
-    nextWordNoCheck(word);
+    nextWordNoCheck(chunkSize);
 
     check();
 }
