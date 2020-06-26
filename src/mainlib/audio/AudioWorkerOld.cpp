@@ -13,7 +13,8 @@
 AudioWorkerOld::AudioWorkerOld(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
     freq(0),
     environment(std::move(paramEnvironment)),
-    sleepTime(std::chrono::microseconds(environment->params.period_time)),
+    //sleepTime(std::chrono::microseconds(environment->params.period_time)),
+    sleepTime(std::chrono::microseconds(100000)),
     volume(MAX_VOLUME/3),
     stopValue(false)
 {

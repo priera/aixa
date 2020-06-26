@@ -1,55 +1,85 @@
-#include "AudioBuilder.h"
-#include "InterleavedBufferFactory.h"
+#include "AudioWorkerFactory.h"
 
 #include <iostream>
 #include <sstream>
 
-AudioEnvironment *AudioBuilder::setupAudioEnvironment(AudioParameters &parameters) {
-    AlsaEnvironment environment;
-    snd_pcm_hw_params_alloca(&environment.hwparams);
-    snd_pcm_sw_params_alloca(&environment.swparams);
+#include <mainlib/stream/StreamTypes.h>
 
-    std::cout << "Playback device is " << parameters.device << "\n";
-    std::cout << "Stream parameters are " << parameters.rate << "Hz, " << snd_pcm_format_name(parameters.format) << ", " << parameters.channels << " channels\n";
-    std::cout << "Sine wave rate is " << parameters.freq << "Hz\n";
+#include "InterleavedBufferFactory.h"
+
+std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std::string &streamPath) {
+    auto stream = tryToGetStream(streamPath);
+
+    if (!stream) {
+        return std::unique_ptr<AudioWorker>(nullptr);
+    }
+
+    auto streamParams = stream->getParameters();
+
+    //Current environment is only ALSA. Move this logic to a separate factory if this changes
+    auto environment = setupAudioEnvironment(streamParams);
+
+    return std::unique_ptr<AudioWorker>();
+}
+
+std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &streamPath) {
+    auto ret = std::shared_ptr<Stream>(nullptr);
+
+    try {
+        ret = StreamTypes::getMatchingStreamFactory(streamPath)->probe();
+    } catch (std::exception &e){
+        std::cerr << "Could not obtain stream due to error: " << e.what() << std::endl;
+    }
+
+    return ret;
+}
+
+AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters &streamParams) {
+    AlsaEnvironment alsaEnv;
+    alsaEnv.params = AlsaParameters{"default", 500000, 100000};
+
+    snd_pcm_hw_params_alloca(&alsaEnv.hwparams);
+    snd_pcm_sw_params_alloca(&alsaEnv.swparams);
+
+    std::cout << "Playback device is " << alsaEnv.params.device << "\n";
+    std::cout << "Stream streamParams are " << streamParams.rate << "Hz, " << snd_pcm_format_name(streamParams.format) << ", " << streamParams.channels << " channels\n";
 
     int err;
     std::stringstream s;
 
-    if ((err = snd_output_stdio_attach(&environment.output, stdout, 0)) < 0) {
+    if ((err = snd_output_stdio_attach(&alsaEnv.output, stdout, 0)) < 0) {
         s << "Output failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
 
-    if ((err = snd_pcm_open(&environment.handle, parameters.device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    if ((err = snd_pcm_open(&alsaEnv.handle, alsaEnv.params.device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
         s << "Playback open error: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
 
-    if ((err = setHwParams(environment, SND_PCM_ACCESS_RW_INTERLEAVED, parameters)) < 0) {
+    if ((err = setHwParams(alsaEnv, SND_PCM_ACCESS_RW_INTERLEAVED, streamParams)) < 0) {
         s << "Setting of hwparams failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
-    if ((err = setSwParams(environment, parameters)) < 0) {
+    if ((err = setSwParams(alsaEnv, streamParams)) < 0) {
         s << "Setting of swparams failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
 
-    snd_pcm_dump(environment.handle, environment.output);
+    snd_pcm_dump(alsaEnv.handle, alsaEnv.output);
 
-    auto bufferFactory = InterleavedBufferFactory(parameters.channels, environment.frame_size, parameters.format);
+    auto bufferFactory = InterleavedBufferFactory(streamParams.channels, alsaEnv.frame_size, streamParams.format);
     auto samplesRing = std::make_shared<SamplesRing>(10, bufferFactory.generator());
 
-    //return new AudioEnvironment(parameters, environment, samplesRing);
-    return nullptr;
+    return AudioEnvironment(streamParams, alsaEnv, samplesRing);
 }
 
-int AudioBuilder::setHwParams(AlsaEnvironment &environment,
+int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
                               snd_pcm_access_t access,
-                              AudioParameters &parameters) {
+                              const AudioStreamParameters &parameters) {
 
-    snd_pcm_t *handle = environment.handle;
-    snd_pcm_hw_params_t * params = environment.hwparams;
+    snd_pcm_t *handle = env.handle;
+    snd_pcm_hw_params_t * params = env.hwparams;
 
     unsigned int rrate;
     snd_pcm_uframes_t size;
@@ -104,9 +134,9 @@ int AudioBuilder::setHwParams(AlsaEnvironment &environment,
     }
 
     /* set the buffer time */
-    err = snd_pcm_hw_params_set_buffer_time_near(handle, params, &parameters.buffer_time, &dir);
+    err = snd_pcm_hw_params_set_buffer_time_near(handle, params, &env.params.buffer_time, &dir);
     if (err < 0) {
-        printf("Unable to set buffer time %u for playback: %s\n", parameters.buffer_time, snd_strerror(err));
+        printf("Unable to set buffer time %u for playback: %s\n", env.params.buffer_time, snd_strerror(err));
         return err;
     }
 
@@ -115,12 +145,12 @@ int AudioBuilder::setHwParams(AlsaEnvironment &environment,
         printf("Unable to get buffer size for playback: %s\n", snd_strerror(err));
         return err;
     }
-    environment.buffer_size = size;
+    env.buffer_size = size;
 
     /* set the period time */
-    err = snd_pcm_hw_params_set_period_time_near(handle, params, &parameters.period_time, &dir);
+    err = snd_pcm_hw_params_set_period_time_near(handle, params, &env.params.period_time, &dir);
     if (err < 0) {
-        printf("Unable to set period time %u for playback: %s\n", parameters.period_time, snd_strerror(err));
+        printf("Unable to set period time %u for playback: %s\n", env.params.period_time, snd_strerror(err));
         return err;
     }
 
@@ -130,7 +160,7 @@ int AudioBuilder::setHwParams(AlsaEnvironment &environment,
         return err;
     }
 
-    environment.frame_size = size;
+    env.frame_size = size;
 
     /* write the parameters to device */
     err = snd_pcm_hw_params(handle, params);
@@ -141,8 +171,8 @@ int AudioBuilder::setHwParams(AlsaEnvironment &environment,
     return 0;
 }
 
-int AudioBuilder::setSwParams(AlsaEnvironment &environment,
-                              const AudioParameters &parameters) {
+int AudioWorkerFactory::setSwParams(AlsaEnvironment &environment,
+                              const AudioStreamParameters &parameters) {
 
     snd_pcm_t *handle = environment.handle;
     snd_pcm_sw_params_t *swparams = environment.swparams;

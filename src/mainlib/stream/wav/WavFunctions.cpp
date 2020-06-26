@@ -8,9 +8,7 @@ namespace WavFunctions {
         std::string riffTag, waveTag;
 
         reader.nextIdTag(riffTag);
-
         reader.nextWord(fileSize);
-
         reader.nextIdTag(waveTag);
 
         if (riffTag != "RIFF" || waveTag != "WAVE") {

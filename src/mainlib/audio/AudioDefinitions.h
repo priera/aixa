@@ -10,6 +10,14 @@
 
 #include "InterleavedBuffer.h"
 
+struct AudioStreamParameters {
+    snd_pcm_format_t format;    /* sample format */
+    unsigned int rate;          /* stream rate */
+    unsigned int channels;      /* count of channels */
+    unsigned int bps;           /* bytes per second */
+    unsigned int bitsSample;    /* bits per sample */
+};
+
 struct AudioParameters {
     std::string device;   /* playback device */
     snd_pcm_format_t format;    /* sample format */
@@ -24,8 +32,16 @@ inline AudioParameters getDefaultAudioParameters() {
     return { "default", SND_PCM_FORMAT_S16, 44100, 1, 500000, 100000, 440 };
 }
 
+struct AlsaParameters {
+    std::string device;         /* playback device */
+    unsigned int buffer_time;   /* ring buffer length in us */
+    unsigned int period_time;   /* period time in us */
+};
+
 struct AlsaEnvironment {
     //TODO: fix memory leaks
+
+    AlsaParameters params;
 
     snd_pcm_t *handle;
     snd_pcm_hw_params_t *hwparams;
@@ -39,12 +55,12 @@ struct AlsaEnvironment {
 using SamplesRing = BuffersRing<InterleavedBuffer>;
 
 struct AudioEnvironment {
-    AudioEnvironment(AudioParameters parameters, AlsaEnvironment &environment, std::shared_ptr<SamplesRing> ring) :
-            params(std::move(parameters)),
+    AudioEnvironment(AudioStreamParameters parameters, AlsaEnvironment &environment, std::shared_ptr<SamplesRing> ring) :
+            params(parameters),
             platform(environment),
             samplesRing(std::move(ring)) {}
 
-    AudioParameters params;
+    AudioStreamParameters params;
     AlsaEnvironment platform;
     std::shared_ptr<SamplesRing> samplesRing;
 };

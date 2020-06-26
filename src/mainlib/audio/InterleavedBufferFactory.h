@@ -7,7 +7,7 @@
 
 class InterleavedBufferFactory {
 public:
-    InterleavedBufferFactory(int channels, snd_pcm_sframes_t frameSize, snd_pcm_format_t format) :
+    InterleavedBufferFactory(unsigned int channels, snd_pcm_sframes_t frameSize, snd_pcm_format_t format) :
             channels(channels), frameSize(frameSize), format(format) { }
 
     virtual ~InterleavedBufferFactory() = default;
@@ -15,7 +15,7 @@ public:
     BuffersRing<InterleavedBuffer>::ElemGenerator generator();
 
 private:
-    int channels;
+    unsigned int channels;
     snd_pcm_sframes_t frameSize;
     snd_pcm_format_t format;
 };

@@ -12,12 +12,16 @@ class WavStream : public Stream {
 public:
     WavStream(const std::string &filePath, WavFormat format) :
             f(filePath),
-            format(format) {}
+            format(format) {
+        if (this->format.bitsPerSample != 16) {
+            throw std::runtime_error("Not allowed WAV stream format");
+        }
+    }
 
     ~WavStream() override = default;
 
+    AudioStreamParameters getParameters() const override;
     void read() override;
-
     bool finished() override;
 
 private:

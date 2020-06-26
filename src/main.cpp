@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
         noteSetter.addObserver(openGLTask.getCentralNoteManager());
     });
 
-    AudioBuilder audioBuilder;
+    /*AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
     auto environment = std::unique_ptr<AudioEnvironment>(environment_p);
@@ -70,16 +70,16 @@ int main(int argc, char *argv[]) {
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
 
-    auto audioThread = buildAudioThread(worker);
+    auto audioThread = buildAudioThread(worker); */
 
     openGLTask.start();
 
     int ret = app.exec();
 
-    worker.stop();
+    //worker.stop();
 
     openGLTask.quit();
-    audioThread->join();
+    //audioThread->join();
 
     GLContextManager::getInstance().release();
 
