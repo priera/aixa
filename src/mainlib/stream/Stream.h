@@ -8,7 +8,7 @@ public:
     virtual ~Stream() = default;
 
     virtual AudioStreamParameters getParameters() const = 0;
-    virtual void read() = 0;
+    virtual short nextSample() = 0;
     virtual bool finished() = 0;
 };
 

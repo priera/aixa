@@ -18,7 +18,6 @@ private:
     AudioEnvironment setupAudioEnvironment(AudioStreamParameters &streamParams);
 
     int setHwParams(AlsaEnvironment &env,
-                    snd_pcm_access_t access,
                     const AudioStreamParameters &parameters);
 
     int setSwParams(AlsaEnvironment &environment,

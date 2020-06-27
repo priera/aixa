@@ -7,19 +7,23 @@
 
 class InterleavedBuffer {
 public:
-    InterleavedBuffer(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format);
+    InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size, snd_pcm_format_t format);
+
+    virtual ~InterleavedBuffer();
 
     void startNewFrame();
     void storeNextSample(short sample);
 
-    void *frame() const { return samples; }
-    size_t dataSize() const { return frameSize * channels * bps; }
+    void *frame() const { return m_frame; }
+    size_t dataSize() const { return m_frameSize * channels * bps; }
+    size_t samplesCount() const { return m_frameSize * channels; };
 
 private:
     int channels;
-    snd_pcm_sframes_t frameSize;
+    size_t currentChannel;
+    snd_pcm_uframes_t m_frameSize;
 
-    signed short *samples; //sizeof(short) == 2
+    signed short *m_frame; //sizeof(short) == 2
     std::vector<unsigned char *> ptrToChanelSample;
     snd_pcm_channel_area_t *areas;
     std::vector<int> steps;

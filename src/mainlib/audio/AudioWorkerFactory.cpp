@@ -15,11 +15,12 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     }
 
     auto streamParams = stream->getParameters();
-
-    //Current environment is only ALSA. Move this logic to a separate factory if this changes
     auto environment = setupAudioEnvironment(streamParams);
 
-    return std::unique_ptr<AudioWorker>();
+    auto streamReader = std::make_unique<StreamReader>(stream, environment.samplesRing);
+    auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing);
+
+    return std::make_unique<AudioWorker>(environment, std::move(streamReader), std::move(publisher));
 }
 
 std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &streamPath) {
@@ -57,7 +58,7 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
         throw std::runtime_error(s.str());
     }
 
-    if ((err = setHwParams(alsaEnv, SND_PCM_ACCESS_RW_INTERLEAVED, streamParams)) < 0) {
+    if ((err = setHwParams(alsaEnv, streamParams)) < 0) {
         s << "Setting of hwparams failed: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
@@ -68,14 +69,16 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
 
     snd_pcm_dump(alsaEnv.handle, alsaEnv.output);
 
+    /*Notice the asymmetry: internally ALSA stores five buffers (500000 us of audio)
+     * while buffersRing stores one second */
+    const auto BUFFERS_FOR_ONE_SECOND = 1000000 / alsaEnv.params.period_time;
     auto bufferFactory = InterleavedBufferFactory(streamParams.channels, alsaEnv.frame_size, streamParams.format);
-    auto samplesRing = std::make_shared<SamplesRing>(10, bufferFactory.generator());
+    auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferFactory.generator());
 
-    return AudioEnvironment(streamParams, alsaEnv, samplesRing);
+    return std::move(AudioEnvironment(streamParams, alsaEnv, samplesRing));
 }
 
 int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
-                              snd_pcm_access_t access,
                               const AudioStreamParameters &parameters) {
 
     snd_pcm_t *handle = env.handle;
@@ -99,8 +102,8 @@ int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
         return err;
     }
 
-    /* set the interleaved read/write format */
-    err = snd_pcm_hw_params_set_access(handle, params, access);
+    /* set the interleaved storeNextSamplesAt/write format */
+    err = snd_pcm_hw_params_set_access(handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
     if (err < 0) {
         printf("Access type not available for playback: %s\n", snd_strerror(err));
         return err;
@@ -122,7 +125,7 @@ int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
 
     /* set the stream rate */
     rrate = parameters.rate;
-    err = snd_pcm_hw_params_set_rate_near(handle, params, &rrate, 0);
+    err = snd_pcm_hw_params_set_rate_near(handle, params, &rrate, nullptr);
     if (err < 0) {
         printf("Rate %uHz not available for playback: %s\n", parameters.rate, snd_strerror(err));
         return err;
@@ -193,7 +196,7 @@ int AudioWorkerFactory::setSwParams(AlsaEnvironment &environment,
         return err;
     }
 
-    /* allow the transfer when at least frame_size samples can be processed */
+    /* allow the transfer when at least frame_size samplesRing can be processed */
     /* or disable this mechanism when period event is enabled (aka interrupt like style processing) */
     err = snd_pcm_sw_params_set_avail_min(handle, swparams, environment.frame_size);
     if (err < 0) {

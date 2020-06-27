@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <mainlib/stream/wav/WavReader.h>
+#include <mainlib/audio/AudioWorkerFactory.h>
 
 #include "mainlib/gui/MainEventFilter.h"
 
@@ -56,6 +57,8 @@ int main(int argc, char *argv[]) {
         win.setReady();
         noteSetter.addObserver(openGLTask.getCentralNoteManager());
     });
+
+    auto audioWorker = AudioWorkerFactory().buildWithInputStream("/home/pedro/alsaTests/amics.wav");
 
     /*AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();

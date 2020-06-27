@@ -21,7 +21,7 @@ public:
     ~WavStream() override = default;
 
     AudioStreamParameters getParameters() const override;
-    void read() override;
+    short nextSample() override;
     bool finished() override;
 
 private:

@@ -69,7 +69,7 @@ int AudioBuilder::setHwParams(AlsaEnvironment &environment,
         return err;
     }
 
-    /* set the interleaved read/write format */
+    /* set the interleaved storeNextSamplesAt/write format */
     err = snd_pcm_hw_params_set_access(handle, params, access);
     if (err < 0) {
         printf("Access type not available for playback: %s\n", snd_strerror(err));
@@ -163,7 +163,7 @@ int AudioBuilder::setSwParams(AlsaEnvironment &environment,
         return err;
     }
 
-    /* allow the transfer when at least frame_size samples can be processed */
+    /* allow the transfer when at least frame_size samplesRing can be processed */
     /* or disable this mechanism when period event is enabled (aka interrupt like style processing) */
     err = snd_pcm_sw_params_set_avail_min(handle, swparams, environment.frame_size);
     if (err < 0) {

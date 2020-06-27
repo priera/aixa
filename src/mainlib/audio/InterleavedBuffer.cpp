@@ -2,17 +2,18 @@
 
 #include <sstream>
 
-InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_sframes_t frame_size, snd_pcm_format_t format) :
-    channels(channels),
-    frameSize(frame_size) {
+InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size, snd_pcm_format_t format) :
+        channels(channels),
+        currentChannel(0),
+        m_frameSize(frame_size) {
 
-    format_bits = snd_pcm_format_width(SND_PCM_FORMAT_S16); // 16
+    format_bits = snd_pcm_format_width(format);
     bps = format_bits / 8;
-    phys_bps = snd_pcm_format_physical_width(SND_PCM_FORMAT_S16) / 8;
-    big_endian = snd_pcm_format_big_endian(SND_PCM_FORMAT_S16) == 1;
-    to_unsigned = snd_pcm_format_unsigned(SND_PCM_FORMAT_S16) == 1;
+    phys_bps = snd_pcm_format_physical_width(format) / 8;
+    big_endian = snd_pcm_format_big_endian(format) == 1;
+    to_unsigned = snd_pcm_format_unsigned(format) == 1;
 
-    auto samplesBuffer = malloc(frameSize * channels * bps);
+    auto samplesBuffer = malloc(m_frameSize * channels * bps);
     if (samplesBuffer == nullptr) {
         throw std::bad_alloc();
     }
@@ -30,7 +31,7 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_sframes_t frame_size,
         areas[chn].step = channels * snd_pcm_format_physical_width(format);
     }
 
-    ptrToChanelSample.resize(channels, 0);
+    ptrToChanelSample.resize(channels, nullptr);
     steps.resize(channels, 0);
 
     /* verify and prepare the contents of areas */
@@ -51,27 +52,34 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_sframes_t frame_size,
         steps[chn] = areas[chn].step / 8;
     }
 
-    samples = static_cast<signed short*>(samplesBuffer);
+    m_frame = static_cast<signed short*>(samplesBuffer);
 }
+
+InterleavedBuffer::~InterleavedBuffer() {
+    free(m_frame);
+    free(areas);
+}
+
 
 void InterleavedBuffer::startNewFrame() {
     for (int chn = 0; chn < channels; chn++) {
         ptrToChanelSample[chn] = (((unsigned char *) areas[chn].addr) + (areas[chn].first / 8));
     }
+    currentChannel = 0;
 }
 
 void InterleavedBuffer::storeNextSample(short sample) {
     if (to_unsigned)
         sample ^= 1U << (format_bits - 1);
-    for (int chn = 0; chn < channels; chn++) {
-        if (big_endian) {
-            for (int i = 0; i < bps; i++)
-                *(ptrToChanelSample[chn] + phys_bps - 1 - i) = (sample >> i * 8) & 0xff;
-        } else {
-            for (int i = 0; i < bps; i++)
-                *(ptrToChanelSample[chn] + i) = (sample >> i * 8) & 0xff;
-        }
 
-        ptrToChanelSample[chn] += steps[chn];
+    if (big_endian) {
+        for (int i = 0; i < bps; i++)
+            *(ptrToChanelSample[currentChannel] + phys_bps - 1 - i) = (sample >> i * 8) & 0xff;
+    } else {
+        for (int i = 0; i < bps; i++)
+            *(ptrToChanelSample[currentChannel] + i) = (sample >> i * 8) & 0xff;
     }
+
+    ptrToChanelSample[currentChannel] += steps[currentChannel];
+    currentChannel = (currentChannel + 1) % channels;
 }

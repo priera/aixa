@@ -48,8 +48,8 @@ struct AlsaEnvironment {
     snd_pcm_sw_params_t *swparams;
     snd_output_t *output;
 
-    snd_pcm_sframes_t buffer_size;
-    snd_pcm_sframes_t frame_size;
+    snd_pcm_uframes_t buffer_size;
+    snd_pcm_uframes_t frame_size;
 };
 
 using SamplesRing = BuffersRing<InterleavedBuffer>;
