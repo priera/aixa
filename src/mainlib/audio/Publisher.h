@@ -12,7 +12,7 @@ public:
 
     virtual ~Publisher() = default;
 
-    void publish();
+    void exec();
 
 private:
     void attemptStreamRecovery(int err);

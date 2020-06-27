@@ -11,11 +11,12 @@ public:
 
     virtual ~StreamReader() = default;
 
-    void consume();
+    void exec();
 
 private:
     std::shared_ptr<Stream> stream;
     std::shared_ptr<SamplesRing> samplesRing;
+    bool initialized{false};
 };
 
 

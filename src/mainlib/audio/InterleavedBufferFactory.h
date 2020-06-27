@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_AUDIO_INTERLEAVEDBUFFERFACTORY_H
 #define AIXA_SRC_MAINLIB_AUDIO_INTERLEAVEDBUFFERFACTORY_H
 
-#include <mainlib/buffers/BuffersRing.h>
+#include <mainlib/threading/BuffersRing.h>
 
 #include "InterleavedBuffer.h"
 

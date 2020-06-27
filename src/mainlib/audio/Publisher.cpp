@@ -4,7 +4,7 @@
 #include <iostream>
 #include <thread>
 
-void Publisher::publish() {
+void Publisher::exec() {
     waitForStream();
 
     {

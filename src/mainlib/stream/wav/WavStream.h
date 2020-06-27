@@ -22,7 +22,7 @@ public:
 
     AudioStreamParameters getParameters() const override;
     short nextSample() override;
-    bool finished() override;
+    void prepareForFirstRead() override;
 
 private:
     FileReader f;

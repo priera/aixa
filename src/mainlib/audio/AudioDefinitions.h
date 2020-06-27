@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <alsa/asoundlib.h>
-#include <mainlib/buffers/BuffersRing.h>
+#include <mainlib/threading/BuffersRing.h>
 
 #include "InterleavedBuffer.h"
 

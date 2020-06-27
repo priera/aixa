@@ -34,6 +34,7 @@ std::thread * buildAudioThread(AudioWorkerOld & worker)
 }
 
 int main(int argc, char *argv[]) {
+    using namespace std::chrono_literals;
   /*  AlsaExamples examples(argc, argv);
     examples.run(); */
 
@@ -59,6 +60,13 @@ int main(int argc, char *argv[]) {
     });
 
     auto audioWorker = AudioWorkerFactory().buildWithInputStream("/home/pedro/alsaTests/amics.wav");
+    audioWorker->start();
+
+    std::this_thread::sleep_for(5s);
+
+    audioWorker->stop();
+
+    return 0;
 
     /*AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
@@ -73,7 +81,7 @@ int main(int argc, char *argv[]) {
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
 
-    auto audioThread = buildAudioThread(worker); */
+    auto audioThread = buildAudioThread(worker);
 
     openGLTask.start();
 
@@ -86,6 +94,6 @@ int main(int argc, char *argv[]) {
 
     GLContextManager::getInstance().release();
 
-    return ret;
+    return ret; */
 }
 

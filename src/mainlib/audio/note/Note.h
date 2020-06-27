@@ -1,7 +1,7 @@
 #ifndef AIXA_NOTE_H
 #define AIXA_NOTE_H
 
-#include "mainlib/buffers/CircularBuffer.h"
+#include "mainlib/threading/CircularBuffer.h"
 
 #include "mainlib/observer/Observer.h"
 

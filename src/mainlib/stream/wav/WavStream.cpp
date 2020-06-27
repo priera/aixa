@@ -1,9 +1,5 @@
 #include "WavStream.h"
 
-bool WavStream::finished() {
-    return false;
-}
-
 AudioStreamParameters WavStream::getParameters() const {
     return AudioStreamParameters{SND_PCM_FORMAT_S16,
                                  format.samplingRate,
@@ -14,4 +10,8 @@ AudioStreamParameters WavStream::getParameters() const {
 
 short WavStream::nextSample() {
     return 0;
+}
+
+void WavStream::prepareForFirstRead() {
+
 }
