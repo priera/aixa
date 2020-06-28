@@ -13,7 +13,7 @@ public:
     WavStream(const std::string &filePath, WavFormat format) :
             f(filePath),
             format(format) {
-        if (this->format.bitsPerSample != 16) {
+        if (format.bitsPerSample != 16) {
             throw std::runtime_error("Not allowed WAV stream format");
         }
     }

@@ -1,15 +1,27 @@
 #include "WavStreamFactory.h"
 
+#include <filesystem>
+
 #include <mainlib/stream/FileReader.h>
 
 #include "WavFunctions.h"
 #include "WavStream.h"
 
+namespace fs = std::filesystem;
+
 std::shared_ptr<Stream> WavStreamFactory::probe() {
+    const unsigned int PROBING_BYTES = 24;
+
+    auto realFileSize = fs::file_size(filePath);
+    if (realFileSize < PROBING_BYTES)
+        throw std::runtime_error("Invalid input file");
+
     FileReader f(filePath);
 
     unsigned int size;
     WavFunctions::readHeader(f, size);
+    if (realFileSize < size)
+        throw std::runtime_error("Invalid input file");
 
     std::string idTag;
     f.nextChunkInfo(idTag, size);
@@ -20,6 +32,9 @@ std::shared_ptr<Stream> WavStreamFactory::probe() {
 
     WavFormat format{};
     WavFunctions::readFormat(f, size, format);
+
+    if (format.bitsPerSample != 16)
+        throw std::runtime_error("Not supported WAV sample format");
 
     return std::make_shared<WavStream>(filePath, format);
 }

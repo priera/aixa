@@ -7,7 +7,7 @@
 
 class FileReader {
 public:
-    FileReader(const std::string & path);
+    explicit FileReader(const std::string &path);
     virtual ~FileReader();
 
     void seekToBeginning();
@@ -20,14 +20,6 @@ public:
     void readString(std::string &str, unsigned int size);
 
 private:
-    void check() {
-        if (!f.good())
-            throw std::runtime_error("Error while reading file");
-    }
-
-    void nextIdTagNoCheck(std::string &str);
-    void nextWordNoCheck(unsigned int &w);
-
     union WordType {
         unsigned int word;
         char bytes[4];

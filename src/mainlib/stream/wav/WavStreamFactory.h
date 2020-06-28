@@ -6,7 +6,7 @@
 
 class WavStreamFactory : public StreamFactory {
 public:
-    WavStreamFactory(std::string streamPath) : filePath(std::move(streamPath)) {}
+    explicit WavStreamFactory(std::string streamPath) : filePath(std::move(streamPath)) {}
 
     ~WavStreamFactory() override = default;
 
