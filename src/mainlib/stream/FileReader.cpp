@@ -43,3 +43,7 @@ void FileReader::nextChunkInfo(std::string &idTag, unsigned int &chunkSize) {
     nextIdTag(idTag);
     nextWord(chunkSize);
 }
+
+void FileReader::skipBytes(long count) {
+    f.seekg(f.tellg() + count);
+}

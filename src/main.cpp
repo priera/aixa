@@ -62,11 +62,9 @@ int main(int argc, char *argv[]) {
     auto audioWorker = AudioWorkerFactory().buildWithInputStream("/home/pedro/alsaTests/amics.wav");
     audioWorker->start();
 
-    std::this_thread::sleep_for(5s);
+    /*std::this_thread::sleep_for(5s);
 
-    audioWorker->stop();
-
-    return 0;
+    audioWorker->stop(); */
 
     /*AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
@@ -95,5 +93,16 @@ int main(int argc, char *argv[]) {
     GLContextManager::getInstance().release();
 
     return ret; */
+
+    openGLTask.start();
+
+    int ret = app.exec();
+
+    audioWorker->stop();
+    openGLTask.quit();
+
+    GLContextManager::getInstance().release();
+
+    return ret;
 }
 

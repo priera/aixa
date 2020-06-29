@@ -27,16 +27,18 @@ public:
 
     void start() {
         state = State::RUNNING;
+        stateCv.notify_one();
     }
 
     void stopAndDetach() {
         state = State::STOPPING;
+        stateCv.notify_one();
         t.detach();
     }
 
 private:
-    enum class State {
-        PREPARED,
+    enum class State : unsigned int {
+        PREPARED = 0,
         RUNNING,
         STOPPING
     };
@@ -55,15 +57,14 @@ private:
     void waitUntilStarted() {
         std::mutex m;
         std::unique_lock<std::mutex> lk(m);
-        std::condition_variable cv;
 
-        cv.wait(lk, [this]() { return state != State::PREPARED; });
+        stateCv.wait(lk, [this]() { return state != State::PREPARED; });
     }
 
     WorkingClass &worker;
 
-    //The kind of operations done on state do not involve temporaries. So no need of atomics
     State state{State::PREPARED};
+    std::condition_variable stateCv;
     std::thread t;
 };
 

@@ -1,5 +1,7 @@
 #include "WavStream.h"
 
+#include "WavFunctions.h"
+
 AudioStreamParameters WavStream::getParameters() const {
     return AudioStreamParameters{SND_PCM_FORMAT_S16,
                                  format.samplingRate,
@@ -8,10 +10,13 @@ AudioStreamParameters WavStream::getParameters() const {
                                  format.bitsPerSample};
 }
 
-short WavStream::nextSample() {
-    return 0;
+void WavStream::prepareForFirstRead() {
+    unsigned int fileSize;
+
+    WavFunctions::readHeader(f, fileSize);
+    WavFunctions::skipUntilDataChunk(f);
 }
 
-void WavStream::prepareForFirstRead() {
+void WavStream::storeSamples(InterleavedBuffer &buffer) {
 
 }

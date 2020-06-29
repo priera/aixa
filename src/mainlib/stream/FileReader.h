@@ -18,6 +18,7 @@ public:
     void nextTwoBytes(unsigned int &hw);
     void nextByte(unsigned char &b);
     void readString(std::string &str, unsigned int size);
+    void skipBytes(long count);
 
 private:
     union WordType {

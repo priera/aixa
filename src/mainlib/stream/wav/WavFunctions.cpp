@@ -41,4 +41,23 @@ namespace WavFunctions {
 
         return size;
     }
+
+    size_t skipUntilDataChunk(FileReader &reader) {
+        size_t ret = 0;
+
+        std::string tag;
+        unsigned int size;
+        reader.nextChunkInfo(tag, size);
+        ret += 8;
+
+        while (tag != "data") {
+            reader.skipBytes(size);
+            ret += size;
+
+            reader.nextChunkInfo(tag, size);
+            ret += 8;
+        }
+
+        return ret;
+    }
 }

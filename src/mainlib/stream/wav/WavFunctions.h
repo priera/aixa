@@ -9,6 +9,7 @@
 namespace WavFunctions {
     size_t readHeader(FileReader &reader, unsigned int &fileSize);
     size_t readFormat(FileReader &reader, unsigned int size, WavFormat &format);
+    size_t skipUntilDataChunk(FileReader &reader);
 };
 
 

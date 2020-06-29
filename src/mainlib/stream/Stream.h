@@ -9,7 +9,7 @@ public:
 
     virtual AudioStreamParameters getParameters() const = 0;
     virtual void prepareForFirstRead() = 0;
-    virtual short nextSample() = 0;
+    virtual void storeSamples(InterleavedBuffer &buffer) = 0;
 };
 
 #endif //AIXA_SRC_MAINLIB_STREAM_STREAM_H
