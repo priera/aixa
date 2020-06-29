@@ -1,6 +1,6 @@
 #include "WavFunctions.h"
 
-#include <mainlib/stream/wav/wavparts/WavFormat.h>
+#include <mainlib/stream/wav/WavFormat.h>
 
 namespace WavFunctions {
 
@@ -40,6 +40,30 @@ namespace WavFunctions {
         }
 
         return size;
+    }
+
+    std::vector<std::string> extractListData(FileReader &f, unsigned int size) {
+        std::vector<std::string> ret;
+
+        std::string infoTag;
+        f.nextIdTag(infoTag);
+        size -= 4;
+
+        while (size > 0) {
+            std::string infoIdTag;
+            f.nextIdTag(infoIdTag);
+
+            unsigned int textSize;
+            f.nextWord(textSize);
+
+            std::string infoText(textSize, '\0');
+            f.readString(infoText, textSize);
+
+            size -= 8 + textSize;
+            ret.push_back(infoText);
+        }
+
+        return ret;
     }
 
     size_t skipUntilDataChunk(FileReader &reader) {

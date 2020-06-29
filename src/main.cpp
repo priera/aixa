@@ -6,7 +6,6 @@
 #include <chrono>
 
 #include <QApplication>
-#include <mainlib/stream/wav/WavReader.h>
 #include <mainlib/audio/AudioWorkerFactory.h>
 
 #include "mainlib/gui/MainEventFilter.h"

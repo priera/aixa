@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include <mainlib/stream/wav/wavparts/WavFormat.h>
+#include <mainlib/stream/wav/WavFormat.h>
 #include <mainlib/stream/FileReader.h>
 
 class WavStream : public Stream {
