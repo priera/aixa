@@ -11,11 +11,9 @@ public:
 
     virtual ~InterleavedBuffer();
 
-    void startNewFrame();
     void storeNextSample(short sample);
 
     char *frame() const { return charFrame; }
-    signed short *samplesFrame() const { return m_samplesFrame; }
     size_t dataSize() const { return m_dataSize; }
     size_t samplesCount() const { return m_frameSize * channels; };
     bool isLittleEndian() const { return little_endian; }
@@ -27,10 +25,6 @@ private:
     size_t m_dataSize;
 
     char *charFrame;
-    signed short *m_samplesFrame; //sizeof(short) == 2
-    std::vector<unsigned char *> ptrToChanelSample;
-    snd_pcm_channel_area_t *areas;
-    std::vector<int> steps;
 
     int format_bits;
     int bps;

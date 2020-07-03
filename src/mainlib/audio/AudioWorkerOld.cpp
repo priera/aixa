@@ -67,7 +67,7 @@ void AudioWorkerOld::writeLoop() {
 
     waitForStream();
 
-    {
+    /*{
         int err, framesToWrite;
         framesToWrite = environment->platform.frame_size;
 
@@ -83,7 +83,7 @@ void AudioWorkerOld::writeLoop() {
 
             framesToWrite -= err;
         }
-    }
+    } */
 
 }
 

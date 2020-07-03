@@ -15,6 +15,7 @@ void SineGenerator::fillFrame(double freq, unsigned int scaleFactor) {
 
     auto buffer = samplesRing->nextWriteBuffer();
 
+    /*
     buffer->startNewFrame();
 
     int n = frameSize;
@@ -28,5 +29,5 @@ void SineGenerator::fillFrame(double freq, unsigned int scaleFactor) {
         if (phase >= MAX_PHASE) {
             phase -= MAX_PHASE;
         }
-    }
+    } */
 }
