@@ -7,6 +7,7 @@
 #include <functional>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 
 template<class T>
 class BuffersRing {
@@ -111,7 +112,8 @@ private:
         switch (state) {
             case State::READY:
                 {
-                    std::unique_lock<std::mutex> lock(stateMutex);
+                    std::mutex m;
+                    std::unique_lock<std::mutex> lock(m);
 
                     cvState.wait(lock, [this] { return state == State::RUNNING; });
                 }
@@ -128,30 +130,28 @@ private:
     }
 
     void setStateTo(State newState) {
-        std::unique_lock<std::mutex> lock(stateMutex);
         state = newState;
         cvState.notify_one();
     }
 
     void addToConsumed(size_t incValue) {
-        std::unique_lock<std::mutex> lock(consumedMutex);
         consumed += incValue;
         cvConsumed.notify_one();
     }
 
     void writeHalt() {
-        std::unique_lock<std::mutex> lock(consumedMutex);
+        std::mutex m;
+        std::unique_lock<std::mutex> lock(m);
 
         cvConsumed.wait(lock, [this] { return consumed >= (count / 2); });
     }
 
     std::vector<std::shared_ptr<T>> elems;
-    size_t count, readPos{0}, writePos{0}, consumed{0};
-    std::mutex stateMutex, consumedMutex;
-    State state{State::READY};
+    size_t count, readPos{0}, writePos{0};
+    std::atomic_size_t consumed{0};
+    volatile State state{State::READY};
     std::condition_variable cvState, cvConsumed;
     typename BuffersWatcher::Done fDoneReading, fDoneWriting;
-
 };
 
 
