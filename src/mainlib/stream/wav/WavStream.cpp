@@ -18,5 +18,8 @@ void WavStream::prepareForFirstRead() {
 }
 
 void WavStream::storeSamples(InterleavedBuffer &buffer) {
+    //FIXME WavData is little endian. Mercifully, samples are stored in little endian in this computer too
+    //  But if computer wasn't little endian, results would be wrong!!!
 
+    f.extractBytes(buffer.frame(), buffer.dataSize());
 }

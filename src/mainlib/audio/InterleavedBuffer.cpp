@@ -10,11 +10,12 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size,
     format_bits = snd_pcm_format_width(format);
     bps = format_bits / 8;
     phys_bps = snd_pcm_format_physical_width(format) / 8;
-    big_endian = snd_pcm_format_big_endian(format) == 1;
+    little_endian = snd_pcm_format_big_endian(format) != 1;
     to_unsigned = snd_pcm_format_unsigned(format) == 1;
+    m_dataSize = m_frameSize * channels * bps;
 
-    auto samplesBuffer = malloc(m_frameSize * channels * bps);
-    if (samplesBuffer == nullptr) {
+    charFrame = static_cast<char *>(malloc(m_dataSize));
+    if (charFrame == nullptr) {
         throw std::bad_alloc();
     }
 
@@ -26,7 +27,7 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size,
     areas = static_cast<snd_pcm_channel_area_t*>(areas_p);
 
     for (unsigned int chn = 0; chn < channels; chn++) {
-        areas[chn].addr = samplesBuffer;
+        areas[chn].addr = charFrame;
         areas[chn].first = chn * snd_pcm_format_physical_width(format);
         areas[chn].step = channels * snd_pcm_format_physical_width(format);
     }
@@ -52,11 +53,11 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size,
         steps[chn] = areas[chn].step / 8;
     }
 
-    m_frame = static_cast<signed short*>(samplesBuffer);
+    m_samplesFrame = reinterpret_cast<signed short*>(charFrame);
 }
 
 InterleavedBuffer::~InterleavedBuffer() {
-    free(m_frame);
+    free(m_samplesFrame);
     free(areas);
 }
 
@@ -72,7 +73,7 @@ void InterleavedBuffer::storeNextSample(short sample) {
     if (to_unsigned)
         sample ^= 1U << (format_bits - 1);
 
-    if (big_endian) {
+    if (little_endian) {
         for (int i = 0; i < bps; i++)
             *(ptrToChanelSample[currentChannel] + phys_bps - 1 - i) = (sample >> i * 8) & 0xff;
     } else {

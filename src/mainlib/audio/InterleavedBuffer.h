@@ -14,16 +14,20 @@ public:
     void startNewFrame();
     void storeNextSample(short sample);
 
-    void *frame() const { return m_frame; }
-    size_t dataSize() const { return m_frameSize * channels * bps; }
+    char *frame() const { return charFrame; }
+    signed short *samplesFrame() const { return m_samplesFrame; }
+    size_t dataSize() const { return m_dataSize; }
     size_t samplesCount() const { return m_frameSize * channels; };
+    bool isLittleEndian() const { return little_endian; }
 
 private:
     int channels;
     size_t currentChannel;
     snd_pcm_uframes_t m_frameSize;
+    size_t m_dataSize;
 
-    signed short *m_frame; //sizeof(short) == 2
+    char *charFrame;
+    signed short *m_samplesFrame; //sizeof(short) == 2
     std::vector<unsigned char *> ptrToChanelSample;
     snd_pcm_channel_area_t *areas;
     std::vector<int> steps;
@@ -31,7 +35,7 @@ private:
     int format_bits;
     int bps;
     int phys_bps;
-    bool big_endian;
+    bool little_endian;
     bool to_unsigned;
 
 };

@@ -47,3 +47,7 @@ void FileReader::nextChunkInfo(std::string &idTag, unsigned int &chunkSize) {
 void FileReader::skipBytes(long count) {
     f.seekg(f.tellg() + count);
 }
+
+void FileReader::extractBytes(char *buff, size_t count) {
+    f.read(buff, count);
+}

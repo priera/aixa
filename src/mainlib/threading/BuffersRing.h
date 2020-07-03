@@ -55,9 +55,8 @@ public:
     virtual ~BuffersRing() = default;
 
     BuffersWatcher nextReadBuffer() {
-        if (readPos == writePos) {
+        if (readPos == writePos)
             readHalt();
-        }
 
         BuffersWatcher ret(elems[readPos], fDoneReading);
 
@@ -71,7 +70,7 @@ public:
     }
 
     void doneWriting() {
-        state = State::FLUSHING;
+        setStateTo(State::FLUSHING);
     }
 
     bool moreBuffers() {
@@ -89,15 +88,13 @@ protected:
     void bufferConsumed() {
         readPos = (readPos + 1) % count;
 
-        {
-            std::lock_guard<std::mutex> lock(consumedMutex);
-
-            if (consumed < (count - 1)) consumed++;
-        }
+        if (consumed < (count - 1))
+            addToConsumed(1);
     }
 
     void bufferWritten() {
-        if (state == State::READY) state = State::RUNNING;
+        if (state == State::READY)
+            setStateTo(State::RUNNING);
 
         auto nextWritePos = (writePos + 1) % count;
         if (nextWritePos == readPos)
@@ -105,11 +102,8 @@ protected:
 
         writePos = nextWritePos;
 
-        {
-            std::lock_guard<std::mutex> lock(consumedMutex);
-
-            if (consumed > 0) consumed--;
-        }
+        if (consumed > 0)
+            addToConsumed(-1);
     }
 
 private:
@@ -117,36 +111,45 @@ private:
         switch (state) {
             case State::READY:
                 {
-                    std::mutex m;
-                    std::unique_lock<std::mutex> lock(m);
-                    std::condition_variable cv;
+                    std::unique_lock<std::mutex> lock(stateMutex);
 
-                    cv.wait(lock, [this] { return state == State::RUNNING; });
+                    cvState.wait(lock, [this] { return state == State::RUNNING; });
                 }
                 break;
             case State::RUNNING: //Buffer under-run
                 readPos = (readPos - 1) % count;
                 break;
             case State::FLUSHING:
-                state = State::FINISHED;
+                setStateTo(State::FINISHED);
                 break;
             case State::FINISHED:
                 throw std::runtime_error("Attempting read of flushed buffer");
         }
     }
 
-    void writeHalt() {
-        std::mutex m;
-        std::unique_lock<std::mutex> lock(m);
-        std::condition_variable cv;
+    void setStateTo(State newState) {
+        std::unique_lock<std::mutex> lock(stateMutex);
+        state = newState;
+        cvState.notify_one();
+    }
 
-        cv.wait(lock, [this] { return consumed >= (count / 2); });
+    void addToConsumed(size_t incValue) {
+        std::unique_lock<std::mutex> lock(consumedMutex);
+        consumed += incValue;
+        cvConsumed.notify_one();
+    }
+
+    void writeHalt() {
+        std::unique_lock<std::mutex> lock(consumedMutex);
+
+        cvConsumed.wait(lock, [this] { return consumed >= (count / 2); });
     }
 
     std::vector<std::shared_ptr<T>> elems;
     size_t count, readPos{0}, writePos{0}, consumed{0};
-    std::mutex consumedMutex;
+    std::mutex stateMutex, consumedMutex;
     State state{State::READY};
+    std::condition_variable cvState, cvConsumed;
     typename BuffersWatcher::Done fDoneReading, fDoneWriting;
 
 };

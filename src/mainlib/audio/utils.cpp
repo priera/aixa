@@ -8,7 +8,7 @@
 namespace audioUtils {
     void dumpSignal(const InterleavedBuffer &buffers, QJsonArray &out) {
         short sample;
-        auto data = static_cast<unsigned char*>(buffers.frame());
+        auto data = buffers.frame();
 
         for (int i = 0; i < buffers.dataSize(); i +=2 ) {
          sample = data[i] + (data[i + 1] << 8);

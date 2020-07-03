@@ -74,7 +74,7 @@ void AudioWorkerOld::writeLoop() {
         auto buffer = environment->samplesRing->nextReadBuffer();
 
         while (framesToWrite > 0) {
-            err = snd_pcm_writei(environment->platform.handle, buffer->frame(), framesToWrite);
+            err = snd_pcm_writei(environment->platform.handle, buffer->samplesFrame(), framesToWrite);
 
             if (err < 0) {
                 attemptStreamRecovery(err);

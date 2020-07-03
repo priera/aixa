@@ -61,10 +61,6 @@ int main(int argc, char *argv[]) {
     auto audioWorker = AudioWorkerFactory().buildWithInputStream("/home/pedro/alsaTests/amics.wav");
     audioWorker->start();
 
-    /*std::this_thread::sleep_for(5s);
-
-    audioWorker->stop(); */
-
     /*AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
