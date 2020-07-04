@@ -8,7 +8,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include "mainlib/CommandBuilder.h"
+#include "mainlib/CommandListener.h"
 
 #include "mainlib/audio/note/Note.h"
 
@@ -16,12 +16,12 @@
 
 class SineGenerator;
 
-class AudioWorkerOld : public CommandBuilder, public NotesListener {
+class AudioWorkerOld : public CommandListener, public NotesListener {
 public:
     AudioWorkerOld(std::unique_ptr<AudioEnvironment> &paramEnvironment);
     virtual ~AudioWorkerOld();
 
-    CommandCollection buildCommandCollection() override;
+    CommandCollection getCommandCollection() override;
 
     void start();
     void stop();

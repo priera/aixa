@@ -61,13 +61,18 @@ int main(int argc, char *argv[]) {
     auto audioWorker = AudioWorkerFactory().buildWithInputStream("/home/pedro/alsaTests/amics.wav");
     audioWorker->start();
 
+    auto commandCollection = audioWorker->getCommandCollection();
+
+    MainEventFilter mainEventFilter(commandCollection, noteSetter);
+    app.installEventFilter(&mainEventFilter);
+
     /*AudioBuilder audioBuilder;
     auto basicParameters = getDefaultAudioParameters();
     auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
     auto environment = std::unique_ptr<AudioEnvironment>(environment_p);
 
     AudioWorkerOld worker(environment);
-    auto commandCollection = worker.buildCommandCollection();
+    auto commandCollection = worker.getCommandCollection();
 
     noteSetter.addObserver(&worker);
 

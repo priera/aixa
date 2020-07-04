@@ -1,7 +1,7 @@
 #include "Commands.h"
 
 void VolumeUp::execute() {
-    worker->increaseVolume();
+    worker.increaseVolume();
 }
 
 std::string VolumeUp::getName() const {
@@ -10,7 +10,7 @@ std::string VolumeUp::getName() const {
 
 
 void VolumeDown::execute() {
-    worker->decreaseVolume();
+    worker.decreaseVolume();
 }
 
 std::string VolumeDown::getName() const {

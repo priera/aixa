@@ -30,10 +30,10 @@ public:
         stateCv.notify_one();
     }
 
-    void stopAndDetach() {
+    void stopAndWait() {
         state = State::STOPPING;
         stateCv.notify_one();
-        t.detach();
+        t.join();
     }
 
 private:

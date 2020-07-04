@@ -3,11 +3,11 @@
 
 #include "Command.h"
 
-class CommandBuilder {
+class CommandListener {
 public:
-    virtual ~CommandBuilder() = default;
+    virtual ~CommandListener() = default;
 
-    virtual CommandCollection buildCommandCollection() = 0;
+    virtual CommandCollection getCommandCollection() = 0;
 };
 
 #endif //AIXA_COMMANDBUILDER_H

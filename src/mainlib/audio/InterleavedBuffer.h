@@ -15,6 +15,8 @@ public:
     size_t dataSize() const { return m_dataSize; }
     size_t samplesCount() const { return m_frameSize * channels; };
     bool isLittleEndian() const { return little_endian; }
+    char& operator[](size_t &ind) { return charFrame[ind]; }
+    char& operator[](size_t &&ind) { return charFrame[ind]; }
 
 private:
     int channels;
@@ -22,6 +24,7 @@ private:
     snd_pcm_uframes_t m_frameSize;
     size_t m_dataSize;
 
+    //TODO: use a vector of char. Thank you
     char *charFrame;
 
     int format_bits;

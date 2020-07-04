@@ -11,6 +11,7 @@ bool Publisher::exec() {
     if (samplesRing->moreBuffers()) {
         auto buffer = samplesRing->nextReadBuffer();
 
+        volumeManager->applyTo(*buffer);
         int err = snd_pcm_writei(alsaEnv.handle, buffer->frame(), alsaEnv.frame_size);
 
         if (err < 0)

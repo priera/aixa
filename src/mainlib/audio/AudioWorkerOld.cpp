@@ -18,11 +18,12 @@ AudioWorkerOld::AudioWorkerOld(std::unique_ptr<AudioEnvironment> &paramEnvironme
     volume(MAX_VOLUME/3),
     stopValue(false)
 {
-    auto volumeUp = new VolumeUp(*this);
+    /*auto volumeUp = new VolumeUp(*this);
     auto volumeDown = new VolumeDown(*this);
 
     myCommands.insert(std::make_pair(volumeUp->getName(), volumeUp));
     myCommands.insert(std::make_pair(volumeDown->getName(), volumeDown));
+    */
 
     sineGenerator = std::make_unique<SineGenerator>(environment->samplesRing, environment->platform.frame_size, environment->params.rate);
 }
@@ -44,7 +45,7 @@ void AudioWorkerOld::decreaseVolume() {
         volume = newVolume;
 }
 
-CommandCollection AudioWorkerOld::buildCommandCollection() {
+CommandCollection AudioWorkerOld::getCommandCollection() {
     return myCommands;
 }
 

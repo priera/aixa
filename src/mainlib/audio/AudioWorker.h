@@ -4,25 +4,26 @@
 #include <memory>
 
 #include <mainlib/threading/WorkerThread.h>
+#include <mainlib/CommandListener.h>
 
 #include "StreamReader.h"
 #include "Publisher.h"
 
-class AudioWorker {
+class AudioWorker : public CommandListener {
 public:
     AudioWorker(AudioEnvironment env,
             std::unique_ptr<StreamReader> reader,
-            std::unique_ptr<Publisher> publisher) :
-    env(std::move(env)),
-    reader(std::move(reader)),
-    publisher(std::move(publisher)),
-    readingThread(*this->reader),
-    publishingThread(*this->publisher) {}
+            std::unique_ptr<Publisher> publisher);
 
     virtual ~AudioWorker() = default;
 
+    CommandCollection getCommandCollection() override;
+
     void start();
     void stop();
+
+    void increaseVolume();
+    void decreaseVolume();
 
 private:
     using ReadingThread = WorkerThread<StreamReader>;
@@ -34,6 +35,8 @@ private:
 
     ReadingThread readingThread;
     PublishingThread publishingThread;
+
+    CommandCollection myCommands;
 };
 
 
