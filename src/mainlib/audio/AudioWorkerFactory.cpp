@@ -39,6 +39,9 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
     AlsaEnvironment alsaEnv;
     alsaEnv.params = AlsaParameters{"default", 500000, 100000};
 
+    if (!streamParams.littleEndianSamples)
+        throw std::runtime_error("Not little endian streams not supported");
+
     snd_pcm_hw_params_alloca(&alsaEnv.hwparams);
     snd_pcm_sw_params_alloca(&alsaEnv.swparams);
 
@@ -82,7 +85,7 @@ int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
                               const AudioStreamParameters &parameters) {
 
     snd_pcm_t *handle = env.handle;
-    snd_pcm_hw_params_t * params = env.hwparams;
+    snd_pcm_hw_params_t *params = env.hwparams;
 
     unsigned int rrate;
     snd_pcm_uframes_t size;

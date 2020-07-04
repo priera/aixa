@@ -4,7 +4,6 @@ bool StreamReader::exec() {
     bool done = false;
 
     if (!initialized) {
-        /*FIXME: use stream parameters to check endianness matching*/
         stream->prepareForFirstRead();
         initialized = true;
     }

@@ -12,6 +12,7 @@
 
 struct AudioStreamParameters {
     snd_pcm_format_t format;    /* sample format */
+    bool littleEndianSamples;   /* if false: big endian */
     unsigned int rate;          /* stream rate */
     unsigned int channels;      /* count of channels */
     unsigned int bps;           /* bytes per second */

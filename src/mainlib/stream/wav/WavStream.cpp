@@ -5,7 +5,10 @@
 #include "WavFunctions.h"
 
 AudioStreamParameters WavStream::getParameters() const {
-    return AudioStreamParameters{SND_PCM_FORMAT_S16,
+    auto sampleFormat = SND_PCM_FORMAT_S16;
+
+    return AudioStreamParameters{sampleFormat,
+                                 snd_pcm_format_little_endian(sampleFormat) == 1,
                                  format.samplingRate,
                                  format.channels,
                                  format.bytesPerSecond,
@@ -20,9 +23,6 @@ void WavStream::prepareForFirstRead() {
 }
 
 void WavStream::storeSamples(InterleavedBuffer &buffer) {
-    //FIXME Wav data is little endian. Mercifully, samples are stored in little endian in this computer too
-    //  But if computer wasn't little endian, results would be wrong!!!
-
     auto toRead = buffer.dataSize();
     auto frame = buffer.frame();
     auto extracted = f.extractBytes(frame, toRead);
