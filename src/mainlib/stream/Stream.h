@@ -9,6 +9,7 @@ public:
 
     virtual AudioStreamParameters getParameters() const = 0;
     virtual void prepareForFirstRead() = 0;
+    virtual bool ended() = 0;
     virtual void storeSamples(InterleavedBuffer &buffer) = 0;
 };
 

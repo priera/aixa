@@ -11,7 +11,7 @@ public:
 
     virtual ~StreamReader() = default;
 
-    void exec();
+    bool exec();
 
 private:
     std::shared_ptr<Stream> stream;

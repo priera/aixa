@@ -50,7 +50,9 @@ private:
             return;
 
         while (state == State::RUNNING) {
-            worker.exec();
+            bool done = worker.exec();
+            if (done)
+                state = State::STOPPING;
         }
     }
 

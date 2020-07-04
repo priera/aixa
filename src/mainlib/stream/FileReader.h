@@ -19,7 +19,8 @@ public:
     void nextByte(unsigned char &b);
     void readString(std::string &str, unsigned int size);
     void skipBytes(long count);
-    void extractBytes(char *buff, size_t count);
+    std::streamsize extractBytes(char *buff, size_t count);
+    bool ended() const;
 
 private:
     union WordType {

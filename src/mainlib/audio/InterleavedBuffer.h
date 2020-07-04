@@ -11,8 +11,6 @@ public:
 
     virtual ~InterleavedBuffer();
 
-    void storeNextSample(short sample);
-
     char *frame() const { return charFrame; }
     size_t dataSize() const { return m_dataSize; }
     size_t samplesCount() const { return m_frameSize * channels; };

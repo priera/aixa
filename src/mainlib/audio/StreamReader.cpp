@@ -1,13 +1,21 @@
 #include "StreamReader.h"
 
-void StreamReader::exec() {
+bool StreamReader::exec() {
+    bool done = false;
+
     if (!initialized) {
+        /*FIXME: use stream parameters to check endianness matching*/
         stream->prepareForFirstRead();
         initialized = true;
     }
 
-    auto buffer = samplesRing->nextWriteBuffer();
-    buffer->startNewFrame();
+    if (!stream->ended()) {
+        auto buffer = samplesRing->nextWriteBuffer();
+        stream->storeSamples(*buffer);
+    } else {
+        samplesRing->doneWriting();
+        done = true;
+    }
 
-    stream->storeSamples(*buffer);
+    return done;
 }

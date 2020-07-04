@@ -48,6 +48,12 @@ void FileReader::skipBytes(long count) {
     f.seekg(f.tellg() + count);
 }
 
-void FileReader::extractBytes(char *buff, size_t count) {
+std::streamsize FileReader::extractBytes(char *buff, size_t count) {
     f.read(buff, count);
+    return f.gcount();
+}
+
+bool FileReader::ended() const {
+    bool fileOk = static_cast<bool>(f);
+    return !fileOk || f.eof();
 }

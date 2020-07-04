@@ -21,6 +21,7 @@ public:
     ~WavStream() override = default;
 
     AudioStreamParameters getParameters() const override;
+    bool ended() override;
     void storeSamples(InterleavedBuffer &buffer) override;
     void prepareForFirstRead() override;
 

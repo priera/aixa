@@ -4,17 +4,22 @@
 #include <iostream>
 #include <thread>
 
-void Publisher::exec() {
+bool Publisher::exec() {
+    bool done = false;
     waitForStream();
 
-    {
+    if (samplesRing->moreBuffers()) {
         auto buffer = samplesRing->nextReadBuffer();
 
         int err = snd_pcm_writei(alsaEnv.handle, buffer->frame(), alsaEnv.frame_size);
 
         if (err < 0)
             attemptStreamRecovery(err);
+    } else {
+        done = true;
     }
+
+    return done;
 }
 
 void Publisher::attemptStreamRecovery(int err) {

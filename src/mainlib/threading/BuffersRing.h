@@ -56,8 +56,7 @@ public:
     virtual ~BuffersRing() = default;
 
     BuffersWatcher nextReadBuffer() {
-        if (readPos == writePos)
-            readHalt();
+        checkReadHalt();
 
         BuffersWatcher ret(elems[readPos], fDoneReading);
 
@@ -91,6 +90,9 @@ protected:
 
         if (consumed < (count - 1))
             addToConsumed(1);
+
+        if (consumed == (count - 1) && state == State::FLUSHING)
+            setStateTo(State::FINISHED);
     }
 
     void bufferWritten() {
@@ -108,7 +110,7 @@ protected:
     }
 
 private:
-    void readHalt() {
+    void checkReadHalt() {
         switch (state) {
             case State::READY:
                 {
@@ -119,13 +121,12 @@ private:
                 }
                 break;
             case State::RUNNING: //Buffer under-run
-                readPos = (readPos - 1) % count;
-                break;
-            case State::FLUSHING:
-                setStateTo(State::FINISHED);
+                if (readPos == writePos)
+                    readPos = (readPos - 1) % count;
                 break;
             case State::FINISHED:
                 throw std::runtime_error("Attempting read of flushed buffer");
+            default: break;
         }
     }
 

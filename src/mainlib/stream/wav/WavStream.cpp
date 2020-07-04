@@ -1,5 +1,7 @@
 #include "WavStream.h"
 
+#include <cstring>
+
 #include "WavFunctions.h"
 
 AudioStreamParameters WavStream::getParameters() const {
@@ -18,8 +20,18 @@ void WavStream::prepareForFirstRead() {
 }
 
 void WavStream::storeSamples(InterleavedBuffer &buffer) {
-    //FIXME WavData is little endian. Mercifully, samples are stored in little endian in this computer too
+    //FIXME Wav data is little endian. Mercifully, samples are stored in little endian in this computer too
     //  But if computer wasn't little endian, results would be wrong!!!
 
-    f.extractBytes(buffer.frame(), buffer.dataSize());
+    auto toRead = buffer.dataSize();
+    auto frame = buffer.frame();
+    auto extracted = f.extractBytes(frame, toRead);
+
+    if (extracted >= 0 && extracted < toRead) {
+        std::memset(&frame[extracted], 0, toRead - extracted);
+    }
+}
+
+bool WavStream::ended() {
+    return f.ended();
 }
