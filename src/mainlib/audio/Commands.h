@@ -3,7 +3,6 @@
 
 #include "mainlib/Command.h"
 
-#include "AudioWorkerOld.h"
 #include "AudioWorker.h"
 
 class VolumeUp : public Command {

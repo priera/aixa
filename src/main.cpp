@@ -1,36 +1,20 @@
 
 //#include "examples/AlsaExamples.h"
 
-#include <thread>
-#include <memory>
-#include <chrono>
-
 #include <QApplication>
+
 #include <mainlib/audio/AudioWorkerFactory.h>
 
 #include "mainlib/gui/MainEventFilter.h"
 
 #include "mainlib/gui/gl/OpenGLTask.h"
 #include "mainlib/gui/gl/OpenGLWindow.h"
-#include "mainlib/gui/CentralNoteManager.h"
-
 #include "mainlib/gui/gl/GLContextManager.h"
 
-#include "mainlib/audio/AudioWorkerOld.h"
-#include "mainlib/audio/AudioBuilder.h"
-
+#include "mainlib/gui/CentralNoteManager.h"
 #include "mainlib/audio/note/NoteSetter.h"
 
 using namespace std::chrono_literals;
-
-std::thread * buildAudioThread(AudioWorkerOld & worker)
-{
-    auto f = [&worker](){
-        worker.start();
-    };
-
-    return new std::thread(f);
-}
 
 int main(int argc, char *argv[]) {
     using namespace std::chrono_literals;
@@ -65,34 +49,6 @@ int main(int argc, char *argv[]) {
 
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
-
-    /*AudioBuilder audioBuilder;
-    auto basicParameters = getDefaultAudioParameters();
-    auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
-    auto environment = std::unique_ptr<AudioEnvironment>(environment_p);
-
-    AudioWorkerOld worker(environment);
-    auto commandCollection = worker.getCommandCollection();
-
-    noteSetter.addObserver(&worker);
-
-    MainEventFilter mainEventFilter(commandCollection, noteSetter);
-    app.installEventFilter(&mainEventFilter);
-
-    auto audioThread = buildAudioThread(worker);
-
-    openGLTask.start();
-
-    int ret = app.exec();
-
-    //worker.stop();
-
-    openGLTask.quit();
-    //audioThread->join();
-
-    GLContextManager::getInstance().release();
-
-    return ret; */
 
     openGLTask.start();
 
