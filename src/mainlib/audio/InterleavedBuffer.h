@@ -15,8 +15,6 @@ public:
     size_t dataSize() const { return m_dataSize; }
     size_t samplesCount() const { return m_frameSize * channels; };
     bool isLittleEndian() const { return little_endian; }
-    char& operator[](size_t &ind) { return charFrame[ind]; }
-    char& operator[](size_t &&ind) { return charFrame[ind]; }
 
 private:
     int channels;

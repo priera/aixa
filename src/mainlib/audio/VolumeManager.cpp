@@ -1,37 +1,34 @@
 #include "VolumeManager.h"
 
-#include <iostream>
-
 void VolumeManager::applyTo(InterleavedBuffer &buff) {
     auto lVolume = volume;
     auto size = buff.dataSize();
 
-    //FIXME: not working and adds noise
-    for (size_t i = 0; i < size; i += 2) {
-        unsigned short sample = buff[i];
-        sample += (buff[i + 1] << 8);
-        sample *= lVolume;
-        buff[i] = sample;
+    auto samplesBytes = &buff.frame()[0];
+    auto inc = sizeof(short);
+    for (size_t i = 0; i < size; i += inc) {
+        auto sample = reinterpret_cast<short *>(samplesBytes);
+        *sample *= lVolume;
+        samplesBytes += inc;
     }
 }
 
 void VolumeManager::increaseVolume() {
-    auto lVolume = volume;
-    lVolume += VOLUME_STEP;
-    if (lVolume > MAX_VOLUME) lVolume = MAX_VOLUME;
-    volume = lVolume;
-    std::cout << "increase: " << lVolume << std::endl;
+    addToVolume(VOLUME_STEP);
 }
 
 void VolumeManager::decreaseVolume() {
-    auto lVolume = volume;
-    unsigned int newVolume = lVolume - VOLUME_STEP;
+    addToVolume(-VOLUME_STEP);
+}
 
-    if (newVolume >= MAX_VOLUME) //overflow condition
+void VolumeManager::addToVolume(float amount) {
+    auto lVolume = volume;
+    lVolume += amount;
+
+    if (lVolume < MIN_VOLUME)
         lVolume = MIN_VOLUME;
-    else
-        lVolume = newVolume;
+    else if (lVolume > MAX_VOLUME)
+        lVolume = MAX_VOLUME;
 
     volume = lVolume;
-    std::cout << "decrease: " << lVolume << std::endl;
 }

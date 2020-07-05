@@ -13,13 +13,13 @@ public:
     void decreaseVolume();
 
 private:
-    static constexpr unsigned int MIN_VOLUME = 0;
+    void addToVolume(float amount);
 
-    static constexpr int FORMAT_BITS = 16; //snd_pcm_format_width(SND_PCM_FORMAT_S16);
-    static constexpr unsigned int MAX_VOLUME = (1 << (FORMAT_BITS - 1)) - 1;
-    static constexpr unsigned int VOLUME_STEP = (MAX_VOLUME - MIN_VOLUME) / 20;
+    static constexpr float MIN_VOLUME = 0;
+    static constexpr float MAX_VOLUME = 1.0;
+    static constexpr float VOLUME_STEP = (MAX_VOLUME - MIN_VOLUME) / 20;
 
-    volatile unsigned int volume{0};
+    volatile float volume{0.6};
 
 };
 
