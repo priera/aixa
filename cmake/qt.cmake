@@ -1,4 +1,4 @@
-set(Qt5_DIR /home/pedro/Qt/5.12.4/gcc_64/lib/cmake/Qt5)
+set(Qt5_DIR /home/pedro/Qt/5.15.0/gcc_64/lib/cmake/Qt5)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)

@@ -16,3 +16,4 @@ target_link_libraries(${TARGET_NAME}
         freetype)
 
 add_subdirectory(audio/test)
+add_subdirectory(math/test)

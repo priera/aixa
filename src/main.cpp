@@ -4,6 +4,8 @@
 #include <QApplication>
 
 #include <mainlib/audio/AudioWorkerFactory.h>
+#include <mainlib/math/FourierTransform.h>
+#include <mainlib/audio/SineGenerator.h>
 
 #include "mainlib/gui/MainEventFilter.h"
 
@@ -21,10 +23,23 @@ int main(int argc, char *argv[]) {
   /*  AlsaExamples examples(argc, argv);
     examples.run(); */
 
-    /*WavReader wavReader("/home/pedro/alsaTests/amics.wav");
-    wavReader.run(); */
+  /*    SineGenerator(std::size_t signalSize, double samplePeriod, double freq, unsigned int scaleFactor = 1);*/
 
-    QApplication app(argc, argv);
+    SineGenerator generator = SineGenerator(110, 1.0 / 44100, 440);
+    auto transform = aixa::math::FourierTransform::prepare(110);
+    auto &result = transform.applyTo(generator.nextSignal());
+    result.print();
+
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < result.size(); i++) {
+        auto & e = result(i);
+        std::cout << e.re() << " " << e.im() << std::endl;
+    }
+
+    return 0;
+
+    /*QApplication app(argc, argv);
 
     OpenGLWindow win;
     float w = 1920 * 3.0 / 4;
@@ -59,6 +74,6 @@ int main(int argc, char *argv[]) {
 
     GLContextManager::getInstance().release();
 
-    return ret;
+    return ret; */
 }
 

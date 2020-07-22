@@ -11,8 +11,11 @@ public:
 
     virtual ~InterleavedBuffer();
 
-    char *frame() const { return charFrame; }
+    char *raw() const { return charFrame; }
     size_t dataSize() const { return m_dataSize; }
+
+    //Notice following function only works if system is little endian
+    short *samples() const { return reinterpret_cast<short *>(&charFrame[0]); };
     size_t samplesCount() const { return m_frameSize * channels; };
     bool isLittleEndian() const { return little_endian; }
 

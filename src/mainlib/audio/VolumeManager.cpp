@@ -2,14 +2,10 @@
 
 void VolumeManager::applyTo(InterleavedBuffer &buff) {
     auto lVolume = volume;
-    auto size = buff.dataSize();
 
-    auto samplesBytes = &buff.frame()[0];
-    auto inc = sizeof(short);
-    for (size_t i = 0; i < size; i += inc) {
-        auto sample = reinterpret_cast<short *>(samplesBytes);
-        *sample *= lVolume;
-        samplesBytes += inc;
+    auto samples = buff.samples();
+    for (size_t i = 0; i < buff.samplesCount(); i++) {
+        samples[i] *= lVolume;
     }
 }
 

@@ -3,23 +3,28 @@
 
 #include <cmath>
 
+#include <mainlib/math/Vector.h>
+#include <mainlib/math/types.h>
+
 #include "AudioDefinitions.h"
 
 class InterleavedBuffer;
 
 class SineGenerator {
 public:
-    SineGenerator(std::shared_ptr<SamplesRing> samplesRing, int frameSize, double rate);
+    SineGenerator(std::size_t signalSize, double samplePeriod, double freq, unsigned int scaleFactor = 1);
 
-    void fillFrame(double freq, unsigned int scaleFactor);
+    const aixa::math::DoubleVector &nextSignal();
 
 private:
     static constexpr double MAX_PHASE = 2 * M_PI;
 
-    std::shared_ptr<SamplesRing> samplesRing;
-    int frameSize;
-    double rate;
+    std::size_t signalSize;
+    double samplePeriod;
+    double freq;
+    unsigned int scaleFactor;
 
+    aixa::math::DoubleVector signal;
     double phase;
 };
 

@@ -1,33 +1,29 @@
 #include "SineGenerator.h"
 
-#include <utility>
+using namespace aixa::math;
 
-#include "InterleavedBuffer.h"
-
-SineGenerator::SineGenerator(std::shared_ptr<SamplesRing> samplesRing, int frameSize, double rate) :
-    samplesRing(std::move(samplesRing)),
-    frameSize(frameSize),
-    rate(rate),
+SineGenerator::SineGenerator(std::size_t signalSize,
+        double samplePeriod,
+        double freq,
+        unsigned int scaleFactor) :
+    signalSize(signalSize),
+    samplePeriod(samplePeriod),
+    freq(freq),
+    scaleFactor(scaleFactor),
+    signal(DoubleVector(signalSize)),
     phase(0) {}
 
-void SineGenerator::fillFrame(double freq, unsigned int scaleFactor) {
-    double step = MAX_PHASE * freq / rate;
+const DoubleVector &SineGenerator::nextSignal() {
+    double step = MAX_PHASE * freq * samplePeriod;
 
-    auto buffer = samplesRing->nextWriteBuffer();
-
-    /*
-    buffer->startNewFrame();
-
-    int n = frameSize;
-    while (n-- > 0) {
-        int res;
-
-        res = sin(phase) * scaleFactor;
-        buffer->storeNextSample(res);
+    for (size_t i = 0; i < signalSize; i++) {
+        signal(i) = std::sin(phase) * scaleFactor;
 
         phase += step;
         if (phase >= MAX_PHASE) {
             phase -= MAX_PHASE;
         }
-    } */
+    }
+
+    return signal;
 }

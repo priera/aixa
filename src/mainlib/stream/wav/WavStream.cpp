@@ -24,7 +24,7 @@ void WavStream::prepareForFirstRead() {
 
 void WavStream::storeSamples(InterleavedBuffer &buffer) {
     auto toRead = buffer.dataSize();
-    auto frame = buffer.frame();
+    auto frame = buffer.raw();
     auto extracted = f.extractBytes(frame, toRead);
 
     if (extracted >= 0 && extracted < toRead) {

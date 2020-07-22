@@ -12,7 +12,7 @@ bool Publisher::exec() {
         auto buffer = samplesRing->nextReadBuffer();
 
         volumeManager->applyTo(*buffer);
-        int err = snd_pcm_writei(alsaEnv.handle, buffer->frame(), alsaEnv.frame_size);
+        int err = snd_pcm_writei(alsaEnv.handle, buffer->raw(), alsaEnv.frame_size);
 
         if (err < 0)
             attemptStreamRecovery(err);
