@@ -4,17 +4,17 @@
 #include "Matrix.h"
 
 namespace aixa::math {
-    template<typename T>
-    class Vector : public Matrix<T> {
+    template<typename T, class ZeroComparer>
+    class Vector : public Matrix<T, ZeroComparer> {
     public:
-        explicit Vector(size_t M, T def = T()) : Matrix<T>(1, M, def) {
+        explicit Vector(size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, def) {
         }
 
-        const T &operator()(size_t n) const {
+        const T &operator[](size_t n) const {
             return this->content[n];
         }
 
-        T &operator()(size_t n) {
+        T &operator[](size_t n) {
             return this->content[n];
         }
     };

@@ -6,21 +6,21 @@
 
 namespace aixa::math {
 
-    template<typename T>
-    class BasisMatrix : public Matrix<T>{
+    template<typename T, class ZeroComparer>
+    class BasisMatrix : public Matrix<T, ZeroComparer>{
     public:
         //N columns, M rows
         BasisMatrix(size_t N, size_t M, T def = T()) :
-            Matrix<T>(N, M, def),
-            result(std::move(Vector<T>(M, T()))){};
+            Matrix<T, ZeroComparer>(N, M, def),
+            result(std::move(Vector<T, ZeroComparer>(M, T()))){};
 
-        Vector<T>& operator*(const Vector<T>& other) {
+        Vector<T, ZeroComparer>& operator*(const Vector<T, ZeroComparer>& other) {
             this->multiply(other, result);
             return result;
         }
 
     private:
-        Vector<T> result;
+        Vector<T, ZeroComparer> result;
     };
 }
 

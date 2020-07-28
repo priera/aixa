@@ -4,8 +4,10 @@
 #include <QApplication>
 
 #include <mainlib/audio/AudioWorkerFactory.h>
-#include <mainlib/math/FourierTransform.h>
-#include <mainlib/audio/SineGenerator.h>
+#include <mainlib/math/dft/MatrixFourierTransform.h>
+#include <mainlib/math/SineGenerator.h>
+#include <mainlib/math/dft/CooleyTukeyFFT.h>
+#include <mainlib/math/dft/FourierTransformFactory.h>
 
 #include "mainlib/gui/MainEventFilter.h"
 
@@ -18,15 +20,21 @@
 
 using namespace std::chrono_literals;
 
+using namespace aixa::math;
+
 int main(int argc, char *argv[]) {
+
     using namespace std::chrono_literals;
   /*  AlsaExamples examples(argc, argv);
     examples.run(); */
 
   /*    SineGenerator(std::size_t signalSize, double samplePeriod, double freq, unsigned int scaleFactor = 1);*/
 
-    SineGenerator generator = SineGenerator(110, 1.0 / 44100, 440);
-    auto transform = aixa::math::FourierTransform::prepare(110);
+    auto fft = getFourierTransformFactory(FourierTransformFactory::Implementations::FFT).build(16);
+    return 0;
+
+    /*SineGenerator generator = SineGenerator(110, 1.0 / 44100, 440);
+    auto transform = aixa::math::MatrixFourierTransform::prepare(110);
     auto &result = transform.applyTo(generator.nextSignal());
     result.print();
 

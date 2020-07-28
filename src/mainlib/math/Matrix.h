@@ -8,15 +8,16 @@
 
 namespace aixa::math {
 
-    template<typename T>
+    template<typename T,
+            class TypeAxioms>
     class Matrix {
     public:
 
         //N columns, M rows
         Matrix(size_t N, size_t M, T def = T());
 
-        Matrix(Matrix &other) = default;
-        Matrix(Matrix &&other) noexcept = default;
+        Matrix(const Matrix<T, TypeAxioms> &other) = default;
+        Matrix(Matrix<T, TypeAxioms> &&other) noexcept = default;
 
         virtual ~Matrix() = default;
 
@@ -26,6 +27,59 @@ namespace aixa::math {
 
         T &operator()(size_t row, size_t column) {
             return content[row * columns_ + column];
+        }
+
+        Matrix<T, TypeAxioms> operator*(const T t) const {
+            Matrix<T, TypeAxioms> ret(*this);
+
+            for (auto& elem: ret.content)
+                elem *= t;
+
+            return std::move(ret);
+        }
+
+        Matrix<T, TypeAxioms> operator+(const Matrix<T, TypeAxioms>& other) const {
+            if (this->rows() != other.rows() ||
+                this->columns() != other.columns())
+                throw std::runtime_error("Invalid matrix operation");
+
+            Matrix<T, TypeAxioms> ret(*this);
+            for (size_t i = 0; i < size(); i++) {
+                ret.content[i] += other.content[i];
+            }
+
+            return std::move(ret);
+        }
+
+        Matrix<T, TypeAxioms> operator-(const Matrix<T, TypeAxioms>& other) const {
+            if (this->rows() != other.rows() ||
+                this->columns() != other.columns())
+                throw std::runtime_error("Invalid matrix operation");
+
+            TypeAxioms axioms;
+            auto diff = (*this) + (other * axioms.inverter());
+
+            return std::move(diff);
+        }
+
+        bool operator==(const Matrix<T, TypeAxioms>& other) const {
+            if (this->rows() != other.rows() ||
+                this->columns() != other.columns())
+                throw std::runtime_error("Invalid matrix operation");
+
+            bool eq = true;
+            for (size_t i = 0; i < size(); i++) {
+                if (this->content[i] != other.content[i]) {
+                    eq = false;
+                    break;
+                }
+            }
+
+            return eq;
+        }
+
+        bool operator!=(const Matrix<T, TypeAxioms>& other) const {
+            return !(*this == other);
         }
 
         size_t columns() const {
@@ -50,7 +104,8 @@ namespace aixa::math {
             return rows_ * columns_;
         }
 
-        void multiply(const Matrix<T> &other, Matrix<T> &result);
+        void multiply(const Matrix<T, TypeAxioms> &other,
+                      Matrix<T, TypeAxioms> &result);
 
         void print() const;
 

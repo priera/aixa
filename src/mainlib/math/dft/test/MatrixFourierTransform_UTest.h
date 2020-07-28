@@ -1,5 +1,5 @@
-#ifndef AIXA_SRC_MAINLIB_MATH_TEST_FOURIERTRANSFORM_UTEST_H
-#define AIXA_SRC_MAINLIB_MATH_TEST_FOURIERTRANSFORM_UTEST_H
+#ifndef AIXA_SRC_MAINLIB_MATH_TEST_MATRIXFOURIERTRANSFORM_UTEST_H
+#define AIXA_SRC_MAINLIB_MATH_TEST_MATRIXFOURIERTRANSFORM_UTEST_H
 
 #include <QtCore/QObject>
 
@@ -8,7 +8,7 @@
 namespace aixa::math {
 
     //Not so much a test class, but rather some utilities to ease development
-    class FourierTransform_UTest : public QObject {
+    class MatrixFourierTransform_UTest : public QObject {
     Q_OBJECT
 
     private slots:
@@ -26,4 +26,4 @@ namespace aixa::math {
     };
 }
 
-#endif //AIXA_SRC_MAINLIB_MATH_TEST_FOURIERTRANSFORM_UTEST_H
+#endif //AIXA_SRC_MAINLIB_MATH_TEST_MATRIXFOURIERTRANSFORM_UTEST_H

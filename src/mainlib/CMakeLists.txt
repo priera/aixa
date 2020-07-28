@@ -15,5 +15,4 @@ target_link_libraries(${TARGET_NAME}
         ${QT_LIBS}
         freetype)
 
-add_subdirectory(audio/test)
-add_subdirectory(math/test)
+add_subdirectory(math/dft/test)

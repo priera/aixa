@@ -1,4 +1,4 @@
-#include "FourierTransform_UTest.h"
+#include "MatrixFourierTransform_UTest.h"
 
 #include <iostream>
 #include <fstream>
@@ -7,7 +7,8 @@
 #include <QtTest/QTest>
 #include <QtCore/QtGlobal>
 
-#include <mainlib/math/FourierTransform.h>
+#include <mainlib/math/dft/MatrixFourierTransform.h>
+#include <mainlib/math/dft/MatrixDFTFactory.h>
 
 namespace aixa::math {
 
@@ -19,8 +20,8 @@ namespace aixa::math {
         std::cout << std::endl;
     }
 
-    template<typename T>
-    static void printVector(const Vector<T>& v) {
+    template<typename T, class ZeroComparer>
+    static void printVector(const Vector<T, ZeroComparer>& v) {
         for (size_t i = 0; i < v.size(); i++) {
             std::cout << v(i) << " ";
         }
@@ -28,13 +29,15 @@ namespace aixa::math {
         std::cout << std::endl;
     }
 
-    template<typename T>
-    static void storeVector(const std::string &name, const std::filesystem::path& dir, const Vector<T>& v) {
+    template<typename T, class ZeroComparer>
+    static void storeVector(const std::string &name,
+                            const std::filesystem::path& dir,
+                            const Vector<T, ZeroComparer>& v) {
         auto fileName = dir / (name + std::string(".txt"));
         std::ofstream f(fileName);
 
         for (size_t i = 0; i < v.size(); i++) {
-            f << v(i) << " ";
+            f << v[i] << " ";
         }
 
         f << std::endl;
@@ -57,19 +60,21 @@ namespace aixa::math {
         DoubleVector ret(dimensionality);
         for (size_t i = 0; i < dimensionality; i++) {
             double freq = (om * i) + phase;
-            ret(i) = amp * std::cos(freq);
+            ret[i] = amp * std::cos(freq);
         }
 
         return ret;
     }
 
-    void FourierTransform_UTest::initTestCase() {
+    void MatrixFourierTransform_UTest::initTestCase() {
         storeAt = std::filesystem::path(qgetenv("storeAt").toStdString());
     }
 
-    void FourierTransform_UTest::test_printBasisVectors() {
-        auto transform = FourierTransform::prepare(400);
-        auto basis = transform.basis;
+    void MatrixFourierTransform_UTest::test_printBasisVectors() {
+        auto transform = std::unique_ptr<FourierTransform>(MatrixDFTFactory().build(64));
+        auto matrixTransform = dynamic_cast<MatrixFourierTransform*>(transform.get());
+
+        auto basis = matrixTransform->basis;
 
         auto v0 = basis.vector(0);
         auto v1 = basis.vector(1);
@@ -93,39 +98,39 @@ namespace aixa::math {
         storeVector("v60", storeAt, v60);
     }
 
-    void FourierTransform_UTest::test_simpleDFT() {
+    void MatrixFourierTransform_UTest::test_simpleDFT() {
         DoubleVector signal = signalOfFreq(64, 2 * M_PI / 16, 3);
 
-        auto transform = FourierTransform::prepare(64);
-        auto &result = transform.applyTo(signal);
+        auto transform = std::unique_ptr<FourierTransform>(MatrixDFTFactory().build(64));
+        auto &result = transform->applyTo(signal);
 
         storeVector("dft1", storeAt, result);
     }
 
-    void FourierTransform_UTest::test_simpleDFT2() {
+    void MatrixFourierTransform_UTest::test_simpleDFT2() {
         DoubleVector signal = signalOfFreq(64, 2 * M_PI / 16, 3, M_PI / 3);
 
-        auto transform = FourierTransform::prepare(64);
-        auto &result = transform.applyTo(signal);
+        auto transform = std::unique_ptr<FourierTransform>(MatrixDFTFactory().build(64));
+        auto &result = transform->applyTo(signal);
 
         //Should be: 0.0981748 (rad)
         //689.062 (Hz)
-        std::cout << transform.baseDiscreteFreq() << std::endl;
-        std::cout << transform.baseContinuousFreq(1 / 44100.0) << std::endl;
+        std::cout << transform->baseDiscreteFreq() << std::endl;
+        std::cout << transform->baseContinuousFreq(1 / 44100.0) << std::endl;
 
         storeVector("dft2", storeAt, result);
     }
 
-    void FourierTransform_UTest::test_simpleDFT3() {
+    void MatrixFourierTransform_UTest::test_simpleDFT3() {
         DoubleVector signal = signalOfFreq(64, 2 * M_PI / 10, 3);
 
-        auto transform = FourierTransform::prepare(64);
-        auto &result = transform.applyTo(signal);
+        auto transform = std::unique_ptr<FourierTransform>(MatrixDFTFactory().build(64));
+        auto &result = transform->applyTo(signal);
 
         storeVector("dft3", storeAt, result);
     }
 
-    void FourierTransform_UTest::test_DFT_A4_1() {
+    void MatrixFourierTransform_UTest::test_DFT_A4_1() {
         double realFreq = 440.0; //A4
         size_t n = 128;
         double ts = 1.0 / 44100;
@@ -133,13 +138,13 @@ namespace aixa::math {
 
         DoubleVector signal = signalOfFreq(n, discreteFreq);
 
-        auto transform = FourierTransform::prepare(n);
-        auto &result = transform.applyTo(signal);
+        auto transform = std::unique_ptr<FourierTransform>(MatrixDFTFactory().build(n));
+        auto &result = transform->applyTo(signal);
 
         storeVector("dft_A4_1", storeAt, result);
     }
 
-    void FourierTransform_UTest::test_DFT_A4_2() {
+    void MatrixFourierTransform_UTest::test_DFT_A4_2() {
         double realFreq = 440.0; //A4
         size_t n = 400;
         double ts = 1.0 / 44100;
@@ -147,11 +152,11 @@ namespace aixa::math {
 
         DoubleVector signal = signalOfFreq(n, discreteFreq);
 
-        auto transform = FourierTransform::prepare(n);
-        auto &result = transform.applyTo(signal);
+        auto transform = std::unique_ptr<FourierTransform>(MatrixDFTFactory().build(n));
+        auto &result = transform->applyTo(signal);
 
         storeVector("dft_A4_2", storeAt, result);
     }
 }
 
-QTEST_MAIN(aixa::math::FourierTransform_UTest)
+QTEST_MAIN(aixa::math::MatrixFourierTransform_UTest)
