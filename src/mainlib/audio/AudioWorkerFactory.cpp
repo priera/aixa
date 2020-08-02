@@ -5,7 +5,7 @@
 
 #include <mainlib/stream/StreamTypes.h>
 
-#include "InterleavedBufferFactory.h"
+#include "InterleavedBufferGenerator.h"
 
 std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std::string &streamPath) {
     auto stream = tryToGetStream(streamPath);
@@ -79,8 +79,8 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
     /*Notice the asymmetry: internally ALSA stores five buffers (500000 us of audio)
      * while buffersRing stores one second */
     const auto BUFFERS_FOR_ONE_SECOND = 1000000 / alsaEnv.params.period_time;
-    auto bufferFactory = InterleavedBufferFactory(streamParams.channels, alsaEnv.frame_size, streamParams.format);
-    auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferFactory.generator());
+    auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, alsaEnv.frame_size, streamParams.format);
+    auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
 
     return std::move(AudioEnvironment(streamParams, alsaEnv, samplesRing));
 }

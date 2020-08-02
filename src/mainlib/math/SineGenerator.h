@@ -17,6 +17,10 @@ namespace aixa::math {
 
         const DoubleVector &nextSignal();
 
+        void setFrequency(double freq) { this->freq = freq; }
+
+        void setScaleFactor(unsigned int scaleFactor) { this->scaleFactor = scaleFactor; }
+
     private:
         static constexpr double MAX_PHASE = 2 * M_PI;
 

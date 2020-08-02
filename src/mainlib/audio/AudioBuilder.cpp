@@ -1,5 +1,5 @@
 #include "AudioBuilder.h"
-#include "InterleavedBufferFactory.h"
+#include "InterleavedBufferGenerator.h"
 
 #include <iostream>
 #include <sstream>
@@ -37,7 +37,7 @@ AudioEnvironment *AudioBuilder::setupAudioEnvironment(AudioParameters &parameter
 
     snd_pcm_dump(environment.handle, environment.output);
 
-    auto bufferFactory = InterleavedBufferFactory(parameters.channels, environment.frame_size, parameters.format);
+    auto bufferFactory = InterleavedBufferGenerator(parameters.channels, environment.frame_size, parameters.format);
     auto samplesRing = std::make_shared<SamplesRing>(10, bufferFactory.generator());
 
     //return new AudioEnvironment(parameters, environment, samplesRing);

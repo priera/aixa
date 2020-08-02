@@ -22,32 +22,16 @@ using namespace std::chrono_literals;
 
 using namespace aixa::math;
 
+//static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
+static const auto STREAM = "??";
+
 int main(int argc, char *argv[]) {
-
     using namespace std::chrono_literals;
-  /*  AlsaExamples examples(argc, argv);
-    examples.run(); */
 
-  /*    SineGenerator(std::size_t signalSize, double samplePeriod, double freq, unsigned int scaleFactor = 1);*/
+    /*auto fft = getFourierTransformFactory(FourierTransformFactory::Implementations::FFT).build(16);
+    return 0; */
 
-    auto fft = getFourierTransformFactory(FourierTransformFactory::Implementations::FFT).build(16);
-    return 0;
-
-    /*SineGenerator generator = SineGenerator(110, 1.0 / 44100, 440);
-    auto transform = aixa::math::MatrixFourierTransform::prepare(110);
-    auto &result = transform.applyTo(generator.nextSignal());
-    result.print();
-
-    std::cout << std::endl;
-
-    for (size_t i = 0; i < result.size(); i++) {
-        auto & e = result(i);
-        std::cout << e.re() << " " << e.im() << std::endl;
-    }
-
-    return 0;
-
-    /*QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     OpenGLWindow win;
     float w = 1920 * 3.0 / 4;
@@ -65,7 +49,7 @@ int main(int argc, char *argv[]) {
         noteSetter.addObserver(openGLTask.getCentralNoteManager());
     });
 
-    auto audioWorker = AudioWorkerFactory().buildWithInputStream("/home/pedro/alsaTests/amics.wav");
+    auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
     audioWorker->start();
 
     auto commandCollection = audioWorker->getCommandCollection();
@@ -82,6 +66,6 @@ int main(int argc, char *argv[]) {
 
     GLContextManager::getInstance().release();
 
-    return ret; */
+    return ret;
 }
 

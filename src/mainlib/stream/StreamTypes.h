@@ -5,7 +5,10 @@
 
 class StreamTypes {
 public:
-    static std::shared_ptr<StreamFactory> getMatchingStreamFactory(const std::string & streamPath);
+    static std::unique_ptr<StreamFactory> getMatchingStreamFactory(const std::string & streamPath);
+
+private:
+    static void validateFileStreamPath(const std::string &streamPath);
 };
 
 
