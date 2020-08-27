@@ -6,33 +6,35 @@
 #include "mainlib/observer/Observer.h"
 
 struct Note {
-    static constexpr int VALID_PITCHES = 8;
-
-    enum class Pitch : unsigned char {
-        C = 0,
-        D = 2,
-        E = 3,
-        F = 5,
-        G = 7,
-        A = 9,
-        B = 11,
-        NONE
+    enum class Pitch : signed int {
+        A = 0,
+        B = 2,
+        C = 3,
+        D = 5,
+        E = 7,
+        F = 8,
+        G = 10
     };
 
-    enum class Modifier {
-        NONE,
-        SHARP,
-        FLAT
+    enum class Modifier : signed int {
+        NONE    = 0,
+        SHARP   = +1,
+        FLAT    = -1
     };
 
-    Note() : pitch(Pitch::NONE), octave(0), modifier(Modifier::NONE) {}
+    Note(Pitch pitch, int octave, Modifier modifier)
+            : pitch(pitch),
+              octave(octave),
+              modifier(modifier) { }
+
+    Note() : Note(Pitch::A, 4, Modifier::NONE) {}
 
     Pitch pitch;
     int octave;
     Modifier modifier;
 };
 
-double computeFrequency(const Note &n);
+double computeFrequency(unsigned int octave, int semitones);
 char getNoteChar(const Note &n);
 
 using NotesBuffer = CircularBuffer<Note>;

@@ -12,9 +12,6 @@ namespace aixa::math {
     private slots:
         void test_FFT_data();
         void test_FFT();
-
-        /*void test_A4_1();
-        void test_A4_2(); */
     };
 }
 

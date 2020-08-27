@@ -50,10 +50,7 @@ void NoteSetter::mergeNewNote(const Note &incomingNote) {
             lastNote.octave = 4;
         return;
     }
-
-    if (incomingNote.pitch != Note::Pitch::NONE)
-        lastNote.pitch = incomingNote.pitch;
-
+    
     if (incomingNote.octave != 0) {
         lastNote.octave = incomingNote.octave;
     }
