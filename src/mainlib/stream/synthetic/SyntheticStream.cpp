@@ -17,40 +17,46 @@ AudioStreamParameters SyntheticStream::getParameters() const {
                                  bytesPerSample * 8};
 }
 
+SyntheticStream::SyntheticStream(std::size_t signalSize,
+    double samplePeriod,
+    std::vector<StreamStep> streamSteps) :
+    Stream(),
+    signalSize(signalSize),
+    streamSteps(std::move(streamSteps)),
+    sineGenerator(signalSize, samplePeriod, 0) {
+    currentStep = this->streamSteps.cbegin();
+}
+
 void SyntheticStream::prepareForFirstRead() {
     begin = Clock::now();
 }
 
 bool SyntheticStream::ended() {
-    return _ended;
+    return currentStep == (streamSteps.end() - 1);
 }
 
 void SyntheticStream::storeSamples(InterleavedBuffer &buffer) {
     auto current = Clock::now();
 
     auto passed = current - begin;
-
-    if (passed > 9000ms) {
-        _ended = true;
-    } else if (passed > 6000ms) {
-        signal.setScaleFactor(400);
-        signal.setFrequency(200);
-
-    } else if (passed > 5000ms) {
-        signal.setScaleFactor(0);
-
-    } else if (passed > 3000ms) {
-        signal.setScaleFactor(500);
-        signal.setFrequency(800);
-
-    } else if (passed > 2000ms) {
-        signal.setScaleFactor(0);
+    auto nextStep = currentStep + 1;
+    if (passed > (nextStep->startTime - begin)) {
+        currentStep++;
     }
 
-    auto& newSamples = signal.nextSignal();
+    auto finalSignal = aixa::math::DoubleVector(signalSize);
+
+    auto freqsSize = currentStep->chord.getFrequencies().size();
+    for (std::size_t i = 0; i < freqsSize; i++) {
+        sineGenerator.setFrequency(currentStep->chord.getFrequencies()[i]);
+        sineGenerator.setScaleFactor(currentStep->volume);
+
+        finalSignal += sineGenerator.nextSignal();
+    }
+
     auto buffSamples = buffer.samples();
 
-    for (std::size_t i = 0; i < newSamples.size(); i++) {
-        buffSamples[i] = static_cast<short>(newSamples[i]);
+    for (std::size_t i = 0; i < finalSignal.size(); i++) {
+        buffSamples[i] = static_cast<short>(finalSignal[i]);
     }
 }

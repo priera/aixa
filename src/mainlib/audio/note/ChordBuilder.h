@@ -15,7 +15,9 @@ public:
     Chord augmented();
     Chord diminished();
 
-    Chord build() const;
+    operator Chord() const {
+        return this->build();
+    }
 
 private:
     ChordBuilder(Note tonic, std::vector<int> semitones) :
@@ -23,6 +25,8 @@ private:
         semitones(std::move(semitones)),
         buildingSeventh(semitones.size() == 4) {
     }
+
+    Chord build() const;
 
     Note tonic;
     std::vector<int> semitones;

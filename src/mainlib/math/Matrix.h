@@ -15,9 +15,7 @@ namespace aixa::math {
 
         //N columns, M rows
         Matrix(size_t N, size_t M, T def = T());
-
         Matrix(const Matrix<T, TypeAxioms> &other) = default;
-        Matrix(Matrix<T, TypeAxioms> &&other) noexcept = default;
 
         virtual ~Matrix() = default;
 
@@ -49,6 +47,12 @@ namespace aixa::math {
             }
 
             return std::move(ret);
+        }
+
+        Matrix<T, TypeAxioms> &operator+=(const Matrix<T, TypeAxioms>& other) {
+            auto sum = *this + other;
+            this->content.swap(sum.content);
+            return *this;
         }
 
         Matrix<T, TypeAxioms> operator-(const Matrix<T, TypeAxioms>& other) const {

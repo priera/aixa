@@ -26,11 +26,6 @@ using namespace aixa::math;
 static const auto STREAM = "??";
 
 int main(int argc, char *argv[]) {
-    using namespace std::chrono_literals;
-
-    /*auto fft = getFourierTransformFactory(FourierTransformFactory::Implementations::FFT).build(16);
-    return 0; */
-
     QApplication app(argc, argv);
 
     OpenGLWindow win;

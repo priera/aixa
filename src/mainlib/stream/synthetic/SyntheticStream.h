@@ -6,13 +6,21 @@
 #include <chrono>
 
 #include <mainlib/math/SineGenerator.h>
+#include <mainlib/audio/note/Chord.h>
 
 class SyntheticStream : public Stream {
 public:
-    SyntheticStream() :
-        Stream(),
-        _ended(false),
-        signal(4410, 1.0 / 44100, 440, 200) {}
+    using Clock = std::chrono::steady_clock;
+
+    struct StreamStep {
+        int volume;
+        Chord chord;
+        std::chrono::time_point<Clock> startTime;
+    };
+
+    SyntheticStream(std::size_t signalSize,
+                    double samplePeriod,
+                    std::vector<StreamStep> streamSteps);
 
     AudioStreamParameters getParameters() const override;
     void prepareForFirstRead() override;
@@ -20,12 +28,12 @@ public:
     void storeSamples(InterleavedBuffer &buffer) override;
 
 private:
-    using Clock = std::chrono::steady_clock;
     std::chrono::time_point<Clock> begin;
 
-    bool _ended;
-
-    aixa::math::SineGenerator signal;
+    std::size_t signalSize;
+    std::vector<StreamStep> streamSteps;
+    std::vector<StreamStep>::const_iterator currentStep;
+    aixa::math::SineGenerator sineGenerator;
 };
 
 

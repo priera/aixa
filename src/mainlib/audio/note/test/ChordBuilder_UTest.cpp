@@ -39,7 +39,7 @@ void ChordBuilder_UTest::test_triad() {
     QFETCH(std::vector<double>, expected);
 
     auto tonic = Note(static_cast<Note::Pitch>(pitch), octave, static_cast<Note::Modifier>(modifier));
-    auto chord = ChordBuilder::triad(tonic).build();
+    Chord chord = ChordBuilder::triad(tonic);
 
     QVERIFY2(compareVectorDoubles(chord.getFrequencies(), expected), "Not matching chord frequencies");
 }
@@ -73,7 +73,7 @@ void ChordBuilder_UTest::test_seventh() {
     QFETCH(std::vector<double>, expected);
 
     auto tonic = Note(static_cast<Note::Pitch>(pitch), octave, static_cast<Note::Modifier>(modifier));
-    auto chord = ChordBuilder::seventh(tonic).build();
+    Chord chord = ChordBuilder::seventh(tonic);
 
     QVERIFY2(compareVectorDoubles(chord.getFrequencies(), expected), "Not matching chord frequencies");
 }

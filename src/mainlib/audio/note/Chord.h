@@ -11,7 +11,7 @@ public:
 
     virtual ~Chord() = default;
 
-    const std::vector<double> &getFrequencies() { return freqs; }
+    const std::vector<double> &getFrequencies() const { return freqs; }
 
 private:
     std::vector<double> freqs;

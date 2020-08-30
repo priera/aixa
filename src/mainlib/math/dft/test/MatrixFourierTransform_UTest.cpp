@@ -1,7 +1,6 @@
 #include "MatrixFourierTransform_UTest.h"
 
 #include <iostream>
-#include <fstream>
 #include <cmath>
 
 #include <QtTest/QTest>
@@ -9,52 +8,9 @@
 
 #include <mainlib/math/dft/MatrixFourierTransform.h>
 #include <mainlib/math/dft/MatrixDFTFactory.h>
+#include <mainlib/math/vectorUtils.h>
 
 namespace aixa::math {
-
-    static void printVector(const std::vector<Complex> & v) {
-        for (auto &c: v) {
-            std::cout << c << " ";
-        }
-
-        std::cout << std::endl;
-    }
-
-    template<typename T, class ZeroComparer>
-    static void printVector(const Vector<T, ZeroComparer>& v) {
-        for (size_t i = 0; i < v.size(); i++) {
-            std::cout << v(i) << " ";
-        }
-
-        std::cout << std::endl;
-    }
-
-    template<typename T, class ZeroComparer>
-    static void storeVector(const std::string &name,
-                            const std::filesystem::path& dir,
-                            const Vector<T, ZeroComparer>& v) {
-        auto fileName = dir / (name + std::string(".txt"));
-        std::ofstream f(fileName);
-
-        for (size_t i = 0; i < v.size(); i++) {
-            f << v[i] << " ";
-        }
-
-        f << std::endl;
-        f.close();
-    }
-
-    static void storeVector(const std::string& name, const std::filesystem::path& dir, const std::vector<Complex>& v) {
-        auto fileName = dir / (name + std::string(".txt"));
-        std::ofstream f(fileName);
-
-        for (auto &c: v) {
-            f << c << " ";
-        }
-
-        f << std::endl;
-        f.close();
-    }
 
     static DoubleVector signalOfFreq(size_t dimensionality, double om, double amp = 1, double phase = 0) {
         DoubleVector ret(dimensionality);
