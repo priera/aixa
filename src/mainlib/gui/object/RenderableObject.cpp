@@ -44,8 +44,7 @@ void RenderableObject::updateDone() {
 void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
     beforeRender(projectionMatrix);
 
-    for (auto &child: children)
-    {
+    for (auto &child: children) {
         child.second->render(projectionMatrix);
     }
 

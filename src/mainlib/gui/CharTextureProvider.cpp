@@ -1,7 +1,6 @@
 #include "mainlib/gui/CharTextureProvider.h"
 
 #include <set>
-#include <iostream>
 
 #include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
 

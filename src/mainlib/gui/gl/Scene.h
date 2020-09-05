@@ -3,7 +3,8 @@
 
 #include <QtGui/QMatrix4x4>
 
-class ShadedRenderableObject;
+#include <mainlib/gui/object/ShadedRenderableObject.h>
+
 
 class Scene {
 public:

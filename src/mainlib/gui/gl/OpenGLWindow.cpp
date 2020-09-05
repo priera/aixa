@@ -23,11 +23,10 @@ OpenGLWindow::~OpenGLWindow() {
     context->doneCurrent();
 }
 
-void OpenGLWindow::render()
-{
-    if (scene) {
+void OpenGLWindow::render() {
+    if (scene)
         scene->draw();
-    }
+
 }
 
 void OpenGLWindow::renderNow() {
@@ -70,7 +69,6 @@ void OpenGLWindow::init() {
     glEnable(GL_CULL_FACE);
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 
     glViewport(0, 0, width(), height());
 

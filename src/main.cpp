@@ -4,23 +4,17 @@
 #include <QApplication>
 
 #include <mainlib/audio/AudioWorkerFactory.h>
-#include <mainlib/math/dft/MatrixFourierTransform.h>
-#include <mainlib/math/SineGenerator.h>
-#include <mainlib/math/dft/CooleyTukeyFFT.h>
-#include <mainlib/math/dft/FourierTransformFactory.h>
 
-#include "mainlib/gui/MainEventFilter.h"
+#include <mainlib/gui/MainEventFilter.h>
 
-#include "mainlib/gui/gl/OpenGLTask.h"
-#include "mainlib/gui/gl/OpenGLWindow.h"
-#include "mainlib/gui/gl/GLContextManager.h"
+#include <mainlib/gui/gl/OpenGLTask.h>
+#include <mainlib/gui/gl/OpenGLWindow.h>
+#include <mainlib/gui/gl/GLContextManager.h>
 
-#include "mainlib/gui/CentralNoteManager.h"
-#include "mainlib/audio/note/NoteSetter.h"
+#include <mainlib/gui/CentralNoteManager.h>
+#include <mainlib/audio/note/NoteSetter.h>
 
 using namespace std::chrono_literals;
-
-using namespace aixa::math;
 
 //static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 static const auto STREAM = "??";
