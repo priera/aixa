@@ -10,13 +10,14 @@ class CharTextureProvider;
 class NoteRenderable;
 
 class CentralNoteManager :
-        public NotesListener,
+        //public NotesListener,
         public ShadedRenderableObject {
 public:
     CentralNoteManager();
     ~CentralNoteManager();
 
-    void notifyNewValue(const Note &note) override;
+    //void notifyNewValue(const Note &note) override;
+    void setNewFrontNote(const Note &note) { newFrontChar = getNoteChar(note); }
 
 protected:
     void doMyUpdate() override;

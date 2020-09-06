@@ -1,4 +1,4 @@
-#include "OpenGLTask.h"
+#include "DrawingWorker.h"
 
 #include <chrono>
 #include <thread>
@@ -13,35 +13,54 @@
 
 #include <iostream>
 
-OpenGLTask::OpenGLTask(OpenGLWindow &win) :
+/*DrawingWorker::DrawingWorker(OpenGLWindow &win) :
     QThread(),
     window(&win),
     frameRate(60) //TODO make this dependent on actual screen configuration
 {
-    connect(this, &OpenGLTask::renderLoopDone, window, &OpenGLWindow::renderNow);
+    connect(this, &DrawingWorker::renderLoopDone, window, &OpenGLWindow::renderNow, Qt::QueuedConnection);
+} */
+
+DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
+                             QSurface &contextSurface,
+                             Scene &scene) :
+    QThread(),
+    frameRate(60), //TODO make this dependent on actual screen configuration
+    context(std::move(context)),
+    scene(&scene),
+    offscreenSurface(&contextSurface),
+    centralNoteManager(nullptr) {
+
 }
 
-OpenGLTask::~OpenGLTask() {}
+void DrawingWorker::run() {
 
-void OpenGLTask::run() {
-
-    auto size = window->size();
+    /*auto size = window->size();
 
     auto context = GLContextManager::getInstance().useNewOffscreenContext();
 
     noteManager = std::make_unique<CentralNoteManager>();
     scene = std::make_unique<Scene>(*noteManager, size.width(), size.height());
 
-    emit sceneBuilt();
+    emit sceneBuilt(); */
+
+    //context->moveToThread(this);
+
+    if (!context->create()) {
+        throw std::runtime_error("Error when creating OpenGLContext");
+    }
+    context->makeCurrent(offscreenSurface);
+
+    centralNoteManager = std::make_unique<CentralNoteManager>();
+    scene->setMainObject(centralNoteManager.get());
 
     long int iterationTimeus = (1 / ((float)frameRate)) * 1000000;
 
     std::chrono::microseconds durationRender(iterationTimeus);
     auto ticksRender = durationRender.count();
 
-    stop = false;
-
-    while (!stop) {
+    m_stop = false;
+    while (!m_stop) {
         auto start = std::chrono::steady_clock::now();
 
         scene->update();
@@ -62,6 +81,11 @@ void OpenGLTask::run() {
     context->doneCurrent();
 }
 
-void OpenGLTask::quit() {
-    stop = true;
+void DrawingWorker::stop() {
+    m_stop = true;
+}
+
+void DrawingWorker::notifyNewValue(const Note &note) {
+    if (centralNoteManager)
+        centralNoteManager->setNewFrontNote(note);
 }

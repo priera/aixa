@@ -1,36 +1,37 @@
 #include "OpenGLWindow.h"
 
-#include <QtGui/QScreen>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QResizeEvent>
+#include <QtGui/QScreen>
 
-#include "mainlib/gui/gl/Scene.h"
 #include "mainlib/gui/gl/GLContextManager.h"
+#include "mainlib/gui/gl/Scene.h"
 #include "mainlib/gui/gl/utils.h"
 
-OpenGLWindow::OpenGLWindow() :
-    QWindow(),
-    QOpenGLFunctions(),
-    context(nullptr),
-    scene(nullptr),
-    initialized(false),
-    ready(false)
-{
+OpenGLWindow::OpenGLWindow()
+        : QWindow(), QOpenGLFunctions(), context(nullptr), scene(nullptr),
+          initialized(false), ready(false) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
-OpenGLWindow::~OpenGLWindow() {
-    context->doneCurrent();
+OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context)
+        : QWindow(), QOpenGLFunctions(),
+            scene(&scene),
+            context(std::move(context)),
+            initialized(false), ready(false) {
+    setSurfaceType(QWindow::OpenGLSurface);
 }
+
+OpenGLWindow::~OpenGLWindow() { context->doneCurrent(); }
 
 void OpenGLWindow::render() {
     if (scene)
         scene->draw();
-
 }
 
 void OpenGLWindow::renderNow() {
-    if (!ready) return;
+    /*if (!ready)
+        return; */
 
     if (!initialized) {
         init();
@@ -52,10 +53,13 @@ void OpenGLWindow::renderNow() {
 }
 
 void OpenGLWindow::init() {
-    auto context_p = GLContextManager::getInstance().createContext();
-    context = std::unique_ptr<QOpenGLContext>(context_p);
+    /*auto context_p = GLContextManager::getInstance().createContext();
+    context = std::unique_ptr<QOpenGLContext>(context_p); */
 
     context->setFormat(requestedFormat());
+    if (!context->create()) {
+        throw std::runtime_error("Error when creating OpenGLContext");
+    }
 
     context->makeCurrent(this);
 
@@ -68,19 +72,16 @@ void OpenGLWindow::init() {
 
     glEnable(GL_CULL_FACE);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glViewport(0, 0, width(), height());
 
     context->doneCurrent();
 }
 
-void OpenGLWindow::setReady() {
-    ready = true;
-}
+//void OpenGLWindow::setReady() { ready = true; }
 
-bool OpenGLWindow::event(QEvent *event)
-{
+bool OpenGLWindow::event(QEvent *event) {
     switch (event->type()) {
         case QEvent::UpdateRequest:
             renderNow();
@@ -90,8 +91,7 @@ bool OpenGLWindow::event(QEvent *event)
     }
 }
 
-void OpenGLWindow::exposeEvent(QExposeEvent *event)
-{
+void OpenGLWindow::exposeEvent(QExposeEvent *event) {
     Q_UNUSED(event);
 
     if (isExposed())
@@ -99,7 +99,8 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 }
 
 void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
-    if (!initialized) return;
+    if (!initialized)
+        return;
 
     auto s = ev->size();
     glViewport(0, 0, s.width(), s.height());

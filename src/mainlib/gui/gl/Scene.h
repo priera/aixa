@@ -5,11 +5,16 @@
 
 #include <mainlib/gui/object/ShadedRenderableObject.h>
 
-
 class Scene {
 public:
     Scene(ShadedRenderableObject &mainObject, int w, int h);
+    Scene(int w, int h);
+
     virtual ~Scene() = default;
+
+    void setMainObject(ShadedRenderableObject *object) {
+        mainObject = object;
+    }
 
     void update();
     void draw();

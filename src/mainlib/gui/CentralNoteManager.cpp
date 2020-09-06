@@ -22,9 +22,9 @@ CentralNoteManager::CentralNoteManager() :
 
 CentralNoteManager::~CentralNoteManager() { }
 
-void CentralNoteManager::notifyNewValue(const Note &note) {
+/*void CentralNoteManager::notifyNewValue(const Note &note) {
     newFrontChar = getNoteChar(note);
-}
+} */
 
 void CentralNoteManager::doMyUpdate(){
     if (frontChar != newFrontChar) {
