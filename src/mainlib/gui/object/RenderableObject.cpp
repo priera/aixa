@@ -3,19 +3,18 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <iostream>
 
+RenderableObject::RenderableObject() :
+        program(nullptr)
+{
+    initializeOpenGLFunctions();
+}
+
+
 RenderableObject::RenderableObject(QOpenGLShaderProgram &program) :
   program(&program)
 {
     initializeOpenGLFunctions();
 }
-
-RenderableObject::RenderableObject() :
- program(nullptr)
-{
-    initializeOpenGLFunctions();
-}
-
-RenderableObject::~RenderableObject() { }
 
 void RenderableObject::addChildObject(float z, RenderableObject *object) {
     int zpos = z * 1000;

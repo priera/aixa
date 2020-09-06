@@ -8,31 +8,17 @@
 #include "mainlib/gui/gl/Scene.h"
 #include "mainlib/gui/gl/utils.h"
 
-OpenGLWindow::OpenGLWindow()
-        : QWindow(), QOpenGLFunctions(), context(nullptr), scene(nullptr),
-          initialized(false), ready(false) {
-    setSurfaceType(QWindow::OpenGLSurface);
-}
-
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context)
         : QWindow(), QOpenGLFunctions(),
             scene(&scene),
             context(std::move(context)),
-            initialized(false), ready(false) {
+            initialized(false) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
 OpenGLWindow::~OpenGLWindow() { context->doneCurrent(); }
 
-void OpenGLWindow::render() {
-    if (scene)
-        scene->draw();
-}
-
 void OpenGLWindow::renderNow() {
-    /*if (!ready)
-        return; */
-
     if (!initialized) {
         init();
         initialized = true;
@@ -43,7 +29,7 @@ void OpenGLWindow::renderNow() {
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    render();
+    scene->draw();
 
     glCheckError();
 
@@ -53,9 +39,6 @@ void OpenGLWindow::renderNow() {
 }
 
 void OpenGLWindow::init() {
-    /*auto context_p = GLContextManager::getInstance().createContext();
-    context = std::unique_ptr<QOpenGLContext>(context_p); */
-
     context->setFormat(requestedFormat());
     if (!context->create()) {
         throw std::runtime_error("Error when creating OpenGLContext");
@@ -78,8 +61,6 @@ void OpenGLWindow::init() {
 
     context->doneCurrent();
 }
-
-//void OpenGLWindow::setReady() { ready = true; }
 
 bool OpenGLWindow::event(QEvent *event) {
     switch (event->type()) {

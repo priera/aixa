@@ -7,7 +7,6 @@
 
 class Scene {
 public:
-    Scene(ShadedRenderableObject &mainObject, int w, int h);
     Scene(int w, int h);
 
     virtual ~Scene() = default;

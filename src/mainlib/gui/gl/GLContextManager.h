@@ -12,7 +12,6 @@ public:
     static void release();
 
     QOpenGLContext *createContext();
-    //QOpenGLContext *useNewOffscreenContext();
     QSurface &getOffscreenSurface() { return *offscreenSurface; }
 
 private:
@@ -20,8 +19,8 @@ private:
 
     static GLContextManager *instance;
 
-    QOpenGLContext *sharedContext;
-    QOffscreenSurface *offscreenSurface;
+    std::unique_ptr<QOpenGLContext> sharedContext;
+    std::unique_ptr<QOffscreenSurface> offscreenSurface;
 };
 
 

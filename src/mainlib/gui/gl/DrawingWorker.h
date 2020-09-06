@@ -19,35 +19,28 @@ class Scene;
 class DrawingWorker : public QThread, public NotesListener {
 Q_OBJECT
 public:
-    //explicit DrawingWorker(OpenGLWindow &win);
     explicit DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
                            QSurface &contextSurface,
                            Scene &scene);
 
     void run() override;
 
-    void stop();
+    void stop() {
+        m_stop = true;
+    }
 
     void notifyNewValue(const Note& note) override;
 
-    //CentralNoteManager *getCentralNoteManager() { return noteManager.get(); }
-    //Scene *getScene() { return scene; }
-
 signals:
-
     void renderLoopDone();
 
-    //void sceneBuilt();
 
 private:
     int frameRate;
 
-    //std::unique_ptr<CentralNoteManager> noteManager;
-
     std::unique_ptr<QOpenGLContext> context;
     Scene *scene;
     QSurface *offscreenSurface;
-    //OpenGLWindow *window;
     std::unique_ptr<CentralNoteManager> centralNoteManager;
 
     std::atomic<bool> m_stop;

@@ -3,20 +3,19 @@
 
 #include <memory>
 
-#include "mainlib/audio/note/Note.h"
-#include "mainlib/gui/object/ShadedRenderableObject.h"
+#include <mainlib/gui/object/NoteRenderable.h>
+#include <mainlib/gui/object/ShadedRenderableObject.h>
+
+#include <mainlib/audio/note/Note.h>
 
 class CharTextureProvider;
-class NoteRenderable;
 
 class CentralNoteManager :
-        //public NotesListener,
         public ShadedRenderableObject {
 public:
     CentralNoteManager();
-    ~CentralNoteManager();
+    ~CentralNoteManager() override = default;
 
-    //void notifyNewValue(const Note &note) override;
     void setNewFrontNote(const Note &note) { newFrontChar = getNoteChar(note); }
 
 protected:

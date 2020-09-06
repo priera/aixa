@@ -13,8 +13,10 @@
 
 class RenderableObject : protected QOpenGLExtraFunctions {
 public:
-    RenderableObject(QOpenGLShaderProgram &program);
-    virtual ~RenderableObject();
+    RenderableObject();
+    explicit RenderableObject(QOpenGLShaderProgram &program);
+
+    virtual ~RenderableObject() = default;
 
     void update();
     void render(QMatrix4x4 & projectionMatrix);
@@ -31,8 +33,6 @@ protected:
         D,
         ANGLE
     };
-
-    RenderableObject();
 
     void setProgram(QOpenGLShaderProgram &program) {
         this->program = &program;

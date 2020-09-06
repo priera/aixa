@@ -13,14 +13,6 @@
 
 #include <iostream>
 
-/*DrawingWorker::DrawingWorker(OpenGLWindow &win) :
-    QThread(),
-    window(&win),
-    frameRate(60) //TODO make this dependent on actual screen configuration
-{
-    connect(this, &DrawingWorker::renderLoopDone, window, &OpenGLWindow::renderNow, Qt::QueuedConnection);
-} */
-
 DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
                              QSurface &contextSurface,
                              Scene &scene) :
@@ -33,19 +25,13 @@ DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
 
 }
 
+void DrawingWorker::notifyNewValue(const Note &note) {
+    if (centralNoteManager)
+        centralNoteManager->setNewFrontNote(note);
+}
+
+
 void DrawingWorker::run() {
-
-    /*auto size = window->size();
-
-    auto context = GLContextManager::getInstance().useNewOffscreenContext();
-
-    noteManager = std::make_unique<CentralNoteManager>();
-    scene = std::make_unique<Scene>(*noteManager, size.width(), size.height());
-
-    emit sceneBuilt(); */
-
-    //context->moveToThread(this);
-
     if (!context->create()) {
         throw std::runtime_error("Error when creating OpenGLContext");
     }
@@ -79,13 +65,4 @@ void DrawingWorker::run() {
     }
 
     context->doneCurrent();
-}
-
-void DrawingWorker::stop() {
-    m_stop = true;
-}
-
-void DrawingWorker::notifyNewValue(const Note &note) {
-    if (centralNoteManager)
-        centralNoteManager->setNewFrontNote(note);
 }

@@ -28,41 +28,24 @@ GLContextManager::GLContextManager() {
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setRenderableType(QSurfaceFormat::OpenGL);
 
-    offscreenSurface = new QOffscreenSurface();
+    offscreenSurface = std::make_unique<QOffscreenSurface>();
     offscreenSurface->setFormat(format);
     offscreenSurface->create();
 
-    sharedContext = new QOpenGLContext();
+    sharedContext = std::make_unique<QOpenGLContext>();
     sharedContext->setFormat(offscreenSurface->format());
     sharedContext->create();
-    //sharedContext->makeCurrent(offscreenSurface);
 
     assert(glGetError() == GL_NO_ERROR);
-
-    //sharedContext->doneCurrent();
 }
 
 QOpenGLContext *GLContextManager::createContext() {
     auto context = new QOpenGLContext();
 
-    context->setShareContext(sharedContext);
+    context->setShareContext(sharedContext.get());
     QSurfaceFormat sf = context->format();
 
     //sf.setOption(QSurfaceFormat::DebugContext);
 
-    //context->setFormat(sf);
-
-    /*if (!context->create()) {
-        throw std::runtime_error("Error when creating OpenGLContext");
-    } */
-
     return context;
 }
-
-/*QOpenGLContext *GLContextManager::useNewOffscreenContext() {
-    auto ret = createContext();
-
-    ret->makeCurrent(offscreenSurface);
-
-    return ret;
-} */

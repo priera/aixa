@@ -12,7 +12,6 @@
 #include <mainlib/gui/gl/GLContextManager.h>
 #include <mainlib/gui/gl/Scene.h>
 
-#include <mainlib/gui/CentralNoteManager.h>
 #include <mainlib/audio/note/NoteSetter.h>
 
 using namespace std::chrono_literals;
@@ -49,12 +48,6 @@ int main(int argc, char *argv[]) {
     const auto h = static_cast<int>(1080 * 3.0 / 4);
     const auto appSize = QSize(w, h);
 
-    /*OpenGLWindow win;
-    win.resize(w, h);
-    win.show(); */
-
-    //DrawingWorker openGLTask(win);
-
     auto scene = std::make_unique<Scene>(appSize.width(), appSize.height());
     auto drawingWorker = std::unique_ptr<DrawingWorker>(buildDrawingWorker(appSize, *scene));
     auto win = std::unique_ptr<OpenGLWindow>(buildOpenGLWindow(appSize, *scene));
@@ -63,15 +56,7 @@ int main(int argc, char *argv[]) {
                      Qt::QueuedConnection);
 
     NoteSetter noteSetter;
-
-
     noteSetter.addObserver(drawingWorker.get());
-
-    /*QObject::connect(&openGLTask, &DrawingWorker::sceneBuilt, [&win, &openGLTask, &noteSetter]() {
-        win.setScene(openGLTask.getScene());
-        win.setReady();
-        noteSetter.addObserver(openGLTask.getCentralNoteManager());
-    }); */
 
     auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
     audioWorker->start();

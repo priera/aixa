@@ -6,24 +6,17 @@
 
 #include <QWindow>
 #include <QOpenGLFunctions>
-
-struct Scene;
+#include "Scene.h"
 
 class OpenGLWindow : public QWindow, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow();
     explicit OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context);
 
     ~OpenGLWindow() override;
 
-    //void setScene(Scene *scene) { this->scene = scene; }
-
-    //void setReady();
-
 public slots:
-    virtual void render();
     virtual void renderNow();
 
 protected:
@@ -39,8 +32,6 @@ private:
 
     Scene *scene;
     std::unique_ptr<QOpenGLContext> context;
-
-    std::atomic<bool> ready;
 };
 
 
