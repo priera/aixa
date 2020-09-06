@@ -22,7 +22,6 @@ CentralNoteManager::CentralNoteManager() :
 
 void CentralNoteManager::doMyUpdate(){
     if (frontChar != newFrontChar) {
-
         frontChar = newFrontChar;
 
         auto charText = charTextureProvider->generateChar(frontChar);

@@ -19,6 +19,9 @@ OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &contex
 OpenGLWindow::~OpenGLWindow() { context->doneCurrent(); }
 
 void OpenGLWindow::renderNow() {
+    if (!isExposed())
+        return;
+
     if (!initialized) {
         init();
         initialized = true;
