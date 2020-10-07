@@ -24,7 +24,7 @@ void CentralNoteManager::doMyUpdate(){
     if (frontChar != newFrontChar) {
         frontChar = newFrontChar;
 
-        auto charText = charTextureProvider->generateChar(frontChar);
+        auto &charText = charTextureProvider->generateChar(frontChar);
         if (!frontNote) {
             frontNote = std::make_unique<NoteRenderable>(charText, *program);
 

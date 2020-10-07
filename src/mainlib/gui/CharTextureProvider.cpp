@@ -1,6 +1,7 @@
 #include "mainlib/gui/CharTextureProvider.h"
 
 #include <set>
+#include <iostream>
 
 #include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
 
@@ -19,6 +20,8 @@ CharTextureProvider::CharTextureProvider() {
         GLuint texture;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
+
+        assert(glGetError() == GL_NO_ERROR);
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
@@ -53,8 +56,8 @@ CharTextureProvider::CharTextureProvider() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-CharTextureProvider::Character CharTextureProvider::generateChar(char c) {
-    char upperChar = toupper(c);
+CharTextureProvider::Character &CharTextureProvider::generateChar(char c) {
+    char upperChar = std::toupper(c);
 
     auto it = characters.find(upperChar);
     if (it == characters.end())

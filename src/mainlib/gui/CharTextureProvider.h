@@ -18,7 +18,7 @@ public:
 
     CharTextureProvider();
 
-    Character generateChar(char c);
+    Character &generateChar(char c);
 
 private:
     std::map<char, Character> characters;
