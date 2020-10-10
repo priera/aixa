@@ -25,7 +25,7 @@ public:
     void stop() { m_stop = true; }
 
 signals:
-    void renderLoopDone();
+    void computeLoopDone();
 
 private:
     int frameRate;

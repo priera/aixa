@@ -19,7 +19,7 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context);
     openGlWindow->resize(appInitialSize.width(), appInitialSize.height());
 
-    QObject::connect(drawingWorker.get(), &DrawingWorker::renderLoopDone,
+    QObject::connect(drawingWorker.get(), &DrawingWorker::computeLoopDone,
                      openGlWindow.get(), &OpenGLWindow::renderNow,
                      Qt::QueuedConnection);
 

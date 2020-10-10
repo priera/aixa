@@ -34,7 +34,7 @@ void DrawingWorker::run() {
 
         scene->update();
 
-        emit renderLoopDone();
+        emit computeLoopDone();
 
         auto end = std::chrono::steady_clock::now();
         auto renderTimeus = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
