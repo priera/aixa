@@ -6,9 +6,6 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QSurface>
 
-#include <mainlib/audio/note/Note.h>
-#include <mainlib/gui/CentralNoteManager.h>
-
 
 class QSurfaceFormat;
 class QOpenGLContext;
@@ -16,7 +13,7 @@ class QOffscreenSurface;
 class OpenGLWindow;
 class Scene;
 
-class DrawingWorker : public QThread, public NotesListener {
+class DrawingWorker : public QThread {
 Q_OBJECT
 public:
     explicit DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
@@ -25,15 +22,10 @@ public:
 
     void run() override;
 
-    void stop() {
-        m_stop = true;
-    }
-
-    void notifyNewValue(const Note& note) override;
+    void stop() { m_stop = true; }
 
 signals:
     void renderLoopDone();
-
 
 private:
     int frameRate;
@@ -41,7 +33,6 @@ private:
     std::unique_ptr<QOpenGLContext> context;
     Scene *scene;
     QSurface *offscreenSurface;
-    std::unique_ptr<CentralNoteManager> centralNoteManager;
 
     std::atomic<bool> m_stop;
 };

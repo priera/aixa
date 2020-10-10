@@ -2,17 +2,15 @@
 
 using namespace std::chrono_literals;
 
-NoteRenderable::NoteRenderable(CharTextureProvider::Character &character, QOpenGLShaderProgram &program) :
+NoteRenderable::NoteRenderable(QOpenGLShaderProgram &program) :
     RenderableObject(program),
-    character(character),
+    character(nullptr),
     initialized(false)
-{
-    updateOnCharData();
-}
+{ }
 
 void NoteRenderable::updateOnCharData() {
-    float charw = character.size[0];
-    float charh = character.size[1];
+    float charw = character->size[0];
+    float charh = character->size[1];
 
     charPixelRatio = charw / charh;
 
@@ -22,9 +20,9 @@ void NoteRenderable::updateOnCharData() {
     angle = 0.0;
 }
 
-void NoteRenderable::setCharacter(const CharTextureProvider::Character & character) {
+void NoteRenderable::setCharacter(const CharTextureProvider::Character &charTex) {
     std::lock_guard<std::mutex> l(charUpdateMutex);
-    this->character = character;
+    this->character = &charTex;
 
     updateOnCharData();
 
@@ -37,6 +35,9 @@ void NoteRenderable::setCharacter(const CharTextureProvider::Character & charact
 }
 
 void NoteRenderable::doMyRender() {
+    if (!character)
+        return;
+
     std::lock_guard<std::mutex> l(charUpdateMutex);
     if (!initialized) {
         init();
@@ -50,7 +51,7 @@ void NoteRenderable::doMyRender() {
     glBindVertexArray(VAO);
 
     // Render glyph texture over quad
-    glBindTexture(GL_TEXTURE_2D, character.textureID);
+    glBindTexture(GL_TEXTURE_2D, character->textureID);
 
     // Update content of VBO memory
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -93,4 +94,6 @@ void NoteRenderable::init() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    assert(glGetError() == GL_NO_ERROR);
 }

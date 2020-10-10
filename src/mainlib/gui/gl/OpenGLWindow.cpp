@@ -12,7 +12,8 @@ OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &contex
         : QWindow(), QOpenGLFunctions(),
             scene(&scene),
             context(std::move(context)),
-            initialized(false) {
+            initialized(false),
+            centralNoteManager(nullptr) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
@@ -37,7 +38,6 @@ void OpenGLWindow::renderNow() {
     glCheckError();
 
     context->swapBuffers(this);
-
     context->doneCurrent();
 }
 
@@ -48,7 +48,6 @@ void OpenGLWindow::init() {
     }
 
     context->makeCurrent(this);
-
     initializeOpenGLFunctions();
 
     glEnable(GL_DEPTH_TEST);
@@ -61,6 +60,9 @@ void OpenGLWindow::init() {
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glViewport(0, 0, width(), height());
+
+    centralNoteManager = std::make_unique<CentralNoteManager>();
+    scene->setMainObject(centralNoteManager.get());
 
     context->doneCurrent();
 }
@@ -88,4 +90,9 @@ void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
 
     auto s = ev->size();
     glViewport(0, 0, s.width(), s.height());
+}
+
+void OpenGLWindow::notifyNewValue(const Note &note) {
+    if (centralNoteManager)
+        centralNoteManager->setNewFrontNote(note);
 }

@@ -9,7 +9,7 @@
 class FreeTypeCharacterBitmapProvider : public CharacterBitmapProvider {
 public:
     FreeTypeCharacterBitmapProvider();
-    ~FreeTypeCharacterBitmapProvider();
+    ~FreeTypeCharacterBitmapProvider() override;
 
     Character getCharacter(char c) override;
 

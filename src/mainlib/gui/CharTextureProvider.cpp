@@ -2,6 +2,7 @@
 
 #include <set>
 #include <iostream>
+#include <mainlib/gui/gl/utils.h>
 
 #include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
 
@@ -13,6 +14,7 @@ CharTextureProvider::CharTextureProvider() {
     std::set<char> chars = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glCheckError();
 
     for (auto &p: chars) {
         auto bitmapData = provider.getCharacter(p);
@@ -51,12 +53,14 @@ CharTextureProvider::CharTextureProvider() {
         };
 
         characters[p] = character;
+        glCheckError();
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
+    glCheckError();
 }
 
-CharTextureProvider::Character &CharTextureProvider::generateChar(char c) {
+CharTextureProvider::Character &CharTextureProvider::getChar(char c) {
     char upperChar = std::toupper(c);
 
     auto it = characters.find(upperChar);

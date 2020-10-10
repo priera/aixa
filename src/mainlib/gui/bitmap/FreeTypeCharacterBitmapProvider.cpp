@@ -1,8 +1,6 @@
 #include "FreeTypeCharacterBitmapProvider.h"
 
-#include <iostream>
-#include <sstream>
-#include <exception>
+#include <stdexcept>
 
 FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
     if (FT_Init_FreeType(&ft))

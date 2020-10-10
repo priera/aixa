@@ -19,6 +19,8 @@ public:
     void setNewFrontNote(const Note &note) { newFrontChar = getNoteChar(note); }
 
 protected:
+    void beforeRender(const QMatrix4x4 & projectionMatrix) override;
+
     void doMyUpdate() override;
 
     void applyChildTransformations(RenderableObject *pObject) override;

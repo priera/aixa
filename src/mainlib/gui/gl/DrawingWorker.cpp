@@ -6,12 +6,8 @@
 #include <QtGui/QOffscreenSurface>
 
 #include "OpenGLWindow.h"
-#include "mainlib/gui/CentralNoteManager.h"
-
-#include "mainlib/gui/gl/Scene.h"
-#include <mainlib/gui/gl/GLContextManager.h>
-
-#include <iostream>
+#include "Scene.h"
+#include "GLContextManager.h"
 
 DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
                              QSurface &contextSurface,
@@ -20,30 +16,17 @@ DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
     frameRate(60), //TODO make this dependent on actual screen configuration
     context(std::move(context)),
     scene(&scene),
-    offscreenSurface(&contextSurface),
-    centralNoteManager(nullptr) {
+    offscreenSurface(&contextSurface) {
 
 }
-
-void DrawingWorker::notifyNewValue(const Note &note) {
-    if (centralNoteManager)
-        centralNoteManager->setNewFrontNote(note);
-}
-
 
 void DrawingWorker::run() {
-    if (!context->create()) {
-        throw std::runtime_error("Error when creating OpenGLContext");
-    }
-    context->makeCurrent(offscreenSurface);
-
-    centralNoteManager = std::make_unique<CentralNoteManager>();
-    scene->setMainObject(centralNoteManager.get());
-
     long int iterationTimeus = (1 / ((float)frameRate)) * 1000000;
 
     std::chrono::microseconds durationRender(iterationTimeus);
     auto ticksRender = durationRender.count();
+
+    context->makeCurrent(offscreenSurface);
 
     m_stop = false;
     while (!m_stop) {

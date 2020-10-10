@@ -8,7 +8,7 @@
 
 class RenderableObject;
 
-class CharTextureProvider : protected QOpenGLExtraFunctions {
+class CharTextureProvider : protected QOpenGLFunctions {
 public:
     struct Character {
         GLuint textureID;   // ID handle of the glyph texture
@@ -18,7 +18,7 @@ public:
 
     CharTextureProvider();
 
-    Character &generateChar(char c);
+    Character &getChar(char c);
 
 private:
     std::map<char, Character> characters;

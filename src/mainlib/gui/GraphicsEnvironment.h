@@ -30,7 +30,7 @@ public:
         GLContextManager::release();
     }
 
-    NotesListener* getNotesListener() { return drawingWorker.get(); }
+    NotesListener* getNotesListener() { return openGLWindow.get(); }
 
 private:
     std::unique_ptr<Scene> scene;

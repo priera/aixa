@@ -9,8 +9,8 @@ CentralNoteManager::CentralNoteManager() :
     , newFrontChar(' ')
 {
     charTextureProvider = std::make_unique<CharTextureProvider>();
-    //auto ch1 = charTextureProvider->generateChar(' ');
-    //auto ch2 = charTextureProvider->generateChar('G');
+    //auto ch1 = charTextureProvider->getChar(' ');
+    //auto ch2 = charTextureProvider->getChar('G');
 
     //frontNote = std::make_unique<NoteRenderable>(ch1, *program);
     //backNote = std::make_unique<NoteRenderable>(ch2,*program);
@@ -20,18 +20,26 @@ CentralNoteManager::CentralNoteManager() :
 
 }
 
+void CentralNoteManager::beforeRender(const QMatrix4x4 & projectionMatrix) {
+    ShadedRenderableObject::beforeRender(projectionMatrix);
+
+    if (frontChar != ' ' && !frontNote) {
+        frontNote = std::make_unique<NoteRenderable>(*program);
+
+        addChildObject(0.05, frontNote.get());
+    }
+}
+
 void CentralNoteManager::doMyUpdate(){
+    RenderableObject::doMyUpdate();
+
     if (frontChar != newFrontChar) {
         frontChar = newFrontChar;
 
-        auto &charText = charTextureProvider->generateChar(frontChar);
-        if (!frontNote) {
-            frontNote = std::make_unique<NoteRenderable>(charText, *program);
-
-            addChildObject(0.05, frontNote.get());
+        if (frontNote) {
+            auto &charTex = charTextureProvider->getChar(frontChar);
+            frontNote->setCharacter(charTex);
         }
-
-        frontNote->setCharacter(charText);
     }
 }
 

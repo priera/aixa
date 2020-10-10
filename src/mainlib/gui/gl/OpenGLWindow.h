@@ -6,9 +6,16 @@
 
 #include <QWindow>
 #include <QOpenGLFunctions>
+
+#include <mainlib/audio/note/Note.h>
+#include <mainlib/gui/CentralNoteManager.h>
+
 #include "Scene.h"
 
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions {
+class OpenGLWindow :
+        public QWindow,
+        public NotesListener,
+        protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
@@ -18,6 +25,8 @@ public:
 
 public slots:
     virtual void renderNow();
+
+    void notifyNewValue(const Note& note) override;
 
 protected:
     bool event(QEvent *event) override;
@@ -32,6 +41,7 @@ private:
 
     Scene *scene;
     std::unique_ptr<QOpenGLContext> context;
+    std::unique_ptr<CentralNoteManager> centralNoteManager;
 };
 
 
