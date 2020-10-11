@@ -4,9 +4,8 @@
 #include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
 
-#include "mainlib/gui/gl/GLContextManager.h"
-#include "mainlib/gui/gl/Scene.h"
-#include "mainlib/gui/gl/utils.h"
+#include "GLContextManager.h"
+#include "utils.h"
 
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context)
         : QWindow(), QOpenGLFunctions(),

@@ -3,10 +3,9 @@
 
 #include <memory>
 
-#include <mainlib/gui/object/NoteRenderable.h>
-#include <mainlib/gui/object/ShadedRenderableObject.h>
-
 #include <mainlib/audio/note/Note.h>
+#include <mainlib/gui/scene/ShadedRenderableObject.h>
+#include <mainlib/gui/scene/NoteRenderable.h>
 
 class CharTextureProvider;
 

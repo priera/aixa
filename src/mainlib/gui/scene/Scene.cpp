@@ -1,6 +1,4 @@
-#include "mainlib/gui/gl/Scene.h"
-
-#include "mainlib/gui/object/ShadedRenderableObject.h"
+#include "Scene.h"
 
 Scene::Scene(int w, int h) :
     mainObject(nullptr) {

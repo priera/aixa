@@ -6,7 +6,7 @@
 #include <QtGui/QOffscreenSurface>
 
 #include "OpenGLWindow.h"
-#include "Scene.h"
+#include "mainlib/gui/scene/Scene.h"
 #include "GLContextManager.h"
 
 DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,

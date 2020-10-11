@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <mainlib/gui/gl/Scene.h>
+#include <mainlib/gui/scene/Scene.h>
 #include <mainlib/gui/gl/DrawingWorker.h>
 #include <mainlib/gui/gl/OpenGLWindow.h>
 

@@ -1,4 +1,4 @@
-#include "mainlib/gui/object/Animation.h"
+#include "Animation.h"
 
 #include <cassert>
 

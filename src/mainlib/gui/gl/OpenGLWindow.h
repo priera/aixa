@@ -10,7 +10,7 @@
 #include <mainlib/audio/note/Note.h>
 #include <mainlib/gui/CentralNoteManager.h>
 
-#include "Scene.h"
+#include "mainlib/gui/scene/Scene.h"
 
 class OpenGLWindow :
         public QWindow,

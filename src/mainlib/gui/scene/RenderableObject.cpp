@@ -57,7 +57,7 @@ void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
     afterRender();
 }
 
-float &RenderableObject::chooseParamForAnimation(const AnimationParam param) {
+float &RenderableObject::chooseParamForAnimation(AnimationParam param) {
     static float dummy = 0;
 
     switch (param) {

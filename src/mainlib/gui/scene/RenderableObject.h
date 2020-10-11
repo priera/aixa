@@ -8,8 +8,7 @@
 #include <QtGui/QOpenGLShaderProgram>
 
 #include <QtGui/QMatrix4x4>
-
-#include "mainlib/gui/object/Animation.h"
+#include "Animation.h"
 
 class RenderableObject : protected QOpenGLExtraFunctions {
 public:
@@ -58,7 +57,7 @@ protected:
     QOpenGLShaderProgram *program;
 
 private:
-    float &chooseParamForAnimation(const AnimationParam param);
+    float &chooseParamForAnimation(AnimationParam param);
 
     QMatrix4x4 updateMatrix;
     QMatrix4x4 renderMatrix;
