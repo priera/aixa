@@ -6,8 +6,8 @@
 
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QOpenGLShaderProgram>
-
 #include <QtGui/QMatrix4x4>
+
 #include "Animation.h"
 
 class RenderableObject : protected QOpenGLExtraFunctions {
@@ -16,6 +16,8 @@ public:
     explicit RenderableObject(QOpenGLShaderProgram &program);
 
     virtual ~RenderableObject() = default;
+
+    bool isInitialized() const { return initialized; }
 
     void update();
     void render(QMatrix4x4 & projectionMatrix);

@@ -8,7 +8,7 @@
 class TexturedPlane : public ShadedRenderableObject {
 public:
     explicit TexturedPlane(std::filesystem::path texturePath);
-    ~TexturedPlane() override = default;
+    ~TexturedPlane() noexcept override;
 
 protected:
     void init() override;
@@ -16,6 +16,11 @@ protected:
 
 private:
     std::filesystem::path texturePath;
+
+    unsigned int VBO{0};
+    unsigned int VAO{0};
+    unsigned int EBO{0};
+    unsigned int texture{};
 };
 
 

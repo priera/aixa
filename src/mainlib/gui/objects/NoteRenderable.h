@@ -5,9 +5,8 @@
 
 #include <QMatrix4x4>
 
-#include "mainlib/gui/scene/RenderableObject.h"
-#include "mainlib/gui/CharTextureProvider.h"
-
+#include <mainlib/gui/scene/RenderableObject.h>
+#include <mainlib/gui/CharTextureProvider.h>
 
 class NoteRenderable : public RenderableObject {
 public:
