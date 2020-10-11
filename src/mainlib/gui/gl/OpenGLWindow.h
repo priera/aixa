@@ -8,9 +8,8 @@
 #include <QOpenGLFunctions>
 
 #include <mainlib/audio/note/Note.h>
-#include <mainlib/gui/CentralNoteManager.h>
-
-#include "mainlib/gui/scene/Scene.h"
+#include <mainlib/gui/objects/CentralNoteManager.h>
+#include <mainlib/gui/scene/Scene.h>
 
 class OpenGLWindow :
         public QWindow,

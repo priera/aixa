@@ -5,7 +5,7 @@
 
 #include <mainlib/audio/note/Note.h>
 #include <mainlib/gui/scene/ShadedRenderableObject.h>
-#include <mainlib/gui/scene/NoteRenderable.h>
+#include <mainlib/gui/objects/NoteRenderable.h>
 
 class CharTextureProvider;
 
