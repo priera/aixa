@@ -4,7 +4,8 @@
 #include <iostream>
 
 RenderableObject::RenderableObject() :
-        program(nullptr)
+        program(nullptr),
+        initialized(false)
 {
     initializeOpenGLFunctions();
 }
@@ -41,6 +42,9 @@ void RenderableObject::updateDone() {
 }
 
 void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
+    if (!checkInitialized())
+        return;
+
     beforeRender(projectionMatrix);
 
     for (auto &child: children) {
@@ -55,6 +59,19 @@ void RenderableObject::render(QMatrix4x4 & projectionMatrix) {
     l.unlock();
 
     afterRender();
+}
+
+bool RenderableObject::checkInitialized() {
+    if (!initialized) {
+        if (!readyToInitialize()) {
+            return false;
+        } else {
+            init();
+            initialized = true;
+        }
+    }
+
+    return true;
 }
 
 float &RenderableObject::chooseParamForAnimation(AnimationParam param) {
@@ -111,3 +128,9 @@ void RenderableObject::moveCenterAt(float x, float y, float z) {
 void RenderableObject::rotate(float degrees) {
     updateMatrix.rotate(degrees, 0.0f, 1.0f, 0.0f);
 }
+
+bool RenderableObject::readyToInitialize() {
+    return true;
+}
+
+void RenderableObject::init() { }

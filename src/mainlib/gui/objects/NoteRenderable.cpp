@@ -4,9 +4,7 @@ using namespace std::chrono_literals;
 
 NoteRenderable::NoteRenderable(QOpenGLShaderProgram &program) :
     RenderableObject(program),
-    character(nullptr),
-    initialized(false)
-{ }
+    character(nullptr) { }
 
 void NoteRenderable::updateOnCharData() {
     float charw = character->size[0];
@@ -35,14 +33,7 @@ void NoteRenderable::setCharacter(const CharTextureProvider::Character &charTex)
 }
 
 void NoteRenderable::doMyRender() {
-    if (!character)
-        return;
-
     std::lock_guard<std::mutex> l(charUpdateMutex);
-    if (!initialized) {
-        init();
-        initialized = true;
-    }
 
     program->setUniformValue("textColor", {0.7f, 0.7f, 0.7f });
 
@@ -96,4 +87,8 @@ void NoteRenderable::init() {
     glBindVertexArray(0);
 
     assert(glGetError() == GL_NO_ERROR);
+}
+
+bool NoteRenderable::readyToInitialize() {
+    return character;
 }

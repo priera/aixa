@@ -42,6 +42,8 @@ protected:
 
     virtual void doMyRender();
     virtual void beforeRender(const QMatrix4x4 & projectionMatrix);
+    virtual bool readyToInitialize();
+    virtual void init();
     virtual void afterRender();
 
     virtual void applyChildTransformations(RenderableObject *pObject);
@@ -58,6 +60,7 @@ protected:
 
 private:
     float &chooseParamForAnimation(AnimationParam param);
+    bool checkInitialized();
 
     QMatrix4x4 updateMatrix;
     QMatrix4x4 renderMatrix;
@@ -65,6 +68,7 @@ private:
     std::mutex updateMutex;
 
     std::map<AnimationParam, Animation> animations;
+    bool initialized;
 };
 
 #endif //AIXA_RENDERABLEOBJECT_H

@@ -16,19 +16,19 @@ public:
     void setCharacter(const CharTextureProvider::Character & charTex);
 
 protected:
+    bool readyToInitialize() override;
+    void init() override;
+
     void doMyRender() override;
 
 private:
     void updateOnCharData();
-    void init();
 
     std::mutex charUpdateMutex;
 
     const CharTextureProvider::Character *character;
     float charPixelRatio;
     unsigned int VBO, VAO;
-
-    bool initialized;
 };
 
 
