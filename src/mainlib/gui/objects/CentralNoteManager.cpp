@@ -18,14 +18,14 @@ CentralNoteManager::CentralNoteManager() :
 
 }
 
-void CentralNoteManager::beforeRender(const QMatrix4x4 & projectionMatrix) {
-    ShadedRenderableObject::beforeRender(projectionMatrix);
+bool CentralNoteManager::readyToInitialize() {
+    return frontChar != ' ' && !frontNote;
+}
 
-    if (frontChar != ' ' && !frontNote) {
-        frontNote = std::make_unique<NoteRenderable>(*program);
+void CentralNoteManager::init() {
+    frontNote = std::make_unique<NoteRenderable>(*program);
 
-        addChildObject(0.05, frontNote.get());
-    }
+    addChildObject(0.05, frontNote.get());
 }
 
 void CentralNoteManager::doMyUpdate(){
@@ -46,3 +46,4 @@ void CentralNoteManager::applyChildTransformations(RenderableObject *pObject) {
 
     pObject->moveCenterAt(0, 0, zCord);
 }
+

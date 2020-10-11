@@ -39,13 +39,14 @@ protected:
         this->program = &program;
     }
 
+    virtual bool readyToInitialize();
+    virtual void init();
+
     virtual void doMyUpdate();
     virtual void updateDone();
 
     virtual void doMyRender();
     virtual void beforeRender(const QMatrix4x4 & projectionMatrix);
-    virtual bool readyToInitialize();
-    virtual void init();
     virtual void afterRender();
 
     virtual void applyChildTransformations(RenderableObject *pObject);
