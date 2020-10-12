@@ -3,6 +3,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
+#include <mainlib/gui/objects/TexturedPlane.h>
 
 #include "GLContextManager.h"
 #include "utils.h"
@@ -51,17 +52,18 @@ void OpenGLWindow::init() {
 
     glEnable(GL_DEPTH_TEST);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glViewport(0, 0, width(), height());
 
     centralNoteManager = std::make_unique<CentralNoteManager>();
-    scene->setMainObject(centralNoteManager.get());
+    //scene->setMainObject(centralNoteManager.get());
+
+    auto texturedPlane = new TexturedPlane(std::filesystem::path());
+    scene->setMainObject(texturedPlane);
 
     context->doneCurrent();
 }

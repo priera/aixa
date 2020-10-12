@@ -1,14 +1,14 @@
 #version 330 core
 
 out vec4 color;
-in vec2 TexCoords;
+in vec2 texCoords;
 
 uniform sampler2D text;
 uniform vec3 textColor;
 
 void main()
 {
-    vec4 alphaMap = texture(text, TexCoords);
+    vec4 alphaMap = texture(text, texCoords);
 
     vec4 sampled;
     if (alphaMap.r < 0.5) {

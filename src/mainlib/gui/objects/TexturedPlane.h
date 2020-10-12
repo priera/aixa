@@ -20,7 +20,9 @@ private:
     unsigned int VBO{0};
     unsigned int VAO{0};
     unsigned int EBO{0};
-    unsigned int texture{};
+    unsigned int texture{0};
+
+    std::vector<int> indices;
 };
 
 

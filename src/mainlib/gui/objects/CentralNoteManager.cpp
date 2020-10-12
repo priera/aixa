@@ -1,7 +1,7 @@
 #include "CentralNoteManager.h"
 
 CentralNoteManager::CentralNoteManager() :
-    ShadedRenderableObject("./shaders/textured_plane.vert", "./shaders/character.frag")
+    ShadedRenderableObject("./shaders/char.vert", "./shaders/character.frag")
     , targetAngle(-180)
     , frontChar(' ')
     , newFrontChar(' ')

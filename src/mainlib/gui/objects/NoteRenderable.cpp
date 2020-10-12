@@ -35,22 +35,22 @@ void NoteRenderable::setCharacter(const CharTextureProvider::Character &charTex)
 void NoteRenderable::doMyRender() {
     std::lock_guard<std::mutex> l(charUpdateMutex);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     program->setUniformValue("textColor", {0.7f, 0.7f, 0.7f });
 
     glActiveTexture(GL_TEXTURE0);
 
     glBindVertexArray(VAO);
-
-    // Render glyph texture over quad
     glBindTexture(GL_TEXTURE_2D, character->textureID);
-
-    // Update content of VBO memory
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_BLEND);
 
     assert(glGetError() == GL_NO_ERROR);
 }
@@ -62,7 +62,6 @@ void NoteRenderable::init() {
     float triangleHeight = w / charPixelRatio;
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     GLfloat vertices[] = {

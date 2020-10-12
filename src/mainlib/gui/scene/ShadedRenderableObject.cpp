@@ -17,7 +17,10 @@ ShadedRenderableObject::ShadedRenderableObject(const QString &vertexShaderPath, 
     }
 
     program->link();
-    std::cout << program->log().toStdString() << std::endl;
+
+    auto programLog = program->log().toStdString();
+    if (!programLog.empty())
+        std::cerr << "Error in GLSL program: " << programLog << std::endl;
 
     setProgram(*program);
 }

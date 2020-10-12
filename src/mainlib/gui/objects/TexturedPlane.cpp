@@ -1,8 +1,12 @@
+#include <QtGui/QImage>
+#include <iostream>
+#include <mainlib/gui/gl/utils.h>
 #include "TexturedPlane.h"
 
 TexturedPlane::TexturedPlane(std::filesystem::path texturePath) :
-    ShadedRenderableObject("./shaders/textured_plane.vert", "/shaders/2d_texture.frag"),
-    texturePath(std::move(texturePath)) { }
+    ShadedRenderableObject("./shaders/textured_plane.vert", "./shaders/2d_texture.frag"),
+    texturePath(std::move(texturePath)) {
+}
 
 TexturedPlane::~TexturedPlane() noexcept {
     if (isInitialized()) {
@@ -13,16 +17,17 @@ TexturedPlane::~TexturedPlane() noexcept {
 }
 
 void TexturedPlane::init() {
-    float vertices[] = {
-            // positions  // texture coords
-            0.5f,  0.5f,  1.0f, 1.0f, // top right
-            0.5f, -0.5f,  1.0f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f, 0.0f, // bottom left
-            -0.5f,  0.5f, 0.0f, 1.0f  // top left
+    std::vector<float> vertices = {
+            // positions   // texture coords
+            -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left
+             0.5f,  0.5f,  1.0f, 1.0f, // top-right
+             0.5f, -0.5f,  1.0f, 0.0f, // bottom-right
+            -0.5f,  0.5f,  0.0f, 1.0f, // top-left
     };
-    unsigned int indices[] = {
+
+    indices = {
             0, 1, 3, // first triangle
-            1, 2, 3  // second triangle
+            0, 2, 1  // second triangle
     };
 
     glGenVertexArrays(1, &VAO);
@@ -32,10 +37,10 @@ void TexturedPlane::init() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -49,23 +54,38 @@ void TexturedPlane::init() {
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    //TODO glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    QImage original("./data/container.jpg");
+    auto textureImage = new QImage(original.convertToFormat(QImage::Format_RGB888));
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 textureImage->width(),
+                 textureImage->height(),
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 textureImage->constBits());
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    glCheckError();
 }
 
 void TexturedPlane::doMyRender() {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
+
     glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
