@@ -17,9 +17,9 @@ RenderableObject::RenderableObject(QOpenGLShaderProgram &program) :
     initializeOpenGLFunctions();
 }
 
-void RenderableObject::addChildObject(float z, RenderableObject *object) {
-    int zpos = z * 1000;
-    children[zpos] = object;
+void RenderableObject::addChildObject(float z, std::shared_ptr<RenderableObject> object) {
+    int zpos = static_cast<int>(z * 1000);
+    children[zpos] = std::move(object);
 }
 
 void RenderableObject::update() {
@@ -30,7 +30,7 @@ void RenderableObject::update() {
     for (auto &child: children)
     {
         child.second->update();
-        applyChildTransformations(child.second);
+        applyChildTransformations(*child.second);
         child.second->updateDone();
     }
 
@@ -119,7 +119,7 @@ void RenderableObject::beforeRender(const QMatrix4x4 & projectionMatrix) { }
 
 void RenderableObject::afterRender() { }
 
-void RenderableObject::applyChildTransformations(RenderableObject *pObject) { }
+void RenderableObject::applyChildTransformations(RenderableObject &pObject) { }
 
 void RenderableObject::moveCenterAt(float x, float y, float z) {
     updateMatrix.translate(x - w / 2, y - h / 2, z - d / 2);

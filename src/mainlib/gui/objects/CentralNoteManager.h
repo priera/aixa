@@ -25,11 +25,11 @@ protected:
 
     void doMyUpdate() override;
 
-    void applyChildTransformations(RenderableObject *pObject) override;
+    void applyChildTransformations(RenderableObject &pObject) override;
 
 private:
-    std::unique_ptr<NoteRenderable> frontNote;
-    std::unique_ptr<NoteRenderable> backNote;
+    std::shared_ptr<NoteRenderable> frontNote;
+    std::shared_ptr<NoteRenderable> backNote;
 
     std::unique_ptr<CharTextureProvider> charTextureProvider;
 

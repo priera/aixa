@@ -25,7 +25,7 @@ public:
     void moveCenterAt(float x, float y, float z);
     void rotate(float degrees);
 
-    void addChildObject(float z, RenderableObject *object);
+    void addChildObject(float z, std::shared_ptr<RenderableObject> object);
 
 protected:
     enum class AnimationParam {
@@ -49,7 +49,7 @@ protected:
     virtual void beforeRender(const QMatrix4x4 & projectionMatrix);
     virtual void afterRender();
 
-    virtual void applyChildTransformations(RenderableObject *pObject);
+    virtual void applyChildTransformations(RenderableObject &pObject);
 
     void setupAnimation(AnimationParam param, std::chrono::milliseconds duration, unsigned int samples, \
         float startValue, float endValue, const Animation::HermiteParams & params);
@@ -57,7 +57,7 @@ protected:
     float w, h, d;
     float angle;
 
-    std::map<int, RenderableObject *> children;
+    std::map<int, std::shared_ptr<RenderableObject>> children;
 
     QOpenGLShaderProgram *program;
 

@@ -6,6 +6,10 @@
 TexturedPlane::TexturedPlane(std::filesystem::path texturePath) :
     ShadedRenderableObject("./shaders/textured_plane.vert", "./shaders/2d_texture.frag"),
     texturePath(std::move(texturePath)) {
+
+    if (!std::filesystem::exists(this->texturePath)) {
+        throw std::runtime_error("Image with path " + this->texturePath.string() + " does not exist");
+    }
 }
 
 TexturedPlane::~TexturedPlane() noexcept {
@@ -60,7 +64,7 @@ void TexturedPlane::init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    QImage original("./data/container.jpg");
+    QImage original(QString::fromStdString(texturePath.string()));
     auto textureImage = new QImage(original.convertToFormat(QImage::Format_RGB888));
 
     glTexImage2D(GL_TEXTURE_2D,

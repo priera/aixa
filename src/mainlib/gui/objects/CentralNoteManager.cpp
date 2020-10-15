@@ -23,9 +23,9 @@ bool CentralNoteManager::readyToInitialize() {
 }
 
 void CentralNoteManager::init() {
-    frontNote = std::make_unique<NoteRenderable>(*program);
+    frontNote = std::make_shared<NoteRenderable>(*program);
 
-    addChildObject(0.05, frontNote.get());
+    addChildObject(0.05, frontNote);
 }
 
 void CentralNoteManager::doMyUpdate(){
@@ -41,9 +41,9 @@ void CentralNoteManager::doMyUpdate(){
     }
 }
 
-void CentralNoteManager::applyChildTransformations(RenderableObject *pObject) {
-    float zCord = (pObject == frontNote.get()) ? 0.05 : -0.05;
+void CentralNoteManager::applyChildTransformations(RenderableObject &pObject) {
+    float zCord = (&pObject == frontNote.get()) ? 0.05 : -0.05;
 
-    pObject->moveCenterAt(0, 0, zCord);
+    pObject.moveCenterAt(0, 0, zCord);
 }
 

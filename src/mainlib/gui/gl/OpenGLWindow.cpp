@@ -3,6 +3,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
+
 #include <mainlib/gui/objects/TexturedPlane.h>
 
 #include "GLContextManager.h"
@@ -62,7 +63,7 @@ void OpenGLWindow::init() {
     centralNoteManager = std::make_unique<CentralNoteManager>();
     //scene->setMainObject(centralNoteManager.get());
 
-    auto texturedPlane = new TexturedPlane(std::filesystem::path());
+    auto texturedPlane = new TexturedPlane("./data/container.jpg");
     scene->setMainObject(texturedPlane);
 
     context->doneCurrent();
