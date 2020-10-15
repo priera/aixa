@@ -2,19 +2,11 @@
 
 using namespace std::chrono_literals;
 
-NoteRenderable::NoteRenderable(QOpenGLShaderProgram &program) :
-    RenderableObject(program),
+NoteRenderable::NoteRenderable(QOpenGLShaderProgram &program, Dimensions dim) :
+    RenderableObject(program, dim),
     character(nullptr) { }
 
 void NoteRenderable::updateOnCharData() {
-    float charw = character->size[0];
-    float charh = character->size[1];
-
-    charPixelRatio = charw / charh;
-
-    w = 1.0;
-    h = w / charPixelRatio;
-    d = 0.0;
     angle = 0.0;
 }
 
@@ -59,19 +51,17 @@ void NoteRenderable::init() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    float triangleHeight = w / charPixelRatio;
-
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     GLfloat vertices[] = {
-            w,   0.0,            1.0, 1.0,
-            0.0, triangleHeight, 0.0, 0.0,
-            0.0, 0.0,            0.0, 1.0,
+            dim.width,  0.0,            1.0, 1.0,
+            0.0,        dim.height,     0.0, 0.0,
+            0.0,        0.0,            0.0, 1.0,
 
-            w,   0.0,            1.0, 1.0,
-            w,   triangleHeight, 1.0, 0.0,
-            0.0, triangleHeight, 0.0, 0.0
+            dim.width,  0.0,            1.0, 1.0,
+            dim.width,  dim.height,     1.0, 0.0,
+            0.0,        dim.height,     0.0, 0.0
     };
 
     glBufferData(GL_ARRAY_BUFFER,  sizeof(GLfloat) * 6 * 4, vertices, GL_DYNAMIC_DRAW);

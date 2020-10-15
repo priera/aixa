@@ -10,7 +10,7 @@
 
 class NoteRenderable : public RenderableObject {
 public:
-    explicit NoteRenderable(QOpenGLShaderProgram &program);
+    NoteRenderable(QOpenGLShaderProgram &program, Dimensions dim);
 
     void setCharacter(const CharTextureProvider::Character & charTex);
 

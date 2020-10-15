@@ -2,8 +2,10 @@
 
 #include <iostream>
 
-ShadedRenderableObject::ShadedRenderableObject(const QString &vertexShaderPath, const QString &fragmentShaderPath) :
-    RenderableObject() {
+ShadedRenderableObject::ShadedRenderableObject(const QString &vertexShaderPath,
+                                               const QString &fragmentShaderPath,
+                                               Dimensions dimensions) :
+    RenderableObject(dimensions) {
     programContainer = std::make_unique<QOpenGLShaderProgram>();
 
     auto program = programContainer.get();

@@ -4,7 +4,9 @@
 #include "TexturedPlane.h"
 
 TexturedPlane::TexturedPlane(std::filesystem::path texturePath) :
-    ShadedRenderableObject("./shaders/textured_plane.vert", "./shaders/2d_texture.frag"),
+    ShadedRenderableObject("./shaders/textured_plane.vert",
+                           "./shaders/2d_texture.frag",
+                           Dimensions{1.0f, 1.0f, 0.0f}),
     texturePath(std::move(texturePath)) {
 
     if (!std::filesystem::exists(this->texturePath)) {
@@ -21,12 +23,14 @@ TexturedPlane::~TexturedPlane() noexcept {
 }
 
 void TexturedPlane::init() {
+    const float halfWidth = dim.width / 2;
+    const float halfHeight = dim.height / 2;
     std::vector<float> vertices = {
             // positions   // texture coords
-            -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left
-             0.5f,  0.5f,  1.0f, 1.0f, // top-right
-             0.5f, -0.5f,  1.0f, 0.0f, // bottom-right
-            -0.5f,  0.5f,  0.0f, 1.0f, // top-left
+            -halfWidth, -halfHeight,  0.0f, 0.0f, // bottom-left
+             halfWidth,  halfHeight,  1.0f, 1.0f, // top-right
+             halfWidth, -halfHeight,  1.0f, 0.0f, // bottom-right
+            -halfWidth,  halfHeight,  0.0f, 1.0f, // top-left
     };
 
     indices = {

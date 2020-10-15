@@ -3,16 +3,18 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <iostream>
 
-RenderableObject::RenderableObject() :
+RenderableObject::RenderableObject(Dimensions dimensions) :
         program(nullptr),
+        dim(dimensions),
         initialized(false)
 {
     initializeOpenGLFunctions();
 }
 
 
-RenderableObject::RenderableObject(QOpenGLShaderProgram &program) :
-  program(&program)
+RenderableObject::RenderableObject(QOpenGLShaderProgram &program, Dimensions dimensions) :
+  program(&program),
+  dim(dimensions)
 {
     initializeOpenGLFunctions();
 }
@@ -27,8 +29,7 @@ void RenderableObject::update() {
 
     doMyUpdate();
 
-    for (auto &child: children)
-    {
+    for (auto &child: children) {
         child.second->update();
         applyChildTransformations(*child.second);
         child.second->updateDone();
@@ -82,13 +83,13 @@ float &RenderableObject::chooseParamForAnimation(AnimationParam param) {
             return angle;
             break;
         case AnimationParam::W:
-            return w;
+            return dim.width;
             break;
         case AnimationParam::H:
-            return h;
+            return dim.height;
             break;
         case AnimationParam::D:
-            return d;
+            return dim.depth;
             break;
     }
 
@@ -122,7 +123,7 @@ void RenderableObject::afterRender() { }
 void RenderableObject::applyChildTransformations(RenderableObject &pObject) { }
 
 void RenderableObject::moveCenterAt(float x, float y, float z) {
-    updateMatrix.translate(x - w / 2, y - h / 2, z - d / 2);
+    updateMatrix.translate(x - dim.width / 2, y - dim.height / 2, z - dim.depth / 2);
 }
 
 void RenderableObject::rotate(float degrees) {

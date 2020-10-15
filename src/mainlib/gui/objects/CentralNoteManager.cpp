@@ -1,7 +1,9 @@
 #include "CentralNoteManager.h"
 
 CentralNoteManager::CentralNoteManager() :
-    ShadedRenderableObject("./shaders/char.vert", "./shaders/character.frag")
+    ShadedRenderableObject("./shaders/char.vert",
+                           "./shaders/character.frag",
+                           Dimensions{1.0f, 1.25f, 0.1f})
     , targetAngle(-180)
     , frontChar(' ')
     , newFrontChar(' ')
@@ -23,7 +25,7 @@ bool CentralNoteManager::readyToInitialize() {
 }
 
 void CentralNoteManager::init() {
-    frontNote = std::make_shared<NoteRenderable>(*program);
+    frontNote = std::make_shared<NoteRenderable>(*program, Dimensions{dim.width, dim.height, 0.0f});
 
     addChildObject(0.05, frontNote);
 }

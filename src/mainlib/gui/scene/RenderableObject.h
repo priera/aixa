@@ -9,11 +9,12 @@
 #include <QtGui/QMatrix4x4>
 
 #include "Animation.h"
+#include "Dimensions.h"
 
 class RenderableObject : protected QOpenGLExtraFunctions {
 public:
-    RenderableObject();
-    explicit RenderableObject(QOpenGLShaderProgram &program);
+    explicit RenderableObject(Dimensions dimensions);
+    explicit RenderableObject(QOpenGLShaderProgram &program, Dimensions dimensions);
 
     virtual ~RenderableObject() = default;
 
@@ -54,7 +55,7 @@ protected:
     void setupAnimation(AnimationParam param, std::chrono::milliseconds duration, unsigned int samples, \
         float startValue, float endValue, const Animation::HermiteParams & params);
 
-    float w, h, d;
+    Dimensions dim;
     float angle;
 
     std::map<int, std::shared_ptr<RenderableObject>> children;

@@ -10,7 +10,7 @@
 
 class ShadedRenderableObject : public RenderableObject {
 public:
-    ShadedRenderableObject(const QString &vertexShaderPath, const QString &fragmentShaderPath);
+    ShadedRenderableObject(const QString &vertexShaderPath, const QString &fragmentShaderPath, Dimensions dimensions);
 
 protected:
     void beforeRender(const QMatrix4x4 & projectionMatrix) override;
