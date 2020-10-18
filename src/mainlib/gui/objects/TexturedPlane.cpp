@@ -23,14 +23,12 @@ TexturedPlane::~TexturedPlane() noexcept {
 }
 
 void TexturedPlane::init() {
-    const float halfWidth = dim.width / 2;
-    const float halfHeight = dim.height / 2;
     std::vector<float> vertices = {
-            // positions   // texture coords
-            -halfWidth, -halfHeight,  0.0f, 0.0f, // bottom-left
-             halfWidth,  halfHeight,  1.0f, 1.0f, // top-right
-             halfWidth, -halfHeight,  1.0f, 0.0f, // bottom-right
-            -halfWidth,  halfHeight,  0.0f, 1.0f, // top-left
+            // positions           // texture coords
+            0.0f, 0.0f,            0.0f, 0.0f, // bottom-left
+            dim.width, dim.height, 1.0f, 1.0f, // top-right
+            dim.width, 0.0f,       1.0f, 0.0f, // bottom-right
+            0.0f, dim.height,      0.0f, 1.0f, // top-left
     };
 
     indices = {
