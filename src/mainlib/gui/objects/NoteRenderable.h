@@ -26,7 +26,6 @@ private:
     std::mutex charUpdateMutex;
 
     const CharTextureProvider::Character *character;
-    float charPixelRatio;
     unsigned int VBO, VAO;
 };
 

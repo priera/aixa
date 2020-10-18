@@ -21,8 +21,6 @@ protected:
     bool readyToInitialize() override;
     void init() override;
 
-    //void beforeRender(const QMatrix4x4 & projectionMatrix) override;
-
     void doMyUpdate() override;
 
     void applyChildTransformations(RenderableObject &pObject) override;

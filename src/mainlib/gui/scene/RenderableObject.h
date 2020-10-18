@@ -25,6 +25,7 @@ public:
 
     void moveCenterAt(float x, float y, float z);
     void rotate(float degrees);
+    void scale(float amount);
 
     void addChildObject(float z, std::shared_ptr<RenderableObject> object);
 
@@ -56,7 +57,7 @@ protected:
         float startValue, float endValue, const Animation::HermiteParams & params);
 
     Dimensions dim;
-    float angle;
+    float angle{0};
 
     std::map<int, std::shared_ptr<RenderableObject>> children;
 
@@ -72,7 +73,7 @@ private:
     std::mutex updateMutex;
 
     std::map<AnimationParam, Animation> animations;
-    bool initialized;
+    bool initialized{false};
 };
 
 #endif //AIXA_RENDERABLEOBJECT_H

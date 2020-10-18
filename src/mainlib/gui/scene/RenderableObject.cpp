@@ -1,14 +1,13 @@
 #include "RenderableObject.h"
 
 #include <QtGui/QOpenGLShaderProgram>
-#include <iostream>
 
 RenderableObject::RenderableObject(Dimensions dimensions) :
         program(nullptr),
-        dim(dimensions),
-        initialized(false)
+        dim(dimensions)
 {
     initializeOpenGLFunctions();
+    updateMatrix.setToIdentity();
 }
 
 
@@ -17,6 +16,7 @@ RenderableObject::RenderableObject(QOpenGLShaderProgram &program, Dimensions dim
   dim(dimensions)
 {
     initializeOpenGLFunctions();
+    updateMatrix.setToIdentity();
 }
 
 void RenderableObject::addChildObject(float z, std::shared_ptr<RenderableObject> object) {
@@ -25,16 +25,15 @@ void RenderableObject::addChildObject(float z, std::shared_ptr<RenderableObject>
 }
 
 void RenderableObject::update() {
-    updateMatrix.setToIdentity();
-
     doMyUpdate();
 
     for (auto &child: children) {
         child.second->update();
         applyChildTransformations(*child.second);
-        child.second->updateDone();
     }
 
+    updateDone();
+    updateMatrix.setToIdentity();
 }
 
 void RenderableObject::updateDone() {
@@ -81,16 +80,12 @@ float &RenderableObject::chooseParamForAnimation(AnimationParam param) {
     switch (param) {
         case AnimationParam::ANGLE:
             return angle;
-            break;
         case AnimationParam::W:
             return dim.width;
-            break;
         case AnimationParam::H:
             return dim.height;
-            break;
         case AnimationParam::D:
             return dim.depth;
-            break;
     }
 
     return dummy;
@@ -129,6 +124,11 @@ void RenderableObject::moveCenterAt(float x, float y, float z) {
 void RenderableObject::rotate(float degrees) {
     updateMatrix.rotate(degrees, 0.0f, 1.0f, 0.0f);
 }
+
+void RenderableObject::scale(float amount) {
+    updateMatrix.scale(amount);
+}
+
 
 bool RenderableObject::readyToInitialize() {
     return true;
