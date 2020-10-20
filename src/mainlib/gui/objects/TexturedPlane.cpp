@@ -1,7 +1,8 @@
-#include <QtGui/QImage>
-#include <iostream>
-#include <mainlib/gui/gl/utils.h>
 #include "TexturedPlane.h"
+
+#include <QtGui/QImage>
+
+#include <mainlib/gui/gl/utils.h>
 
 TexturedPlane::TexturedPlane(std::filesystem::path texturePath) :
     ShadedRenderableObject("./shaders/textured_plane.vert",
@@ -67,15 +68,15 @@ void TexturedPlane::init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     QImage original(QString::fromStdString(texturePath.string()));
-    auto textureImage = new QImage(original.convertToFormat(QImage::Format_RGB888));
+    auto textureImage = new QImage(original.convertToFormat(QImage::Format_RGBA8888));
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_RGB,
+                 GL_RGBA,
                  textureImage->width(),
                  textureImage->height(),
                  0,
-                 GL_RGB,
+                 GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  textureImage->constBits());
     glGenerateMipmap(GL_TEXTURE_2D);

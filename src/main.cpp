@@ -22,18 +22,20 @@ int main(int argc, char *argv[]) {
     const auto appSize = QSize(w, h);
 
     auto graphicsEnvironment = GraphicsEnvironmentFactory::build(appSize);
-    graphicsEnvironment->start();
+
 
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
     auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
-    audioWorker->start();
 
     auto commandCollection = audioWorker->getCommandCollection();
 
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
+
+    graphicsEnvironment->start();
+    audioWorker->start();
 
     int ret = app.exec();
 
