@@ -60,11 +60,12 @@ void OpenGLWindow::init() {
 
     glViewport(0, 0, width(), height());
 
-    centralNoteManager = std::make_unique<CentralNoteManager>();
-    //scene->setMainObject(centralNoteManager.get());
+    BitmapsProvider bitmapsProvider;
+    centralNoteManager = std::make_unique<CentralNoteManager>(bitmapsProvider);
+    scene->setMainObject(centralNoteManager.get());
 
     auto texturedPlane = new TexturedPlane("./data/container.jpg");
-    scene->setMainObject(texturedPlane);
+    //scene->setMainObject(texturedPlane);
 
     context->doneCurrent();
 }

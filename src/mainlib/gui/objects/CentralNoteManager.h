@@ -12,7 +12,7 @@ class CharTextureProvider;
 class CentralNoteManager :
         public ShadedRenderableObject {
 public:
-    CentralNoteManager();
+    CentralNoteManager(BitmapsProvider &bitmapsProvider);
     ~CentralNoteManager() override = default;
 
     void setNewFrontNote(const Note &note) { newFrontChar = getNoteChar(note); }

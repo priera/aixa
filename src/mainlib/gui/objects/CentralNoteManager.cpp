@@ -1,14 +1,14 @@
 #include "CentralNoteManager.h"
 
-CentralNoteManager::CentralNoteManager() :
+CentralNoteManager::CentralNoteManager(BitmapsProvider &bitmapsProvider) :
     ShadedRenderableObject("./shaders/textured_plane.vert",
                            "./shaders/character.frag",
-                           Dimensions{1.0f, 1.25f, 0.1f})
+                           Dimensions{0.1f, 0.125f, 0.1f})
     , targetAngle(-180)
     , frontChar(' ')
     , newFrontChar(' ')
 {
-    charTextureProvider = std::make_unique<CharTextureProvider>();
+    charTextureProvider = std::make_unique<CharTextureProvider>(bitmapsProvider);
     //auto ch1 = charTextureProvider->getChar(' ');
     //auto ch2 = charTextureProvider->getChar('G');
 

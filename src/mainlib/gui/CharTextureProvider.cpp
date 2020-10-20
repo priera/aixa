@@ -4,12 +4,8 @@
 #include <iostream>
 #include <mainlib/gui/gl/utils.h>
 
-#include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
-
-CharTextureProvider::CharTextureProvider() {
+CharTextureProvider::CharTextureProvider(BitmapsProvider &bitmapsProvider) {
     initializeOpenGLFunctions();
-
-    FreeTypeCharacterBitmapProvider provider;
 
     std::set<char> chars = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
 
@@ -17,7 +13,7 @@ CharTextureProvider::CharTextureProvider() {
     glCheckError();
 
     for (auto &p: chars) {
-        auto bitmapData = provider.getCharacter(p);
+        auto bitmapData = bitmapsProvider.getCharacter(p);
 
         GLuint texture;
         glGenTextures(1, &texture);
@@ -27,13 +23,13 @@ CharTextureProvider::CharTextureProvider() {
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RED,
-                bitmapData.width,
+                bitmapData.glStorage,
+                bitmapData.columns,
                 bitmapData.rows,
                 0,
-                GL_RED,
+                bitmapData.glStorage,
                 GL_UNSIGNED_BYTE,
-                bitmapData.buffer
+                &bitmapData.bytes[0]
         );
 
         // Set texture options
@@ -48,8 +44,7 @@ CharTextureProvider::CharTextureProvider() {
         // Now store character for later use
         Character character = {
                 texture,
-                {bitmapData.width, bitmapData.rows},
-                {bitmapData.bitmap_left, bitmapData.bitmap_top}
+                {bitmapData.columns, bitmapData.rows}
         };
 
         characters[p] = character;

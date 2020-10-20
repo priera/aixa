@@ -6,6 +6,8 @@
 #include <QMatrix4x4>
 #include <QOpenGLExtraFunctions>
 
+#include <mainlib/gui/bitmap/BitmapsProvider.h>
+
 class RenderableObject;
 
 class CharTextureProvider : protected QOpenGLFunctions {
@@ -16,7 +18,7 @@ public:
         std::vector<int> bearing;  // Offset from baseline to left/top of glyph
     };
 
-    CharTextureProvider();
+    CharTextureProvider(BitmapsProvider &bitmapsProvider);
 
     Character &getChar(char c);
 

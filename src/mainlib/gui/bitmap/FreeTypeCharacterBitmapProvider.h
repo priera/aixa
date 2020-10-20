@@ -1,17 +1,17 @@
 #ifndef AIXA_FREETYPECHARACTERBITMAPPROVIDER_H
 #define AIXA_FREETYPECHARACTERBITMAPPROVIDER_H
 
-#include "CharacterBitmapProvider.h"
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-class FreeTypeCharacterBitmapProvider : public CharacterBitmapProvider {
+#include "Bitmap.h"
+
+class FreeTypeCharacterBitmapProvider {
 public:
     FreeTypeCharacterBitmapProvider();
-    ~FreeTypeCharacterBitmapProvider() override;
+    virtual ~FreeTypeCharacterBitmapProvider();
 
-    Character getCharacter(char c) override;
+    Bitmap getCharacter(char c);
 
 private:
     FT_Library ft;
