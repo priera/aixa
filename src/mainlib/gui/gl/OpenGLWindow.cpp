@@ -14,7 +14,8 @@ OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &contex
             scene(&scene),
             context(std::move(context)),
             initialized(false),
-            centralNoteManager(nullptr) {
+            centralNoteManager(nullptr),
+            bitmapsProvider(std::make_unique<BitmapsProvider>()){
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
@@ -60,12 +61,11 @@ void OpenGLWindow::init() {
 
     glViewport(0, 0, width(), height());
 
-    BitmapsProvider bitmapsProvider;
-    centralNoteManager = std::make_unique<CentralNoteManager>(bitmapsProvider);
-    scene->setMainObject(centralNoteManager.get());
+    centralNoteManager = std::make_unique<CentralNoteManager>(*bitmapsProvider);
+    //scene->setMainObject(centralNoteManager.get());
 
-    auto texturedPlane = new TexturedPlane("./data/container.jpg");
-    //scene->setMainObject(texturedPlane);
+    auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
+    scene->setMainObject(texturedPlane);
 
     context->doneCurrent();
 }

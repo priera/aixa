@@ -4,10 +4,11 @@
 #include <filesystem>
 
 #include <mainlib/gui/scene/ShadedRenderableObject.h>
+#include <mainlib/gui/bitmap/BitmapsProvider.h>
 
 class TexturedPlane : public ShadedRenderableObject {
 public:
-    explicit TexturedPlane(std::filesystem::path texturePath);
+    TexturedPlane(BitmapsProvider &bitmapsProvider, std::filesystem::path texturePath);
     ~TexturedPlane() noexcept override;
 
 protected:
@@ -15,6 +16,7 @@ protected:
     void doMyRender() override;
 
 private:
+    BitmapsProvider *bitmapsProvider;
     std::filesystem::path texturePath;
 
     unsigned int VBO{0};

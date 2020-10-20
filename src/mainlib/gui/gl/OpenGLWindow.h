@@ -41,6 +41,7 @@ private:
     Scene *scene;
     std::unique_ptr<QOpenGLContext> context;
     std::unique_ptr<CentralNoteManager> centralNoteManager;
+    std::unique_ptr<BitmapsProvider> bitmapsProvider;
 };
 
 

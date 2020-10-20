@@ -2,6 +2,7 @@
 #define AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPSPROVIDER_H
 
 #include <memory>
+#include <filesystem>
 
 #include "Bitmap.h"
 #include "FreeTypeCharacterBitmapProvider.h"
@@ -12,6 +13,7 @@ public:
     virtual ~BitmapsProvider() = default;
 
     Bitmap getCharacter(char c);
+    Bitmap getImage(const std::filesystem::path &path);
 
 private:
     std::unique_ptr<FreeTypeCharacterBitmapProvider> freeTypeProvider;

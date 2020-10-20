@@ -1,18 +1,13 @@
 #include "TexturedPlane.h"
 
-#include <QtGui/QImage>
-
 #include <mainlib/gui/gl/utils.h>
 
-TexturedPlane::TexturedPlane(std::filesystem::path texturePath) :
+TexturedPlane::TexturedPlane(BitmapsProvider &bitmapsProvider, std::filesystem::path texturePath) :
     ShadedRenderableObject("./shaders/textured_plane.vert",
                            "./shaders/2d_texture.frag",
                            Dimensions{1.0f, 1.0f, 0.0f}),
+    bitmapsProvider(&bitmapsProvider),
     texturePath(std::move(texturePath)) {
-
-    if (!std::filesystem::exists(this->texturePath)) {
-        throw std::runtime_error("Image with path " + this->texturePath.string() + " does not exist");
-    }
 }
 
 TexturedPlane::~TexturedPlane() noexcept {
@@ -67,18 +62,16 @@ void TexturedPlane::init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    QImage original(QString::fromStdString(texturePath.string()));
-    auto textureImage = new QImage(original.convertToFormat(QImage::Format_RGBA8888));
-
+    auto img = bitmapsProvider->getImage(texturePath);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_RGBA,
-                 textureImage->width(),
-                 textureImage->height(),
+                 img.glStorage,
+                 img.columns,
+                 img.rows,
                  0,
-                 GL_RGBA,
+                 img.glStorage,
                  GL_UNSIGNED_BYTE,
-                 textureImage->constBits());
+                 &img.bytes[0]);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
