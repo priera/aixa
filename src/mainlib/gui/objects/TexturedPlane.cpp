@@ -62,16 +62,18 @@ void TexturedPlane::init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    auto img = bitmapsProvider->getImage(texturePath);
+    //auto bmp = bitmapsProvider->getImage(texturePath);
+    auto bmp = bitmapsProvider->buildProcedural();
+
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 img.glStorage,
-                 img.columns,
-                 img.rows,
+                 bmp.glStorage,
+                 bmp.columns,
+                 bmp.rows,
                  0,
-                 img.glStorage,
+                 bmp.glStorage,
                  GL_UNSIGNED_BYTE,
-                 &img.bytes[0]);
+                 &bmp.bytes[0]);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);

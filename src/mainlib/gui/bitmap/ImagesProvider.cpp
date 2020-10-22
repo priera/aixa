@@ -12,8 +12,8 @@ Bitmap ImagesProvider::getImage(const std::filesystem::path &path) {
             .convertToFormat(QImage::Format_RGBA8888);
 
     return {
-            static_cast<unsigned int>(img.width()),
             static_cast<unsigned int>(img.height()),
+            static_cast<unsigned int>(img.width()),
             GL_RGBA,
             std::vector<unsigned char>(img.constBits(), img.constBits() + img.sizeInBytes())
     };

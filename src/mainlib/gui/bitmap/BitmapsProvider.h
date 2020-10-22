@@ -14,6 +14,7 @@ public:
 
     Bitmap getCharacter(char c);
     Bitmap getImage(const std::filesystem::path &path);
+    Bitmap buildProcedural();
 
 private:
     std::unique_ptr<FreeTypeCharacterBitmapProvider> freeTypeProvider;
