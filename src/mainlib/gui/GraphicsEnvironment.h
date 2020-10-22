@@ -30,12 +30,12 @@ public:
         GLContextManager::release();
     }
 
-    NotesListener* getNotesListener() { return openGLWindow.get(); }
+    std::shared_ptr<NotesListener> getNotesListener() { return openGLWindow; }
 
 private:
     std::unique_ptr<Scene> scene;
     std::unique_ptr<DrawingWorker> drawingWorker;
-    std::unique_ptr<OpenGLWindow> openGLWindow;
+    std::shared_ptr<OpenGLWindow> openGLWindow;
 };
 
 

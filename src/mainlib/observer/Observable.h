@@ -8,29 +8,25 @@
 template <class Entity>
 class Observable {
 public:
+    using MyObserver = Observer<Entity>;
+
     virtual ~Observable() = default;
 
-    void addObserver(Observer<Entity> * observer) {
+    void addObserver(std::shared_ptr<MyObserver> observer) {
         if (!observer) return;
-        observers.push_back(observer);
-    }
-
-    void removeObserver(Observer<Entity> *observer) {
-        auto it = observers.find(observer);
-        if (it == observers.end())
-            return;
-
-        observers.erase(it);
+        observers.emplace_back(observer);
     }
 
     void notifyObservers(const Entity &newValue) {
-        for (auto observer: observers) {
-            observer->notifyNewValue(newValue);
+        for (auto& observerWeak: observers) {
+            auto observer = observerWeak.lock();
+            if (observer)
+                observer->notifyNewValue(newValue);
         }
     }
 
 private:
-    std::vector<Observer<Entity> *> observers;
+    std::vector<std::weak_ptr<MyObserver>> observers;
 };
 
 
