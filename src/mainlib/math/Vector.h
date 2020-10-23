@@ -7,6 +7,12 @@ namespace aixa::math {
     template<typename T, class ZeroComparer>
     class Vector : public Matrix<T, ZeroComparer> {
     public:
+        template<class Other>
+        Vector(Other *other, size_t M, T def = T()) :
+            Matrix<T, ZeroComparer>(1, M, def) {
+            std::copy(other, other + M, this->content.begin());
+        }
+
         explicit Vector(size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, def) {
         }
 

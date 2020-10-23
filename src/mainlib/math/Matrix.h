@@ -94,14 +94,19 @@ namespace aixa::math {
             return rows_;
         }
 
-        //Would be nice to use custom Vector type...
-        std::vector<T> vector(size_t m) const {
-            std::vector<T> ret(columns_);
-            for (size_t col = 0; col < columns_; col++) {
-                ret[col] = content[m * columns_ + col];
-            }
+        std::vector<T> vector(size_t row) const {
+            auto beginOffset = row * columns();
+            auto end = (row + 1) * columns();
+            return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
+        }
 
-            return ret;
+        //Would be nice kind of hacky to implement a custom iterator
+        std::vector<T> copyContent() const {
+            return std::vector<T>(content.begin(), content.begin() + (rows() * columns()));
+        }
+
+        const std::vector<T>& constContent() const {
+            return content;
         }
 
         size_t size() const {

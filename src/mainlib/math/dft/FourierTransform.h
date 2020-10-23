@@ -8,7 +8,7 @@
 namespace aixa::math {
     class FourierTransform {
     public:
-        FourierTransform(unsigned int N) :
+        explicit FourierTransform(unsigned int N) :
             N(N) {};
 
         virtual ~FourierTransform() = default;

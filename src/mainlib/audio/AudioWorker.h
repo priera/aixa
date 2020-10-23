@@ -15,7 +15,7 @@ public:
             std::unique_ptr<StreamReader> reader,
             std::unique_ptr<Publisher> publisher);
 
-    virtual ~AudioWorker() = default;
+    ~AudioWorker() override = default;
 
     CommandCollection getCommandCollection() override;
 

@@ -1,11 +1,13 @@
 #include "AudioWorkerFactory.h"
 
 #include <iostream>
-#include <sstream>
 
 #include <mainlib/stream/StreamTypes.h>
+#include <mainlib/math/dft/FourierTransformFactory.h>
 
 #include "InterleavedBufferGenerator.h"
+
+using namespace aixa::math;
 
 std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std::string &streamPath) {
     auto stream = tryToGetStream(streamPath);
@@ -19,9 +21,17 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
 
     auto streamReader = std::make_unique<StreamReader>(stream, environment.samplesRing);
     auto volumeManager = std::make_unique<VolumeManager>();
+
+    //TODO: this whole Publisher class belongs to another domain of the application
+    //      hell of a refactor lurks ahead
+
+    auto impl = FourierTransformFactory::Implementations::FFT;
+    auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(1024));
+
     auto publisher = std::make_unique<Publisher>(environment.platform,
                                                  environment.samplesRing,
-                                                 std::move(volumeManager));
+                                                 std::move(volumeManager),
+                                                 std::move(transform));
 
     return std::make_unique<AudioWorker>(environment, std::move(streamReader), std::move(publisher));
 }
@@ -82,7 +92,7 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
     auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, alsaEnv.frame_size, streamParams.format);
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
 
-    return std::move(AudioEnvironment(streamParams, alsaEnv, samplesRing));
+    return AudioEnvironment(streamParams, alsaEnv, samplesRing);
 }
 
 int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
