@@ -6,7 +6,7 @@
 namespace aixa::math {
 
     template<typename T, class ZeroComparer>
-    class VectorProxy;
+    class ConstVectorProxy;
 
     template<typename T, class ZeroComparer>
     class Vector : public Matrix<T, ZeroComparer> {
@@ -22,13 +22,13 @@ namespace aixa::math {
 
         ~Vector() override = default;
 
-        VectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count);
+        ConstVectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count) const;
 
         virtual const T &operator[](std::size_t n) const {
             return this->content[n];
         }
 
-        virtual T &operator[](std::size_t n) {
+        T &operator[](std::size_t n) {
             return this->content[n];
         }
 

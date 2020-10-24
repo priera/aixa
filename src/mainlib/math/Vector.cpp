@@ -1,15 +1,15 @@
 #include "Vector.h"
 
-#include "VectorProxy.h"
+#include "ConstVectorProxy.h"
 #include "typeAxioms.h"
 
 namespace aixa::math {
 
     template <typename T, class TypeAxioms>
-    VectorProxy<T, TypeAxioms> Vector<T, TypeAxioms>::slice(std::size_t beginning, std::size_t count) {
+    ConstVectorProxy<T, TypeAxioms> Vector<T, TypeAxioms>::slice(std::size_t beginning, std::size_t count) const {
         assert(beginning + count < this->content.size());
 
-        return VectorProxy<T, TypeAxioms>(*this, this->content, beginning, count);
+        return ConstVectorProxy<T, TypeAxioms>(this->content, beginning, count);
     }
 
     template class Vector<float, DoubleTypeAxioms>;

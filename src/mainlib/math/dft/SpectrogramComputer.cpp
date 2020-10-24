@@ -1,10 +1,10 @@
 #include "SpectrogramComputer.h"
 
-#include <mainlib/math/VectorProxy.h>
+#include <mainlib/math/ConstVectorProxy.h>
 
 namespace aixa::math {
 
-    void SpectrogramComputer::computeOn(DoubleVector &samples) {
+    void SpectrogramComputer::computeOn(const DoubleVector &samples) {
         if (!initialized()) {
             init(samples.size());
         } // else: adjust indexes and offsets
@@ -13,9 +13,9 @@ namespace aixa::math {
 
         unsigned int startOffset = 0;
         for (unsigned int i = 0; i < slicesCount; i++) {
-            const auto slice = samples.slice(startOffset, startOffset + windowSize);
+            const auto slice = samples.slice(startOffset, windowSize);
             const auto& result = this->fourierTransform->applyTo(slice);
-            spectre.slices.emplace_back(result);
+            spectre.slices.emplace_back(result.slice(0, windowSize / 2));
 
             startOffset += overlapping;
         }

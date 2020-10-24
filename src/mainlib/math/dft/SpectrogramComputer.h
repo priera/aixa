@@ -22,7 +22,7 @@ namespace aixa::math {
 
         virtual ~SpectrogramComputer() noexcept = default;
 
-        void computeOn(DoubleVector &samples);
+        void computeOn(const DoubleVector &samples);
 
     private:
         bool initialized() const {
