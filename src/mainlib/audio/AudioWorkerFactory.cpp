@@ -26,12 +26,13 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     //      hell of a refactor lurks ahead
 
     auto impl = FourierTransformFactory::Implementations::FFT;
-    auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(1024));
+    auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(256));
+    auto spectrogramComputer = std::make_unique<SpectrogramComputer>(std::move(transform));
 
     auto publisher = std::make_unique<Publisher>(environment.platform,
                                                  environment.samplesRing,
                                                  std::move(volumeManager),
-                                                 std::move(transform));
+                                                 std::move(spectrogramComputer));
 
     return std::make_unique<AudioWorker>(environment, std::move(streamReader), std::move(publisher));
 }

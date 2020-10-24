@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_AUDIO_PUBLISHER_H
 #define AIXA_SRC_MAINLIB_AUDIO_PUBLISHER_H
 
-#include <mainlib/math/dft/FourierTransform.h>
+#include <mainlib/math/dft/SpectrogramComputer.h>
 
 #include "AudioDefinitions.h"
 #include "VolumeManager.h"
@@ -11,11 +11,11 @@ public:
     explicit Publisher(AlsaEnvironment alsaEnv,
             std::shared_ptr<SamplesRing> samplesRing,
             std::unique_ptr<VolumeManager> volumeManager,
-            std::unique_ptr<aixa::math::FourierTransform> fourierTransform) :
+            std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer) :
             alsaEnv(std::move(alsaEnv)),
             samplesRing(std::move(samplesRing)),
             volumeManager(std::move(volumeManager)),
-            fourierTransform(std::move(fourierTransform)),
+            spectrogramComputer(std::move(spectrogramComputer)),
             sleepTime(std::chrono::microseconds(this->alsaEnv.params.period_time)) {}
 
     virtual ~Publisher() = default;
@@ -34,7 +34,7 @@ private:
     AlsaEnvironment alsaEnv;
     std::shared_ptr<SamplesRing> samplesRing;
     std::unique_ptr<VolumeManager> volumeManager;
-    std::unique_ptr<aixa::math::FourierTransform> fourierTransform;
+    std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer;
     std::chrono::microseconds sleepTime;
 };
 

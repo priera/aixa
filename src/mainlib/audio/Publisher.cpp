@@ -10,12 +10,9 @@ bool Publisher::exec() {
     if (samplesRing->moreBuffers()) {
         auto buffer = samplesRing->nextReadBuffer();
 
-        //0.1 seconds buffer = 4410 samples. Closest power of two: 4096
-        //1024 for fast matrix testing
-        //This is ugly as hell, but it is what it is
-        //FIXME: do not omit samples on the DFT
-        auto doubleVector = aixa::math::DoubleVector(buffer->samples(), 1024);
-        auto result = fourierTransform->applyTo(doubleVector);
+        //0.1 seconds buffer = 4410 samples
+        auto doubleVector = aixa::math::DoubleVector(buffer->samples(), buffer->samplesCount());
+        spectrogramComputer->computeOn(doubleVector);
 
         volumeManager->applyTo(*buffer);
         int err = snd_pcm_writei(alsaEnv.handle, buffer->raw(), alsaEnv.frame_size);

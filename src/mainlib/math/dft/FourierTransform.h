@@ -23,6 +23,10 @@ namespace aixa::math {
             return 1 / (N * samplePeriod);
         }
 
+        unsigned int dimensionality() const {
+            return N;
+        }
+
     protected:
         virtual const ComplexVector &transform(const ComplexVector &complexSignal) = 0;
 

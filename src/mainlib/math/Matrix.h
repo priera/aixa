@@ -14,7 +14,8 @@ namespace aixa::math {
     public:
 
         //N columns, M rows
-        Matrix(size_t N, size_t M, T def = T());
+        Matrix(size_t N, size_t M, T def = T()) : Matrix(N, M, std::true_type(), def) {};
+
         Matrix(const Matrix<T, TypeAxioms> &other) = default;
 
         virtual ~Matrix() = default;
@@ -119,6 +120,9 @@ namespace aixa::math {
         void print() const;
 
     protected:
+        Matrix(size_t N, size_t M, std::true_type allocate, T def);
+        Matrix(size_t N, size_t M, std::false_type resize);
+
         size_t columns_;
         size_t rows_;
 
