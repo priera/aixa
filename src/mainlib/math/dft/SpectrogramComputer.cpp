@@ -2,6 +2,8 @@
 
 #include <mainlib/math/ConstVectorProxy.h>
 
+#include "SpectrogramFragment.h"
+
 namespace aixa::math {
 
     void SpectrogramComputer::computeOn(const DoubleVector &samples) {
@@ -9,7 +11,7 @@ namespace aixa::math {
             init(samples.size());
         } // else: adjust indexes and offsets
 
-        SpectralSlices spectre;
+        SpectrogramFragment fragment;
 
         //0.1 seconds buffer = 4410 samples
 
@@ -18,10 +20,12 @@ namespace aixa::math {
             const auto slice = samples.slice(startOffset, windowSize);
             const auto& result = fourierTransform->applyTo(slice);
             const auto magnitudes = extractMagnitude(result.slice(0, windowSize / 2).detach());
-            spectre.slices.emplace_back(magnitudes);
+            fragment.slices.emplace_back(magnitudes);
 
             startOffset += overlapping;
         }
+
+        notifyObservers(fragment);
     }
 
     void SpectrogramComputer::init(size_t samplesSize) {

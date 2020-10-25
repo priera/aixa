@@ -9,13 +9,11 @@
 
 #include "Note.h"
 
-using NoteNotifier = Observable<Note>;
-
 class NoteSetter : public NoteNotifier {
 public:
     NoteSetter();
 
-    ~NoteSetter();
+    ~NoteSetter() override;
 
     void setPitch(Note::Pitch pitch);
 

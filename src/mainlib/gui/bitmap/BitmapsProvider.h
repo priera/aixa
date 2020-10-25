@@ -6,6 +6,7 @@
 
 #include "Bitmap.h"
 #include "FreeTypeCharacterBitmapProvider.h"
+#include "SpectrogramBitmapProvider.h"
 
 class BitmapsProvider {
 public:
@@ -15,9 +16,15 @@ public:
     Bitmap getCharacter(char c);
     Bitmap getImage(const std::filesystem::path &path);
     Bitmap buildProcedural();
+    Bitmap buildSpectrogram();
+
+    std::shared_ptr<aixa::math::SpectrogramListener> getSpectrogramListener() {
+        return spectrogramProvider;
+    }
 
 private:
     std::unique_ptr<FreeTypeCharacterBitmapProvider> freeTypeProvider;
+    std::shared_ptr<SpectrogramBitmapProvider> spectrogramProvider;
 };
 
 

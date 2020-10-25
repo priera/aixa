@@ -10,6 +10,9 @@
 
 class AudioWorkerFactory {
 public:
+    explicit AudioWorkerFactory(std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer) :
+        spectrogramComputer(std::move(spectrogramComputer)) {}
+
     std::unique_ptr<AudioWorker> buildWithInputStream(const std::string &streamPath);
 
 private:
@@ -22,6 +25,8 @@ private:
 
     int setSwParams(AlsaEnvironment &environment,
                     const AudioStreamParameters &parameters);
+
+    std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer;
 };
 
 

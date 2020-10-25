@@ -18,7 +18,7 @@ class OpenGLWindow :
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context);
+    explicit OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider);
 
     ~OpenGLWindow() override;
 
@@ -41,7 +41,7 @@ private:
     Scene *scene;
     std::unique_ptr<QOpenGLContext> context;
     std::unique_ptr<CentralNoteManager> centralNoteManager;
-    std::unique_ptr<BitmapsProvider> bitmapsProvider;
+    BitmapsProvider *bitmapsProvider;
 };
 
 

@@ -16,12 +16,17 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     context_p = GLContextManager::getInstance().createContext();
     context = std::unique_ptr<QOpenGLContext>(context_p);
 
-    auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context);
+    auto bitmapsProvider = std::make_unique<BitmapsProvider>();
+
+    auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context, *bitmapsProvider);
     openGlWindow->resize(appInitialSize.width(), appInitialSize.height());
 
     QObject::connect(drawingWorker.get(), &DrawingWorker::computeLoopDone,
                      openGlWindow.get(), &OpenGLWindow::renderNow,
                      Qt::QueuedConnection);
 
-    return std::make_unique<GraphicsEnvironment>(scene, drawingWorker, openGlWindow);
+    return std::make_unique<GraphicsEnvironment>(std::move(scene),
+                                                 std::move(drawingWorker),
+                                                 std::move(openGlWindow),
+                                                 std::move(bitmapsProvider));
 }

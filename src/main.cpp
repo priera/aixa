@@ -8,11 +8,23 @@
 
 #include <mainlib/gui/MainEventFilter.h>
 #include <mainlib/gui/GraphicsEnvironmentFactory.h>
+#include <mainlib/math/dft/FourierTransformFactory.h>
 
 using namespace std::chrono_literals;
+using namespace aixa::math;
 
 //static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 static const auto STREAM = "??";
+
+std::unique_ptr<SpectrogramComputer> buildSpectrogramComputer(std::shared_ptr<SpectrogramListener> spectrogramListener) {
+    auto impl = FourierTransformFactory::Implementations::FFT;
+    auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(256));
+    auto spectrogramComputer = std::make_unique<SpectrogramComputer>(std::move(transform));
+    spectrogramComputer->addObserver(spectrogramListener);
+
+    return spectrogramComputer;
+}
+
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -26,7 +38,8 @@ int main(int argc, char *argv[]) {
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
+    auto spectrogramComputer = buildSpectrogramComputer(graphicsEnvironment->getSpectrogramListener());
+    auto audioWorker = AudioWorkerFactory(std::move(spectrogramComputer)).buildWithInputStream(STREAM);
 
     auto commandCollection = audioWorker->getCommandCollection();
 

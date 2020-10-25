@@ -9,13 +9,13 @@
 #include "GLContextManager.h"
 #include "utils.h"
 
-OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context)
+OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider)
         : QWindow(), QOpenGLFunctions(),
             scene(&scene),
             context(std::move(context)),
             initialized(false),
             centralNoteManager(nullptr),
-            bitmapsProvider(std::make_unique<BitmapsProvider>()){
+            bitmapsProvider(&bitmapsProvider){
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
@@ -95,7 +95,7 @@ void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
     glViewport(0, 0, s.width(), s.height());
 }
 
-void OpenGLWindow::notifyNewValue(const Note &note) {
+void OpenGLWindow::notifyNewValue(const Note& note) {
     if (centralNoteManager)
         centralNoteManager->setNewFrontNote(note);
 }

@@ -4,7 +4,9 @@
 template <class Entity>
 class Observer {
 public:
-    virtual void notifyNewValue(const Entity &e) = 0;
+    virtual ~Observer() = default;
+
+    virtual void notifyNewValue(const Entity& e) = 0;
 };
 
 #endif //AIXA_SRC_MAINLIB_OBSERVER_OBSERVER_H

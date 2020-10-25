@@ -4,23 +4,20 @@
 #include <memory>
 
 #include "FourierTransform.h"
+#include "SpectrogramFragment.h"
 
 namespace aixa::math {
-    class SpectrogramComputer {
+    class SpectrogramComputer : public SpectrogramProvider {
     public:
-        struct SpectralSlices {
-            std::vector<std::vector<double>> slices;
-        };
-
         explicit SpectrogramComputer(std::unique_ptr<FourierTransform> fourierTransform) :
+                SpectrogramProvider(),
                 fourierTransform(std::move(fourierTransform)),
                 windowSize(this->fourierTransform->dimensionality()),
                 overlapping(windowSize / 2),
                 slicesCount(0),
-                remainder(nullptr)
-            {}
+                remainder(nullptr) {}
 
-        virtual ~SpectrogramComputer() noexcept = default;
+        ~SpectrogramComputer() noexcept override = default;
 
         void computeOn(const DoubleVector &samples);
 
@@ -30,6 +27,7 @@ namespace aixa::math {
         }
 
         void init(size_t samplesSize);
+
         std::vector<double> extractMagnitude(const ComplexVector &transformResult) const;
 
         std::unique_ptr<FourierTransform> fourierTransform;

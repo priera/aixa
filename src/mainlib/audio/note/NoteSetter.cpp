@@ -10,6 +10,7 @@
 using namespace std::chrono_literals;
 
 NoteSetter::NoteSetter() :
+    NoteNotifier(),
     buffer(std::make_unique<NotesBuffer>(10)),
     noteSeen(false),
     stopWorker(false) {

@@ -22,13 +22,6 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     auto streamReader = std::make_unique<StreamReader>(stream, environment.samplesRing);
     auto volumeManager = std::make_unique<VolumeManager>();
 
-    //TODO: this whole Publisher class belongs to another domain of the application
-    //      hell of a refactor lurks ahead
-
-    auto impl = FourierTransformFactory::Implementations::FFT;
-    auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(256));
-    auto spectrogramComputer = std::make_unique<SpectrogramComputer>(std::move(transform));
-
     auto publisher = std::make_unique<Publisher>(environment.platform,
                                                  environment.samplesRing,
                                                  std::move(volumeManager),
