@@ -9,7 +9,7 @@ namespace aixa::math {
     class SpectrogramComputer {
     public:
         struct SpectralSlices {
-            std::vector<ComplexVector> slices;
+            std::vector<std::vector<double>> slices;
         };
 
         explicit SpectrogramComputer(std::unique_ptr<FourierTransform> fourierTransform) :
@@ -30,6 +30,7 @@ namespace aixa::math {
         }
 
         void init(size_t samplesSize);
+        std::vector<double> extractMagnitude(const ComplexVector &transformResult) const;
 
         std::unique_ptr<FourierTransform> fourierTransform;
         unsigned int windowSize;

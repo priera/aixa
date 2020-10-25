@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <iomanip>
+#include "ComplexExponential.h"
 
 namespace aixa::math {
     class Complex;
@@ -17,6 +18,12 @@ namespace aixa::math {
 
         double re() const { return x; }
         double im() const { return y; }
+        double magnitude() const {
+            auto cRe = re();
+            auto cIm = im();
+
+            return std::sqrt((cRe * cRe) + (cIm * cIm));
+        }
 
         //conjugate
         Complex operator~() const {
@@ -36,6 +43,16 @@ namespace aixa::math {
         Complex& operator*=(const Complex& other) {
             (*this) = (*this) * other;
             return *this;
+        }
+
+        operator ComplexExponential() const {
+            auto cRe = re();
+            auto cIm = im();
+
+            double arg = std::atan2(cIm, cRe);
+            double mag = std::sqrt((cRe * cRe) + (cIm * cIm));
+
+            return ComplexExponential(arg, mag);
         }
 
     private:

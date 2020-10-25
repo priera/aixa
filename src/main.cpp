@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
 
     auto graphicsEnvironment = GraphicsEnvironmentFactory::build(appSize);
 
-
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
