@@ -14,8 +14,8 @@ namespace aixa::math {
         unsigned int startOffset = 0;
         for (unsigned int i = 0; i < slicesCount; i++) {
             const auto slice = samples.slice(startOffset, windowSize);
-            const auto& result = this->fourierTransform->applyTo(slice);
-            spectre.slices.emplace_back(result.slice(0, windowSize / 2));
+            const auto& result = fourierTransform->applyTo(slice);
+            spectre.slices.emplace_back(result.slice(0, windowSize / 2).detach());
 
             startOffset += overlapping;
         }

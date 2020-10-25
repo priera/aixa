@@ -24,6 +24,11 @@ namespace aixa::math {
             return parentContent[offset + n];
         }
 
+        Vector<T, TypeAxioms> detach() const {
+            auto newContent = std::vector<T>(parentContent.begin() + offset, parentContent.begin() + offset + count);
+            return Vector<T, TypeAxioms>(newContent);
+        }
+
     private:
         const std::vector<T> &parentContent;
         std::size_t offset;

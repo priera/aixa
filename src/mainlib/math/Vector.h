@@ -20,6 +20,9 @@ namespace aixa::math {
         explicit Vector(size_t M, T def = T()) :
             Matrix<T, ZeroComparer>(1, M, std::true_type(), def) { }
 
+        explicit Vector(const std::vector<T>& content) :
+            Matrix<T, ZeroComparer>(1, content.size(), content) {}
+
         ~Vector() override = default;
 
         ConstVectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count) const;
