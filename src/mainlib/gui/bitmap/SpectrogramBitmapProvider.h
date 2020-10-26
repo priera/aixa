@@ -5,14 +5,17 @@
 
 #include "Bitmap.h"
 
-class SpectrogramBitmapProvider : public aixa::math::SpectrogramListener {
+class SpectrogramBitmapProvider : public aixa::math::SpectrogramConsumer {
 public:
 
     ~SpectrogramBitmapProvider() override = default;
 
-    void notifyNewValue(const aixa::math::SpectrogramFragment& e) override;
+    void sendNewValue(aixa::math::SpectrogramFragment&& fragment) override;
 
     Bitmap buildBitmap();
+
+private:
+    std::vector<std::vector<double>> spectrogram;
 };
 
 

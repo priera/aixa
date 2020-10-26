@@ -2,8 +2,8 @@
 #define AIXA_NOTE_H
 
 #include <mainlib/threading/CircularBuffer.h>
-#include <mainlib/observer/Observer.h>
-#include <mainlib/observer/Observable.h>
+#include <mainlib/transfer/Observer.h>
+#include <mainlib/transfer/Observable.h>
 
 struct Note {
     enum class Pitch : signed int {

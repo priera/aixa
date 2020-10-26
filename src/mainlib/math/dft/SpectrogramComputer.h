@@ -7,10 +7,10 @@
 #include "SpectrogramFragment.h"
 
 namespace aixa::math {
-    class SpectrogramComputer : public SpectrogramProvider {
+    class SpectrogramComputer : public SpectrogramGenerator {
     public:
         explicit SpectrogramComputer(std::unique_ptr<FourierTransform> fourierTransform) :
-                SpectrogramProvider(),
+                SpectrogramGenerator(),
                 fourierTransform(std::move(fourierTransform)),
                 windowSize(this->fourierTransform->dimensionality()),
                 overlapping(windowSize / 2),

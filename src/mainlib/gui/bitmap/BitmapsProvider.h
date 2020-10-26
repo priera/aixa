@@ -18,13 +18,13 @@ public:
     Bitmap buildProcedural();
     Bitmap buildSpectrogram();
 
-    std::shared_ptr<aixa::math::SpectrogramListener> getSpectrogramListener() {
-        return spectrogramProvider;
+    std::shared_ptr<aixa::math::SpectrogramConsumer> getSpectrogramConsumer() {
+        return spectrogramBitmapProvider;
     }
 
 private:
     std::unique_ptr<FreeTypeCharacterBitmapProvider> freeTypeProvider;
-    std::shared_ptr<SpectrogramBitmapProvider> spectrogramProvider;
+    std::shared_ptr<SpectrogramBitmapProvider> spectrogramBitmapProvider;
 };
 
 

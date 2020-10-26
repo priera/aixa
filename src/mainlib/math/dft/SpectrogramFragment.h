@@ -3,16 +3,16 @@
 
 #include <vector>
 
-#include <mainlib/observer/Observer.h>
-#include <mainlib/observer/Observable.h>
+#include <mainlib/transfer/Emitter.h>
+#include <mainlib/transfer/Receiver.h>
 
 namespace aixa::math {
     struct SpectrogramFragment {
         std::vector<std::vector<double>> slices;
     };
 
-    using SpectrogramListener = Observer<SpectrogramFragment>;
-    using SpectrogramProvider = Observable<SpectrogramFragment>;
+    using SpectrogramConsumer = Receiver<SpectrogramFragment>;
+    using SpectrogramGenerator = Emitter<SpectrogramFragment>;
 }
 
 #endif //AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMFRAGMENT_H

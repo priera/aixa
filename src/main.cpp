@@ -16,11 +16,11 @@ using namespace aixa::math;
 //static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 static const auto STREAM = "??";
 
-std::unique_ptr<SpectrogramComputer> buildSpectrogramComputer(std::shared_ptr<SpectrogramListener> spectrogramListener) {
+std::unique_ptr<SpectrogramComputer> buildSpectrogramComputer(std::shared_ptr<SpectrogramConsumer> spectrogramConsumer) {
     auto impl = FourierTransformFactory::Implementations::FFT;
     auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(256));
     auto spectrogramComputer = std::make_unique<SpectrogramComputer>(std::move(transform));
-    spectrogramComputer->addObserver(spectrogramListener);
+    spectrogramComputer->setReceiver(spectrogramConsumer);
 
     return spectrogramComputer;
 }
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    auto spectrogramComputer = buildSpectrogramComputer(graphicsEnvironment->getSpectrogramListener());
+    auto spectrogramComputer = buildSpectrogramComputer(graphicsEnvironment->getSpectrogramConsumer());
     auto audioWorker = AudioWorkerFactory(std::move(spectrogramComputer)).buildWithInputStream(STREAM);
 
     auto commandCollection = audioWorker->getCommandCollection();

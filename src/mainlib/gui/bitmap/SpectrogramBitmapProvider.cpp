@@ -1,7 +1,9 @@
 #include "SpectrogramBitmapProvider.h"
 
-void SpectrogramBitmapProvider::notifyNewValue(const aixa::math::SpectrogramFragment &fragment) {
-
+void SpectrogramBitmapProvider::sendNewValue(aixa::math::SpectrogramFragment&& fragment) {
+    for (auto& slice: fragment.slices) {
+        spectrogram.emplace_back(std::move(slice));
+    }
 }
 
 Bitmap SpectrogramBitmapProvider::buildBitmap() {

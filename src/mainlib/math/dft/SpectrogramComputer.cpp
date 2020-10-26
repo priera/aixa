@@ -25,7 +25,7 @@ namespace aixa::math {
             startOffset += overlapping;
         }
 
-        notifyObservers(fragment);
+        sendToReceiver(std::move(fragment));
     }
 
     void SpectrogramComputer::init(size_t samplesSize) {

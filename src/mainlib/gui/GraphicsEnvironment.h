@@ -37,8 +37,8 @@ public:
         return openGLWindow;
     }
 
-    std::shared_ptr<aixa::math::SpectrogramListener> getSpectrogramListener() {
-        return bitmapsProvider->getSpectrogramListener();
+    std::shared_ptr<aixa::math::SpectrogramConsumer> getSpectrogramConsumer() {
+        return bitmapsProvider->getSpectrogramConsumer();
     }
 
 private:
