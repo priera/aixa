@@ -3,8 +3,10 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
+#include <QtCore/QTimer>
 
 #include <mainlib/gui/objects/TexturedPlane.h>
+#include <mainlib/gui/objects/SpectrogramPlane.h>
 
 #include "GLContextManager.h"
 #include "utils.h"
@@ -66,6 +68,11 @@ void OpenGLWindow::init() {
 
     auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
     scene->setMainObject(texturedPlane);
+
+    QTimer::singleShot(44000, [this]() {
+        auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+        scene->setMainObject(spectrogramPlane);
+    });
 
     context->doneCurrent();
 }

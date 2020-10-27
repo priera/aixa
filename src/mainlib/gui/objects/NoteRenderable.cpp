@@ -30,7 +30,8 @@ void NoteRenderable::doMyRender() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    program->setUniformValue("textColor", {0.7f, 0.7f, 0.7f });
+    const auto textColor = QVector3D(0.7f, 0.7f, 0.7f);
+    program->setUniformValue("textColor", textColor);
 
     glActiveTexture(GL_TEXTURE0);
 
