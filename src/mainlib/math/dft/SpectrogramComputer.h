@@ -14,8 +14,11 @@ namespace aixa::math {
                 fourierTransform(std::move(fourierTransform)),
                 windowSize(this->fourierTransform->dimensionality()),
                 overlapping(windowSize / 2),
+                mask(windowSize),
                 slicesCount(0),
-                remainder(nullptr) {}
+                remainder(nullptr) {
+            buildMask();
+        }
 
         ~SpectrogramComputer() noexcept override = default;
 
@@ -28,11 +31,14 @@ namespace aixa::math {
 
         void init(size_t samplesSize);
 
+        void buildMask();
+
         std::vector<double> extractMagnitude(const ComplexVector &transformResult) const;
 
         std::unique_ptr<FourierTransform> fourierTransform;
         unsigned int windowSize;
         unsigned int overlapping;
+        DoubleVector mask;
 
         unsigned int slicesCount;
         std::unique_ptr<DoubleVector> remainder;

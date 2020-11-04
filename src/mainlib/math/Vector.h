@@ -12,7 +12,7 @@ namespace aixa::math {
     class Vector : public Matrix<T, ZeroComparer> {
     public:
         template<class Other>
-        Vector(Other *other, size_t M, T def = T()) :
+        Vector(Other other, size_t M, T def = T()) :
             Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {
             std::copy(other, other + M, this->content.begin());
         }
@@ -26,6 +26,7 @@ namespace aixa::math {
         ~Vector() override = default;
 
         ConstVectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count) const;
+        Vector<T, ZeroComparer> copy(std::size_t beginning, std::size_t count) const;
 
         virtual const T &operator[](std::size_t n) const {
             return this->content[n];
@@ -34,6 +35,8 @@ namespace aixa::math {
         T &operator[](std::size_t n) {
             return this->content[n];
         }
+
+        Vector<T, ZeroComparer> operator*(const Vector<T, ZeroComparer>& other) const;
 
     protected:
         Vector(size_t M, std::false_type) :

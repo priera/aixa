@@ -3,6 +3,7 @@
 
 #include <map>
 #include <mutex>
+#include <memory>
 
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QOpenGLShaderProgram>

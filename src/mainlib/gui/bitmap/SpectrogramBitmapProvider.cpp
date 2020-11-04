@@ -44,10 +44,10 @@ void SpectrogramBitmapProvider::fillTexel(std::vector<unsigned char> &bytes,
             const auto colOffset = baseColOffset + (col * PIXEL_SIZE);
             const auto baseAddress = rowAddress + colOffset;
 
-            bytes[baseAddress + col] = color.red();
-            bytes[baseAddress + col + 1] = color.green();
-            bytes[baseAddress + col + 2] = color.blue();
-            bytes[baseAddress + col + 3] = 255;
+            bytes[baseAddress] = color.red();
+            bytes[baseAddress + 1] = color.green();
+            bytes[baseAddress + 2] = color.blue();
+            bytes[baseAddress + 3] = 255;
         }
         rowAddress += WIDTH * PIXEL_SIZE;
     }

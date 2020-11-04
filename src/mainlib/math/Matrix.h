@@ -104,11 +104,6 @@ namespace aixa::math {
             return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
         }
 
-        //Would be nice kind of hacky to implement a custom iterator
-        std::vector<T> copyContent() const {
-            return std::vector<T>(content.begin(), content.begin() + (rows() * columns()));
-        }
-
         const std::vector<T>& constContent() const {
             return content;
         }
