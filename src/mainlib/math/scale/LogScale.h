@@ -4,6 +4,7 @@
 #include "Scale.h"
 
 #include <cmath>
+#include <unordered_set>
 
 namespace aixa::math {
     class LogScale : public Scale {
@@ -16,6 +17,7 @@ namespace aixa::math {
             logMax(std::log10(linMax)),
             den(logMax - logMin) {
             buckets.resize(positions);
+            computeFreeBuckets();
         }
 
         void insert(std::size_t pos, double elem) override;
@@ -24,6 +26,11 @@ namespace aixa::math {
         void prepareData() override;
 
     private:
+        void computeFreeBuckets();
+
+        inline std::size_t getBucketOfPos(std::size_t pos) const;
+        inline bool isFreeBucket(size_t pos) const;
+
         double computeAvg(const std::vector<double> &bucket);
 
         double linMin;
@@ -33,6 +40,8 @@ namespace aixa::math {
         double den;
 
         std::vector<std::vector<double>> buckets;
+        std::unordered_set<std::size_t> freeBuckets;
+
     };
 }
 

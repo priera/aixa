@@ -9,7 +9,9 @@ namespace aixa::math {
     void SpectrogramComputer::computeOn(const DoubleVector &samples) {
         if (!initialized()) {
             init(samples.size());
-        } // else: adjust indexes and offsets
+        }
+        // TODO if already initialized, adjust indexes and offsets
+        //      This probably won't be done, since is quite complex to do, but current results are quite correct
 
         SpectrogramFragment fragment(slicesCount);
         unsigned int startOffset = 0;

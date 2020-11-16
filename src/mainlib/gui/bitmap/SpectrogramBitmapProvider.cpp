@@ -1,6 +1,5 @@
 #include "SpectrogramBitmapProvider.h"
 
-#include <iostream>
 #include <GL/gl.h>
 
 void SpectrogramBitmapProvider::sendNewValue(aixa::math::SpectrogramFragment&& fragment) {
@@ -13,11 +12,11 @@ void SpectrogramBitmapProvider::sendNewValue(aixa::math::SpectrogramFragment&& f
 
 Bitmap SpectrogramBitmapProvider::buildBitmap() {
     //TODO: support sizes not multiple of 256
+    height = spectrogram[0].size();
+    rowRepetitions = 1;
 
-    rowRepetitions = HEIGHT / spectrogram[0].size();
-
-    std::vector<unsigned char> bytes(WIDTH * HEIGHT * PIXEL_SIZE, 0);
-    for (unsigned int i = 0; i < HEIGHT / rowRepetitions; i++) {
+    std::vector<unsigned char> bytes(WIDTH * height * PIXEL_SIZE, 0);
+    for (unsigned int i = 0; i < height / rowRepetitions; i++) {
         for (unsigned int j = 0; j < WIDTH / COL_REPETITIONS; j++) {
             //Notice that iterating the image in row-major order implies iterating the data in column-major order (cache inefficient!!!)
             auto sample = spectrogram[j][i];
@@ -25,7 +24,7 @@ Bitmap SpectrogramBitmapProvider::buildBitmap() {
         }
     }
 
-    return { HEIGHT, WIDTH, GL_RGBA, bytes};
+    return { height, WIDTH, GL_RGBA, bytes};
 }
 
 void SpectrogramBitmapProvider::fillTexel(std::vector<unsigned char> &bytes,

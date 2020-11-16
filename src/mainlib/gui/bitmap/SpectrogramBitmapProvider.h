@@ -28,8 +28,7 @@ private:
     static constexpr int MAX_B = 20;
 
     static constexpr unsigned int WIDTH = 768;
-    static constexpr unsigned int COL_REPETITIONS = 4;
-    static constexpr unsigned int HEIGHT = 512;
+    static constexpr unsigned int COL_REPETITIONS = 1;
     static constexpr auto PIXEL_SIZE = 4 * sizeof(unsigned char);
 
     void fillTexel(std::vector<unsigned char> &vector, unsigned int baseRow, unsigned int baseCol, double sample);
@@ -39,6 +38,7 @@ private:
     inline int project(double value, int min, int max);
 
     std::vector<std::vector<double>> spectrogram;
+    unsigned int height;
     unsigned long rowRepetitions;
 };
 
