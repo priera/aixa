@@ -8,8 +8,12 @@
 #include "AudioDefinitions.h"
 #include "AudioWorker.h"
 
+using namespace aixa::math;
+
 class AudioWorkerFactory {
 public:
+    AudioWorkerFactory() = default;
+
     std::unique_ptr<AudioWorker> buildWithInputStream(const std::string &streamPath);
 
 private:

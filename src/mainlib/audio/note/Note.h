@@ -1,9 +1,9 @@
 #ifndef AIXA_NOTE_H
 #define AIXA_NOTE_H
 
-#include "mainlib/threading/CircularBuffer.h"
-
-#include "mainlib/observer/Observer.h"
+#include <mainlib/threading/CircularBuffer.h>
+#include <mainlib/transfer/Observer.h>
+#include <mainlib/transfer/Observable.h>
 
 struct Note {
     enum class Pitch : signed int {
@@ -39,5 +39,6 @@ char getNoteChar(const Note &n);
 
 using NotesBuffer = CircularBuffer<Note>;
 using NotesListener = Observer<Note>;
+using NoteNotifier = Observable<Note>;
 
 #endif //AIXA_NOTE_H

@@ -9,12 +9,10 @@ add_executable(${TARGET_NAME} main.cpp)
 target_include_directories(${TARGET_NAME} PUBLIC
         ${ROOT_INCLUDE_DIR}
         ${QT_INCLUDES}
-        ${FREETYPE_INCLUDE_DIRS}
-        ${log4cplus_INCLUDES})
+        ${FREETYPE_INCLUDE_DIRS})
 
 target_link_libraries(${TARGET_NAME}
         mainlib
         asound
-        ${QT_LIBS}
-        ${log4cplus_LIBS})
+        ${QT_LIBS})
 

@@ -11,6 +11,6 @@ namespace aixa::math {
             ret[i] = realVector[i];
         }
 
-        return std::move(ret);
+        return ret;
     }
 }

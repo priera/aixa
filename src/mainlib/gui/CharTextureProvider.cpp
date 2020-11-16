@@ -2,34 +2,34 @@
 
 #include <set>
 #include <iostream>
+#include <mainlib/gui/gl/utils.h>
 
-#include "mainlib/gui/bitmap/FreeTypeCharacterBitmapProvider.h"
-
-CharTextureProvider::CharTextureProvider() {
+CharTextureProvider::CharTextureProvider(BitmapsProvider &bitmapsProvider) {
     initializeOpenGLFunctions();
-
-    FreeTypeCharacterBitmapProvider provider;
 
     std::set<char> chars = { 'A', 'B', 'C', 'D', 'E', 'F', 'G' };
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glCheckError();
 
     for (auto &p: chars) {
-        auto bitmapData = provider.getCharacter(p);
+        auto bitmapData = bitmapsProvider.getCharacter(p);
 
         GLuint texture;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
+
+        assert(glGetError() == GL_NO_ERROR);
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RED,
-                bitmapData.width,
+                bitmapData.glStorage,
+                bitmapData.columns,
                 bitmapData.rows,
                 0,
-                GL_RED,
+                bitmapData.glStorage,
                 GL_UNSIGNED_BYTE,
-                bitmapData.buffer
+                &bitmapData.bytes[0]
         );
 
         // Set texture options
@@ -44,18 +44,19 @@ CharTextureProvider::CharTextureProvider() {
         // Now store character for later use
         Character character = {
                 texture,
-                {bitmapData.width, bitmapData.rows},
-                {bitmapData.bitmap_left, bitmapData.bitmap_top}
+                {bitmapData.columns, bitmapData.rows}
         };
 
         characters[p] = character;
+        glCheckError();
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
+    glCheckError();
 }
 
-CharTextureProvider::Character CharTextureProvider::generateChar(char c) {
-    char upperChar = toupper(c);
+CharTextureProvider::Character &CharTextureProvider::getChar(char c) {
+    char upperChar = std::toupper(c);
 
     auto it = characters.find(upperChar);
     if (it == characters.end())

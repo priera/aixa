@@ -9,15 +9,21 @@
 #include "StreamReader.h"
 #include "Publisher.h"
 
+using namespace aixa::math;
+
 class AudioWorker : public CommandListener {
 public:
     AudioWorker(AudioEnvironment env,
             std::unique_ptr<StreamReader> reader,
             std::unique_ptr<Publisher> publisher);
 
-    virtual ~AudioWorker() = default;
+    ~AudioWorker() override = default;
 
     CommandCollection getCommandCollection() override;
+
+    SpectrogramGenerator &getSpectrogramGenerator() {
+        return publisher->getSpectrogramGenerator();
+    }
 
     void start();
     void stop();

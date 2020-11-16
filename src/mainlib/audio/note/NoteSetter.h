@@ -5,17 +5,15 @@
 #include <thread>
 #include <atomic>
 
-#include "mainlib/observer/Observable.h"
+#include <mainlib/transfer/Observable.h>
 
 #include "Note.h"
-
-using NoteNotifier = Observable<Note>;
 
 class NoteSetter : public NoteNotifier {
 public:
     NoteSetter();
 
-    ~NoteSetter();
+    ~NoteSetter() override;
 
     void setPitch(Note::Pitch pitch);
 

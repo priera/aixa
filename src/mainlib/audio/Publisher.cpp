@@ -1,6 +1,5 @@
 #include "Publisher.h"
 
-#include <sstream>
 #include <iostream>
 #include <thread>
 
@@ -10,6 +9,12 @@ bool Publisher::exec() {
 
     if (samplesRing->moreBuffers()) {
         auto buffer = samplesRing->nextReadBuffer();
+
+        //0.1 seconds buffer = 4410 samples
+        auto firstChannel = buffer->channel(0);
+        auto doubleVector = aixa::math::DoubleVector(firstChannel.begin(), firstChannel.size());
+
+        spectrogramComputer->computeOn(doubleVector);
 
         volumeManager->applyTo(*buffer);
         int err = snd_pcm_writei(alsaEnv.handle, buffer->raw(), alsaEnv.frame_size);

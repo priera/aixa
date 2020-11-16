@@ -4,62 +4,45 @@
 #include <QApplication>
 
 #include <mainlib/audio/AudioWorkerFactory.h>
-#include <mainlib/math/dft/MatrixFourierTransform.h>
-#include <mainlib/math/SineGenerator.h>
-#include <mainlib/math/dft/CooleyTukeyFFT.h>
-#include <mainlib/math/dft/FourierTransformFactory.h>
+#include <mainlib/audio/note/NoteSetter.h>
 
-#include "mainlib/gui/MainEventFilter.h"
-
-#include "mainlib/gui/gl/OpenGLTask.h"
-#include "mainlib/gui/gl/OpenGLWindow.h"
-#include "mainlib/gui/gl/GLContextManager.h"
-
-#include "mainlib/gui/CentralNoteManager.h"
-#include "mainlib/audio/note/NoteSetter.h"
+#include <mainlib/gui/MainEventFilter.h>
+#include <mainlib/gui/GraphicsEnvironmentFactory.h>
 
 using namespace std::chrono_literals;
-
 using namespace aixa::math;
 
-//static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
-static const auto STREAM = "??";
+static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
+//static const auto STREAM = "??";
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    OpenGLWindow win;
-    float w = 1920 * 3.0 / 4;
-    float h = 1080 * 3.0 / 4;
-    win.resize(w, h);
-    win.show();
+    const auto w = static_cast<int>(1920 * 3.0 / 4);
+    const auto h = static_cast<int>(1080 * 3.0 / 4);
+    const auto appSize = QSize(w, h);
 
-    OpenGLTask openGLTask(win);
+    auto graphicsEnvironment = GraphicsEnvironmentFactory::build(appSize);
 
     NoteSetter noteSetter;
-
-    QObject::connect(&openGLTask, &OpenGLTask::sceneBuilt, [&win, &openGLTask, &noteSetter]() {
-        win.setScene(openGLTask.getScene());
-        win.setReady();
-        noteSetter.addObserver(openGLTask.getCentralNoteManager());
-    });
+    noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
     auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
-    audioWorker->start();
+
+    audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment->getSpectrogramConsumer());
 
     auto commandCollection = audioWorker->getCommandCollection();
 
     MainEventFilter mainEventFilter(commandCollection, noteSetter);
     app.installEventFilter(&mainEventFilter);
 
-    openGLTask.start();
+    graphicsEnvironment->start();
+    audioWorker->start();
 
     int ret = app.exec();
 
     audioWorker->stop();
-    openGLTask.quit();
-
-    GLContextManager::getInstance().release();
+    graphicsEnvironment->stop();
 
     return ret;
 }

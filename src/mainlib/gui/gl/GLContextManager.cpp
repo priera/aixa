@@ -3,40 +3,24 @@
 #include <exception>
 #include <iostream>
 
-GLContextManager GLContextManager::instance;
-
-GLContextManager::~GLContextManager() { }
+GLContextManager *GLContextManager::instance = nullptr;
 
 GLContextManager &GLContextManager::getInstance() {
-    if (!instance.initialized) {
-        //Wait until the program is actually running to do the initialization
-        instance.init();
-
-        instance.initialized = true;
+    if (!instance) {
+        instance = new GLContextManager();
     }
 
-    return instance;
+    return *instance;
 }
 
 void GLContextManager::release() {
-    if (instance.initialized) {
-
-        if (instance.surface) {
-            delete instance.surface;
-            instance.surface = nullptr;
-        }
-
-        if (instance.sharedContext) {
-            delete instance.sharedContext;
-            instance.sharedContext = nullptr;
-        }
+    if (instance) {
+        delete instance;
+        instance = nullptr;
     }
 }
 
-GLContextManager::GLContextManager() :
-    initialized(false) { }
-
-void GLContextManager::init() {
+GLContextManager::GLContextManager() {
     QSurfaceFormat format;
     format.setSamples(16);
     format.setMajorVersion(3);
@@ -44,41 +28,24 @@ void GLContextManager::init() {
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setRenderableType(QSurfaceFormat::OpenGL);
 
-    surface = new QOffscreenSurface();
-    surface->setFormat(format);
-    surface->create();
+    offscreenSurface = std::make_unique<QOffscreenSurface>();
+    offscreenSurface->setFormat(format);
+    offscreenSurface->create();
 
-    sharedContext = new QOpenGLContext();
-    sharedContext->setFormat(surface->format());
+    sharedContext = std::make_unique<QOpenGLContext>();
+    sharedContext->setFormat(offscreenSurface->format());
     sharedContext->create();
-    //sharedContext->makeCurrent(surface);
 
     assert(glGetError() == GL_NO_ERROR);
-
-    //sharedContext->doneCurrent();
 }
 
 QOpenGLContext *GLContextManager::createContext() {
     auto context = new QOpenGLContext();
 
-    context->setShareContext(sharedContext);
+    context->setShareContext(sharedContext.get());
     QSurfaceFormat sf = context->format();
 
     //sf.setOption(QSurfaceFormat::DebugContext);
 
-    //context->setFormat(sf);
-
-    if (!context->create()) {
-        throw std::runtime_error("Error when creating OpenGLContext");
-    }
-
     return context;
-}
-
-QOpenGLContext *GLContextManager::useNewOffscreenContext() {
-    auto ret = createContext();
-
-    ret->makeCurrent(surface);
-
-    return ret;
 }

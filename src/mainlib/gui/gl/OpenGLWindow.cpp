@@ -1,37 +1,31 @@
 #include "OpenGLWindow.h"
 
-#include <QtGui/QScreen>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QResizeEvent>
+#include <QtGui/QScreen>
+#include <QtCore/QTimer>
 
-#include "mainlib/gui/gl/Scene.h"
-#include "mainlib/gui/gl/GLContextManager.h"
-#include "mainlib/gui/gl/utils.h"
+#include <mainlib/gui/objects/TexturedPlane.h>
+#include <mainlib/gui/objects/SpectrogramPlane.h>
 
-OpenGLWindow::OpenGLWindow() :
-    QWindow(),
-    QOpenGLFunctions(),
-    context(nullptr),
-    scene(nullptr),
-    initialized(false),
-    ready(false)
-{
+#include "GLContextManager.h"
+#include "utils.h"
+
+OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider)
+        : QWindow(), QOpenGLFunctions(),
+            scene(&scene),
+            context(std::move(context)),
+            initialized(false),
+            centralNoteManager(nullptr),
+            bitmapsProvider(&bitmapsProvider){
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
-OpenGLWindow::~OpenGLWindow() {
-    context->doneCurrent();
-}
-
-void OpenGLWindow::render()
-{
-    if (scene) {
-        scene->draw();
-    }
-}
+OpenGLWindow::~OpenGLWindow() { context->doneCurrent(); }
 
 void OpenGLWindow::renderNow() {
-    if (!ready) return;
+    if (!isExposed())
+        return;
 
     if (!initialized) {
         init();
@@ -43,46 +37,48 @@ void OpenGLWindow::renderNow() {
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    render();
+    scene->draw();
 
     glCheckError();
 
     context->swapBuffers(this);
-
     context->doneCurrent();
 }
 
 void OpenGLWindow::init() {
-    auto context_p = GLContextManager::getInstance().createContext();
-    context = std::unique_ptr<QOpenGLContext>(context_p);
-
     context->setFormat(requestedFormat());
+    if (!context->create()) {
+        throw std::runtime_error("Error when creating OpenGLContext");
+    }
 
     context->makeCurrent(this);
-
     initializeOpenGLFunctions();
 
     glEnable(GL_DEPTH_TEST);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
     glViewport(0, 0, width(), height());
+
+    centralNoteManager = std::make_unique<CentralNoteManager>(*bitmapsProvider);
+    //scene->setMainObject(centralNoteManager.get());
+
+    auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
+    scene->setMainObject(texturedPlane);
+
+    auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+
+    QTimer::singleShot(44000, [this, spectrogramPlane]() {
+        scene->setMainObject(spectrogramPlane);
+    });
 
     context->doneCurrent();
 }
 
-void OpenGLWindow::setReady() {
-    ready = true;
-}
-
-bool OpenGLWindow::event(QEvent *event)
-{
+bool OpenGLWindow::event(QEvent *event) {
     switch (event->type()) {
         case QEvent::UpdateRequest:
             renderNow();
@@ -92,8 +88,7 @@ bool OpenGLWindow::event(QEvent *event)
     }
 }
 
-void OpenGLWindow::exposeEvent(QExposeEvent *event)
-{
+void OpenGLWindow::exposeEvent(QExposeEvent *event) {
     Q_UNUSED(event);
 
     if (isExposed())
@@ -101,8 +96,14 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
 }
 
 void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
-    if (!initialized) return;
+    if (!initialized)
+        return;
 
     auto s = ev->size();
     glViewport(0, 0, s.width(), s.height());
+}
+
+void OpenGLWindow::notifyNewValue(const Note& note) {
+    if (centralNoteManager)
+        centralNoteManager->setNewFrontNote(note);
 }

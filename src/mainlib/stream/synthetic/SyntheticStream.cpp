@@ -40,7 +40,7 @@ void SyntheticStream::storeSamples(InterleavedBuffer &buffer) {
 
     auto passed = current - begin;
     auto nextStep = currentStep + 1;
-    if (passed > (nextStep->startTime - begin)) {
+    if (passed >= (nextStep->startTime - begin)) {
         currentStep++;
     }
 

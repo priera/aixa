@@ -7,23 +7,25 @@
 #include <QWindow>
 #include <QOpenGLFunctions>
 
-class Scene;
+#include <mainlib/audio/note/Note.h>
+#include <mainlib/gui/objects/CentralNoteManager.h>
+#include <mainlib/gui/scene/Scene.h>
 
-class OpenGLWindow : public QWindow, protected QOpenGLFunctions {
+class OpenGLWindow :
+        public QWindow,
+        public NotesListener,
+        protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow();
+    explicit OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider);
 
-    virtual ~OpenGLWindow();
-
-    void setScene(Scene *scene) { this->scene = scene; }
-
-    void setReady();
+    ~OpenGLWindow() override;
 
 public slots:
-    virtual void render();
     virtual void renderNow();
+
+    void notifyNewValue(const Note& note) override;
 
 protected:
     bool event(QEvent *event) override;
@@ -35,10 +37,11 @@ private:
     void init();
 
     bool initialized;
-    std::unique_ptr<QOpenGLContext> context;
 
     Scene *scene;
-    std::atomic<bool> ready;
+    std::unique_ptr<QOpenGLContext> context;
+    std::unique_ptr<CentralNoteManager> centralNoteManager;
+    BitmapsProvider *bitmapsProvider;
 };
 
 

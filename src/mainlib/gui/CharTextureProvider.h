@@ -6,9 +6,11 @@
 #include <QMatrix4x4>
 #include <QOpenGLExtraFunctions>
 
+#include <mainlib/gui/bitmap/BitmapsProvider.h>
+
 class RenderableObject;
 
-class CharTextureProvider : protected QOpenGLExtraFunctions {
+class CharTextureProvider : protected QOpenGLFunctions {
 public:
     struct Character {
         GLuint textureID;   // ID handle of the glyph texture
@@ -16,9 +18,9 @@ public:
         std::vector<int> bearing;  // Offset from baseline to left/top of glyph
     };
 
-    CharTextureProvider();
+    CharTextureProvider(BitmapsProvider &bitmapsProvider);
 
-    Character generateChar(char c);
+    Character &getChar(char c);
 
 private:
     std::map<char, Character> characters;

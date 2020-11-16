@@ -6,27 +6,21 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
 
-
 class GLContextManager {
 public:
     static GLContextManager &getInstance();
-    void release();
+    static void release();
 
     QOpenGLContext *createContext();
-    QOpenGLContext *useNewOffscreenContext();
-
-    virtual ~GLContextManager();
+    QSurface &getOffscreenSurface() { return *offscreenSurface; }
 
 private:
     GLContextManager();
 
-    static GLContextManager instance;
+    static GLContextManager *instance;
 
-    void init();
-
-    bool initialized;
-    QOpenGLContext *sharedContext;
-    QOffscreenSurface *surface;
+    std::unique_ptr<QOpenGLContext> sharedContext;
+    std::unique_ptr<QOffscreenSurface> offscreenSurface;
 };
 
 

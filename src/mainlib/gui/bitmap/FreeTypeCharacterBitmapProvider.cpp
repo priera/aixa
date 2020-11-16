@@ -1,8 +1,7 @@
 #include "FreeTypeCharacterBitmapProvider.h"
 
-#include <iostream>
-#include <sstream>
-#include <exception>
+#include <stdexcept>
+#include <GL/gl.h>
 
 FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
     if (FT_Init_FreeType(&ft))
@@ -22,7 +21,7 @@ FreeTypeCharacterBitmapProvider::~FreeTypeCharacterBitmapProvider() {
     FT_Done_FreeType(ft);
 }
 
-CharacterBitmapProvider::Character FreeTypeCharacterBitmapProvider::getCharacter(char c) {
+Bitmap FreeTypeCharacterBitmapProvider::getCharacter(char c) {
     bool blankBuffer = (c == ' ');
     char actualChar = (blankBuffer) ? 'N' : c;
 
@@ -39,10 +38,11 @@ CharacterBitmapProvider::Character FreeTypeCharacterBitmapProvider::getCharacter
         }
     }
 
+    auto buffer = face->glyph->bitmap.buffer;
+    auto size = face->glyph->bitmap.rows * face->glyph->bitmap.width;
+
     return { face->glyph->bitmap.rows,
              face->glyph->bitmap.width,
-             face->glyph->bitmap_top,
-             face->glyph->bitmap_left,
-             face->glyph->advance.x,
-             face->glyph->bitmap.buffer };
+             GL_RED,
+             std::vector<unsigned char>(buffer, buffer + size) };
 }

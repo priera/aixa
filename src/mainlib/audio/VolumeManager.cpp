@@ -1,7 +1,7 @@
 #include "VolumeManager.h"
 
 void VolumeManager::applyTo(InterleavedBuffer &buff) {
-    auto lVolume = volume;
+    float lVolume = volume;
 
     auto samples = buff.samples();
     for (size_t i = 0; i < buff.samplesCount(); i++) {
@@ -18,7 +18,7 @@ void VolumeManager::decreaseVolume() {
 }
 
 void VolumeManager::addToVolume(float amount) {
-    auto lVolume = volume;
+    float lVolume = volume;
     lVolume += amount;
 
     if (lVolume < MIN_VOLUME)

@@ -14,7 +14,11 @@ namespace aixa::math {
     public:
 
         //N columns, M rows
-        Matrix(size_t N, size_t M, T def = T());
+        Matrix(size_t N, size_t M, T def = T()) : Matrix(N, M, std::true_type(), def) {};
+        Matrix(size_t N, size_t M, std::vector<T> &content) :
+            columns_(N), rows_(M)
+            { this->content.swap(content); }
+
         Matrix(const Matrix<T, TypeAxioms> &other) = default;
 
         virtual ~Matrix() = default;
@@ -94,14 +98,14 @@ namespace aixa::math {
             return rows_;
         }
 
-        //Would be nice to use custom Vector type...
-        std::vector<T> vector(size_t m) const {
-            std::vector<T> ret(columns_);
-            for (size_t col = 0; col < columns_; col++) {
-                ret[col] = content[m * columns_ + col];
-            }
+        std::vector<T> vector(size_t row) const {
+            auto beginOffset = row * columns();
+            auto end = (row + 1) * columns();
+            return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
+        }
 
-            return ret;
+        const std::vector<T>& constContent() const {
+            return content;
         }
 
         size_t size() const {
@@ -114,6 +118,9 @@ namespace aixa::math {
         void print() const;
 
     protected:
+        Matrix(size_t N, size_t M, std::true_type allocate, T def);
+        Matrix(size_t N, size_t M, std::false_type resize);
+
         size_t columns_;
         size_t rows_;
 
