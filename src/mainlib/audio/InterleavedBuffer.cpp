@@ -1,7 +1,5 @@
 #include "InterleavedBuffer.h"
 
-#include <sstream>
-
 InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size, snd_pcm_format_t format) :
         channels(channels),
         currentChannel(0),
@@ -22,4 +20,22 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size,
 
 InterleavedBuffer::~InterleavedBuffer() {
     free(charFrame);
+}
+
+std::vector<short> InterleavedBuffer::channel(unsigned int chan) const {
+    assert(chan >= 0 && chan < channels);
+
+    if (channels == 1) {
+        return std::vector<short>(samples(), samples() + samplesCount());
+    } else {
+        std::vector<short> ret(m_frameSize);
+        auto allSamples = samples();
+        std::size_t sample = chan;
+        for (std::size_t i = 0; i < m_frameSize; i++) {
+            ret[i] = allSamples[sample];
+            sample += channels;
+        }
+
+        return ret;
+    }
 }

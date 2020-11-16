@@ -19,6 +19,8 @@ public:
     size_t samplesCount() const { return m_frameSize * channels; };
     bool isLittleEndian() const { return little_endian; }
 
+    std::vector<short> channel(unsigned int chan) const;
+
 private:
     int channels;
     size_t currentChannel;

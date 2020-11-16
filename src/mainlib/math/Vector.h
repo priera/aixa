@@ -11,8 +11,8 @@ namespace aixa::math {
     template<typename T, class ZeroComparer>
     class Vector : public Matrix<T, ZeroComparer> {
     public:
-        template<class Other>
-        Vector(Other other, size_t M, T def = T()) :
+        template<class OtherIt>
+        Vector(OtherIt other, size_t M, T def = T()) :
             Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {
             std::copy(other, other + M, this->content.begin());
         }
@@ -20,7 +20,7 @@ namespace aixa::math {
         explicit Vector(size_t M, T def = T()) :
             Matrix<T, ZeroComparer>(1, M, std::true_type(), def) { }
 
-        explicit Vector(const std::vector<T>& content) :
+        explicit Vector(std::vector<T>& content) :
             Matrix<T, ZeroComparer>(1, content.size(), content) {}
 
         ~Vector() override = default;

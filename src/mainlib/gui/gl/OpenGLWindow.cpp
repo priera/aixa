@@ -69,8 +69,9 @@ void OpenGLWindow::init() {
     auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
     scene->setMainObject(texturedPlane);
 
-    QTimer::singleShot(44000, [this]() {
-        auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+    auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+
+    QTimer::singleShot(44000, [this, spectrogramPlane]() {
         scene->setMainObject(spectrogramPlane);
     });
 

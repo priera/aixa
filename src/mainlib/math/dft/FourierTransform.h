@@ -15,15 +15,23 @@ namespace aixa::math {
 
         const ComplexVector &applyTo(const DoubleVector &signal);
 
-        double baseDiscreteFreq() const {
+        constexpr double baseDiscreteFreq() const {
             return (2 * M_PI) / N;
         }
 
-        double baseContinuousFreq(double samplePeriod) const {
+        constexpr double baseContinuousFreq(double samplePeriod) const {
             return 1 / (N * samplePeriod);
         }
 
-        unsigned int dimensionality() const {
+        constexpr double maxContinuousFreq(double samplePeriod) const {
+            return 1 / (2 * samplePeriod);
+        }
+
+        constexpr std::size_t relevantSize() const {
+            return (N / 2) + 1;
+        }
+
+        constexpr unsigned int dimensionality() const {
             return N;
         }
 

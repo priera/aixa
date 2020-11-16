@@ -15,9 +15,9 @@ namespace aixa::math {
 
         //N columns, M rows
         Matrix(size_t N, size_t M, T def = T()) : Matrix(N, M, std::true_type(), def) {};
-        Matrix(size_t N, size_t M, const std::vector<T> &content) :
-            columns_(N), rows_(M),
-            content(content) { }
+        Matrix(size_t N, size_t M, std::vector<T> &content) :
+            columns_(N), rows_(M)
+            { this->content.swap(content); }
 
         Matrix(const Matrix<T, TypeAxioms> &other) = default;
 

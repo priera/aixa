@@ -11,16 +11,14 @@ namespace aixa::math {
             init(samples.size());
         } // else: adjust indexes and offsets
 
-        SpectrogramFragment fragment;
-
-        //0.1 seconds buffer = 4410 samples
-
+        SpectrogramFragment fragment(slicesCount);
         unsigned int startOffset = 0;
+
         for (unsigned int i = 0; i < slicesCount; i++) {
             const auto slice = samples.copy(startOffset, windowSize) * mask;
             const auto& result = fourierTransform->applyTo(slice);
-            const auto magnitudes = extractMagnitude(result.slice(0, windowSize / 2).detach());
-            fragment.slices.emplace_back(magnitudes);
+            const auto relevantResult = result.slice(0, sliceSize).detach();
+            storeMagnitude(relevantResult, fragment.slices[i]);
 
             startOffset += overlapping;
         }
@@ -34,21 +32,16 @@ namespace aixa::math {
         remainder = std::make_unique<DoubleVector>(remainderSamples);
     }
 
-    std::vector<double> SpectrogramComputer::extractMagnitude(const ComplexVector &transformResult) const {
-        std::vector<double> ret;
-        ret.reserve(windowSize / 2);
-        for (const auto &complex: transformResult.constContent()) {
-            auto magnitude = complex.magnitude();
+    void SpectrogramComputer::storeMagnitude(const ComplexVector &result, std::vector<double> &storeAt) const {
+        const auto &content = result.constContent();
+        for (std::size_t i = 0; i < sliceSize; i++) {
+            auto magnitude = content[i].magnitude();
             auto normalized = (magnitude < 1.0) ? 0.0 : 10 * std::log10(magnitude);
 
-            if (normalized < 0.0) {
-                char a = 3;
-            }
-
-            ret.push_back(normalized);
+            scale->insert(i, normalized);
         }
 
-        return ret;
+        scale->moveDataTo(storeAt);
     }
 
     void SpectrogramComputer::buildMask() {

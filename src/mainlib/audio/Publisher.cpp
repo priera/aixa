@@ -11,7 +11,9 @@ bool Publisher::exec() {
         auto buffer = samplesRing->nextReadBuffer();
 
         //0.1 seconds buffer = 4410 samples
-        auto doubleVector = aixa::math::DoubleVector(buffer->samples(), buffer->samplesCount());
+        auto firstChannel = buffer->channel(0);
+        auto doubleVector = aixa::math::DoubleVector(firstChannel.begin(), firstChannel.size());
+
         spectrogramComputer->computeOn(doubleVector);
 
         volumeManager->applyTo(*buffer);

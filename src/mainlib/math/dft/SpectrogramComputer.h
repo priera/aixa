@@ -3,16 +3,21 @@
 
 #include <memory>
 
+#include <mainlib/math/scale/Scale.h>
+
 #include "FourierTransform.h"
 #include "SpectrogramFragment.h"
 
 namespace aixa::math {
     class SpectrogramComputer : public SpectrogramGenerator {
     public:
-        explicit SpectrogramComputer(std::unique_ptr<FourierTransform> fourierTransform) :
+        explicit SpectrogramComputer(std::unique_ptr<FourierTransform> fourierTransform,
+                                     std::unique_ptr<Scale> scale) :
                 SpectrogramGenerator(),
                 fourierTransform(std::move(fourierTransform)),
+                scale(std::move(scale)),
                 windowSize(this->fourierTransform->dimensionality()),
+                sliceSize(this->fourierTransform->relevantSize()),
                 overlapping(windowSize / 2),
                 mask(windowSize),
                 slicesCount(0),
@@ -33,12 +38,15 @@ namespace aixa::math {
 
         void buildMask();
 
-        std::vector<double> extractMagnitude(const ComplexVector &transformResult) const;
+        void storeMagnitude(const ComplexVector &result, std::vector<double>& storeAt) const;
 
         std::unique_ptr<FourierTransform> fourierTransform;
+        std::unique_ptr<Scale> scale;
+
         unsigned int windowSize;
         unsigned int overlapping;
         DoubleVector mask;
+        std::size_t sliceSize;
 
         unsigned int slicesCount;
         std::unique_ptr<DoubleVector> remainder;

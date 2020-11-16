@@ -8,6 +8,8 @@
 
 namespace aixa::math {
     struct SpectrogramFragment {
+        explicit SpectrogramFragment(std::size_t slicesCount) : slices(slicesCount) {}
+
         std::vector<std::vector<double>> slices;
     };
 
