@@ -4,6 +4,7 @@
 
 #include <mainlib/stream/StreamTypes.h>
 #include <mainlib/math/dft/FourierTransformFactory.h>
+#include <mainlib/math/dft/SpectrogramBuilder.h>
 
 #include "InterleavedBufferGenerator.h"
 
@@ -21,6 +22,9 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
 
     auto streamReader = std::make_unique<StreamReader>(stream, environment.samplesRing);
     auto volumeManager = std::make_unique<VolumeManager>();
+
+    double sampleRate = 1.0 / streamParams.rate;
+    auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(SpectrogramBuilder(sampleRate).build());
 
     auto publisher = std::make_unique<Publisher>(environment.platform,
                                                  environment.samplesRing,

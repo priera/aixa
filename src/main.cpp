@@ -8,30 +8,12 @@
 
 #include <mainlib/gui/MainEventFilter.h>
 #include <mainlib/gui/GraphicsEnvironmentFactory.h>
-#include <mainlib/math/dft/FourierTransformFactory.h>
-#include <mainlib/math/scale/LinearScale.h>
-#include <mainlib/math/scale/LogScale.h>
 
 using namespace std::chrono_literals;
 using namespace aixa::math;
 
 static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 //static const auto STREAM = "??";
-
-std::unique_ptr<SpectrogramComputer> buildSpectrogramComputer(std::shared_ptr<SpectrogramConsumer> spectrogramConsumer) {
-    auto impl = FourierTransformFactory::Implementations::FFT;
-    auto transform = std::unique_ptr<FourierTransform>(getFourierTransformFactory(impl).build(2048));
-    auto scale = std::make_unique<LinearScale>(transform->relevantSize());
-    const double samplePeriod = 1.0 / 44100;
-    /*auto scale = std::make_unique<LogScale>(transform->baseContinuousFreq(samplePeriod),
-                                            transform->maxContinuousFreq(samplePeriod),
-                                            transform->relevantSize()); */
-    auto spectrogramComputer = std::make_unique<SpectrogramComputer>(std::move(transform), std::move(scale));
-    spectrogramComputer->setReceiver(spectrogramConsumer);
-
-    return spectrogramComputer;
-}
-
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -45,8 +27,9 @@ int main(int argc, char *argv[]) {
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    auto spectrogramComputer = buildSpectrogramComputer(graphicsEnvironment->getSpectrogramConsumer());
-    auto audioWorker = AudioWorkerFactory(std::move(spectrogramComputer)).buildWithInputStream(STREAM);
+    auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
+
+    audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment->getSpectrogramConsumer());
 
     auto commandCollection = audioWorker->getCommandCollection();
 

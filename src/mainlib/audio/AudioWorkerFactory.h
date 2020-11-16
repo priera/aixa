@@ -8,10 +8,11 @@
 #include "AudioDefinitions.h"
 #include "AudioWorker.h"
 
+using namespace aixa::math;
+
 class AudioWorkerFactory {
 public:
-    explicit AudioWorkerFactory(std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer) :
-        spectrogramComputer(std::move(spectrogramComputer)) {}
+    AudioWorkerFactory() = default;
 
     std::unique_ptr<AudioWorker> buildWithInputStream(const std::string &streamPath);
 
@@ -25,8 +26,6 @@ private:
 
     int setSwParams(AlsaEnvironment &environment,
                     const AudioStreamParameters &parameters);
-
-    std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer;
 };
 
 

@@ -6,12 +6,14 @@
 #include "AudioDefinitions.h"
 #include "VolumeManager.h"
 
+using namespace aixa::math;
+
 class Publisher {
 public:
     explicit Publisher(AlsaEnvironment alsaEnv,
-            std::shared_ptr<SamplesRing> samplesRing,
-            std::unique_ptr<VolumeManager> volumeManager,
-            std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer) :
+        std::shared_ptr<SamplesRing> samplesRing,
+        std::unique_ptr<VolumeManager> volumeManager,
+        std::unique_ptr<SpectrogramComputer> spectrogramComputer) :
             alsaEnv(std::move(alsaEnv)),
             samplesRing(std::move(samplesRing)),
             volumeManager(std::move(volumeManager)),
@@ -25,6 +27,10 @@ public:
     void increaseVolume() { volumeManager->increaseVolume(); }
 
     void decreaseVolume() { volumeManager->decreaseVolume(); }
+
+    SpectrogramGenerator &getSpectrogramGenerator() {
+        return *spectrogramComputer;
+    }
 
 private:
     void attemptStreamRecovery(int err);
