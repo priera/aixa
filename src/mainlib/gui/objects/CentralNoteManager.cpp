@@ -3,7 +3,7 @@
 CentralNoteManager::CentralNoteManager(BitmapsProvider &bitmapsProvider) :
     ShadedRenderableObject("./shaders/textured_plane.vert",
                            "./shaders/character.frag",
-                           Dimensions{0.1f, 0.125f, 0.1f})
+                           Dimensions{0.9f, 1.125f, 0.1f})
     , targetAngle(-180)
     , frontChar(' ')
     , newFrontChar(' ')

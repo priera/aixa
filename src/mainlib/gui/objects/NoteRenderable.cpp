@@ -55,18 +55,14 @@ void NoteRenderable::init() {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    auto offset = 0.5f; //Center of glOrtho defined volume. Bound to disappear, since perspective should be used
-    auto w = offset + dim.width;
-    auto h = offset + dim.height;
-
     GLfloat vertices[] = {
-            w, offset,      1.0, 1.0,
-            offset, h,      0.0, 0.0,
-            offset, offset, 0.0, 1.0,
+            dim.width, 0.0,         1.0, 1.0,
+            0.0, dim.height,        0.0, 0.0,
+            0.0, 0.0,               0.0, 1.0,
 
-            w, offset,      1.0, 1.0,
-            w, h,           1.0, 0.0,
-            offset, h,      0.0, 0.0
+            dim.width, 0.0,         1.0, 1.0,
+            dim.width, dim.height,  1.0, 0.0,
+            0.0, dim.height,        0.0, 0.0
     };
 
     glBufferData(GL_ARRAY_BUFFER,  sizeof(GLfloat) * 6 * 4, vertices, GL_DYNAMIC_DRAW);
