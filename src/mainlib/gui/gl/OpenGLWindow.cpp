@@ -1,31 +1,33 @@
 #include "OpenGLWindow.h"
 
+#include <mainlib/gui/objects/SpectrogramPlane.h>
+#include <mainlib/gui/objects/TexturedPlane.h>
+
+#include <QtCore/QTimer>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QResizeEvent>
 #include <QtGui/QScreen>
-#include <QtCore/QTimer>
-
-#include <mainlib/gui/objects/TexturedPlane.h>
-#include <mainlib/gui/objects/SpectrogramPlane.h>
 
 #include "GLContextManager.h"
 #include "utils.h"
 
-OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider)
-        : QWindow(), QOpenGLFunctions(),
-            scene(&scene),
-            context(std::move(context)),
-            initialized(false),
-            centralNoteManager(nullptr),
-            bitmapsProvider(&bitmapsProvider){
+OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context,
+                           BitmapsProvider &bitmapsProvider, TextureCollection &textureCollection) :
+    QWindow(),
+    QOpenGLFunctions(),
+    scene(&scene),
+    context(std::move(context)),
+    initialized(false),
+    centralNoteManager(nullptr),
+    bitmapsProvider(&bitmapsProvider),
+    textureCollection(&textureCollection) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
 OpenGLWindow::~OpenGLWindow() { context->doneCurrent(); }
 
 void OpenGLWindow::renderNow() {
-    if (!isExposed())
-        return;
+    if (!isExposed()) return;
 
     if (!initialized) {
         init();
@@ -59,21 +61,19 @@ void OpenGLWindow::init() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glViewport(0, 0, width(), height());
 
-    centralNoteManager = std::make_unique<CentralNoteManager>(*bitmapsProvider);
-    //scene->setMainObject(centralNoteManager.get());
+    centralNoteManager = std::make_unique<CentralNoteManager>(*textureCollection);
+    // scene->setMainObject(centralNoteManager.get());
 
     auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
     scene->setMainObject(texturedPlane);
 
     auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
 
-    QTimer::singleShot(44000, [this, spectrogramPlane]() {
-        scene->setMainObject(spectrogramPlane);
-    });
+    QTimer::singleShot(44000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); });
 
     context->doneCurrent();
 }
@@ -91,19 +91,16 @@ bool OpenGLWindow::event(QEvent *event) {
 void OpenGLWindow::exposeEvent(QExposeEvent *event) {
     Q_UNUSED(event);
 
-    if (isExposed())
-        renderNow();
+    if (isExposed()) renderNow();
 }
 
 void OpenGLWindow::resizeEvent(QResizeEvent *ev) {
-    if (!initialized)
-        return;
+    if (!initialized) return;
 
     auto s = ev->size();
     glViewport(0, 0, s.width(), s.height());
 }
 
-void OpenGLWindow::notifyNewValue(const Note& note) {
-    if (centralNoteManager)
-        centralNoteManager->setNewFrontNote(note);
+void OpenGLWindow::notifyNewValue(const Note &note) {
+    if (centralNoteManager) centralNoteManager->setNewFrontNote(note);
 }

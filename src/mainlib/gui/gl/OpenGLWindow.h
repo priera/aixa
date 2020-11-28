@@ -1,31 +1,28 @@
 #ifndef AIXA_OPENGLWINDOW_H
 #define AIXA_OPENGLWINDOW_H
 
-#include <memory>
-#include <atomic>
-
-#include <QWindow>
-#include <QOpenGLFunctions>
-
 #include <mainlib/audio/note/Note.h>
 #include <mainlib/gui/objects/CentralNoteManager.h>
 #include <mainlib/gui/scene/Scene.h>
 
-class OpenGLWindow :
-        public QWindow,
-        public NotesListener,
-        protected QOpenGLFunctions {
+#include <QOpenGLFunctions>
+#include <QWindow>
+#include <atomic>
+#include <memory>
+
+class OpenGLWindow : public QWindow, public NotesListener, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    explicit OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider);
+    OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider,
+                 TextureCollection &textureCollection);
 
     ~OpenGLWindow() override;
 
 public slots:
     virtual void renderNow();
 
-    void notifyNewValue(const Note& note) override;
+    void notifyNewValue(const Note &note) override;
 
 protected:
     bool event(QEvent *event) override;
@@ -42,7 +39,7 @@ private:
     std::unique_ptr<QOpenGLContext> context;
     std::unique_ptr<CentralNoteManager> centralNoteManager;
     BitmapsProvider *bitmapsProvider;
+    TextureCollection *textureCollection;
 };
 
-
-#endif //AIXA_OPENGLWINDOW_H
+#endif  // AIXA_OPENGLWINDOW_H
