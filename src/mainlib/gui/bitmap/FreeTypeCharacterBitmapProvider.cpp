@@ -1,7 +1,7 @@
 #include "FreeTypeCharacterBitmapProvider.h"
 
-#include <stdexcept>
 #include <GL/gl.h>
+#include <stdexcept>
 
 FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
     if (FT_Init_FreeType(&ft))
@@ -27,7 +27,6 @@ Bitmap FreeTypeCharacterBitmapProvider::getCharacter(char c, unsigned int pixelS
         throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
 
 
-
     if (blankBuffer) {
         for (int row = 0; row < face->glyph->bitmap.rows; row++) {
             for (int col = 0; col < face->glyph->bitmap.width; col++) {
@@ -39,8 +38,8 @@ Bitmap FreeTypeCharacterBitmapProvider::getCharacter(char c, unsigned int pixelS
     auto buffer = face->glyph->bitmap.buffer;
     auto byteSize = face->glyph->bitmap.rows * face->glyph->bitmap.width;
 
-    return { face->glyph->bitmap.rows,
-             face->glyph->bitmap.width,
-             GL_RED,
-             std::vector<unsigned char>(buffer, buffer + byteSize) };
+    return {face->glyph->bitmap.rows,
+            face->glyph->bitmap.width,
+            GL_RED,
+            std::vector<unsigned char>(buffer, buffer + byteSize)};
 }
