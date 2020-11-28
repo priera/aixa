@@ -1,8 +1,10 @@
 #include "CentralNoteManager.h"
 
+#include <mainlib/gui/gl/ShadersCollection.h>
+
 CentralNoteManager::CentralNoteManager(BitmapsProvider &bitmapsProvider) :
-    ShadedRenderableObject("./shaders/textured_plane.vert",
-                           "./shaders/character.frag",
+    ShadedRenderableObject(ShadersCollection::VERTEX_TEXTURED_PLANE,
+                           ShadersCollection::FRAG_CHARACTER,
                            Dimensions{0.9f, 1.125f, 0.1f})
     , targetAngle(-180)
     , frontChar(' ')

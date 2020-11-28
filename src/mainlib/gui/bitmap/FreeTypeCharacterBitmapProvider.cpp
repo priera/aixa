@@ -9,10 +9,6 @@ FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
 
     if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 0, &face))
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
-
-    // Set size to load glyphs as
-    FT_Set_Pixel_Sizes(face, 0, 80);
-
 }
 
 
@@ -21,9 +17,11 @@ FreeTypeCharacterBitmapProvider::~FreeTypeCharacterBitmapProvider() {
     FT_Done_FreeType(ft);
 }
 
-Bitmap FreeTypeCharacterBitmapProvider::getCharacter(char c) {
+Bitmap FreeTypeCharacterBitmapProvider::getCharacter(char c, unsigned int pixelSize) {
     bool blankBuffer = (c == ' ');
     char actualChar = (blankBuffer) ? 'N' : c;
+
+    FT_Set_Pixel_Sizes(face, 0, pixelSize);
 
     if (FT_Load_Char(face, actualChar, FT_LOAD_RENDER))
         throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
@@ -39,10 +37,10 @@ Bitmap FreeTypeCharacterBitmapProvider::getCharacter(char c) {
     }
 
     auto buffer = face->glyph->bitmap.buffer;
-    auto size = face->glyph->bitmap.rows * face->glyph->bitmap.width;
+    auto byteSize = face->glyph->bitmap.rows * face->glyph->bitmap.width;
 
     return { face->glyph->bitmap.rows,
              face->glyph->bitmap.width,
              GL_RED,
-             std::vector<unsigned char>(buffer, buffer + size) };
+             std::vector<unsigned char>(buffer, buffer + byteSize) };
 }

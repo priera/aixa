@@ -1,9 +1,11 @@
-#include <mainlib/gui/gl/utils.h>
 #include "SpectrogramPlane.h"
 
+#include <mainlib/gui/gl/utils.h>
+#include <mainlib/gui/gl/ShadersCollection.h>
+
 SpectrogramPlane::SpectrogramPlane(BitmapsProvider &bitmapsProvider) :
-        ShadedRenderableObject("./shaders/textured_plane.vert",
-                               "./shaders/2d_texture.frag",
+        ShadedRenderableObject(ShadersCollection::VERTEX_TEXTURED_PLANE,
+                               ShadersCollection::FRAG_2D_TEXTURE,
                                Dimensions{1.0f, 1.0f, 0.0f}),
         bitmapsProvider(&bitmapsProvider) { }
 

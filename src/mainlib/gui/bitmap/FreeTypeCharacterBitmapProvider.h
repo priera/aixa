@@ -11,7 +11,7 @@ public:
     FreeTypeCharacterBitmapProvider();
     virtual ~FreeTypeCharacterBitmapProvider();
 
-    Bitmap getCharacter(char c);
+    Bitmap getCharacter(char c, unsigned int pixelSize = 80);
 
 private:
     FT_Library ft;

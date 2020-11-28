@@ -1,10 +1,11 @@
 #include "TexturedPlane.h"
 
 #include <mainlib/gui/gl/utils.h>
+#include <mainlib/gui/gl/ShadersCollection.h>
 
 TexturedPlane::TexturedPlane(BitmapsProvider &bitmapsProvider, std::filesystem::path texturePath) :
-    ShadedRenderableObject("./shaders/textured_plane.vert",
-                           "./shaders/2d_texture.frag",
+    ShadedRenderableObject(ShadersCollection::VERTEX_TEXTURED_PLANE,
+                           ShadersCollection::FRAG_2D_TEXTURE,
                            Dimensions{1.0f, 1.0f, 0.0f}),
     bitmapsProvider(&bitmapsProvider),
     texturePath(std::move(texturePath)) {
