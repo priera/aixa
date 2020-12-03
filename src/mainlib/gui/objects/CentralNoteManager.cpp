@@ -3,7 +3,7 @@
 #include <mainlib/gui/gl/ShadersCollection.h>
 
 CentralNoteManager::CentralNoteManager(TextureCollection &textureCollection) :
-    ShadedRenderableObject(ShadersCollection::VERTEX_TEXTURED_PLANE, ShadersCollection::FRAG_CHARACTER,
+    ShadedRenderableObject(ShadersCollection::Vertex::TEXTURED_PLANE, ShadersCollection::Fragment::CHARACTER,
                            Dimensions{0.9f, 1.125f, 0.1f}),
     textureCollection(&textureCollection),
     targetAngle(-180),
@@ -25,8 +25,8 @@ void CentralNoteManager::doMyUpdate() {
         frontChar = newFrontChar;
 
         if (frontNote) {
-            unsigned int charTex = textureCollection->getCharacterTexture(frontChar);
-            frontNote->setCharacterText(charTex);
+            const auto &charTex = textureCollection->getCharacterTexture(frontChar, NOTE_CHAR_SIZE);
+            frontNote->setCharacterText(charTex.id);
         }
     }
 }

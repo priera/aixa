@@ -1,20 +1,69 @@
 #include "ImmutableTextBox.h"
 
+#include <mainlib/gui/bitmap/GlyphMetrics.h>
 #include <mainlib/gui/gl/ShadersCollection.h>
+#include <mainlib/gui/gl/utils.h>
 
-ImmutableTextBox::ImmutableTextBox(std::string text, unsigned int pixelSize, double x, double y) :
-    ShadedRenderableObject(ShadersCollection::VERTEX_TEXTURED_PLANE,
-                           ShadersCollection::FRAG_CHARACTER,
+ImmutableTextBox::ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y,
+                                   TextureCollection &textureCollection) :
+    ShadedRenderableObject(ShadersCollection::Vertex::FRONT_CHARACTER, ShadersCollection::Fragment::CHARACTER,
                            Dimensions{0.9f, 1.125f, 0.1f}),
     text(std::move(text)),
     pixelSize(pixelSize),
     x(x),
-    y(y) { }
+    y(y),
+    textureCollection(&textureCollection) {}
 
 void ImmutableTextBox::init() {
-    charData.resize(text.size());
+    glGenVertexArrays(1, &vertexAttr);
+    glGenBuffers(1, &vertexBuff);
 
-    for (auto c: text) {
+    glBindVertexArray(vertexAttr);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuff);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
 
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void ImmutableTextBox::doMyRender() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(vertexAttr);
+
+    float xStart = x;
+
+    for (auto c : text) {
+        const auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
+        const auto &metrics = *(static_cast<GlyphMetrics *>(texture.bitmap.data.get()));
+
+        float xpos = xStart + metrics.left;
+        float ypos = y - (metrics.height - metrics.top);
+
+        float w = metrics.width;
+        float h = metrics.height;
+
+        float vertices[6][4] = {
+            {xpos, ypos + h, 0.0f, 0.0f}, {xpos, ypos, 0.0f, 1.0f},     {xpos + w, ypos, 1.0f, 1.0f},
+
+            {xpos, ypos + h, 0.0f, 0.0f}, {xpos + w, ypos, 1.0f, 1.0f}, {xpos + w, ypos + h, 1.0f, 0.0f}};
+
+        glBindTexture(GL_TEXTURE_2D, texture.id);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuff);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        xStart += (metrics.advanceX >> 6U);  // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
+                                             // of 1/64th pixels by 64 to get amount of pixels))
     }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glCheckError();
 }

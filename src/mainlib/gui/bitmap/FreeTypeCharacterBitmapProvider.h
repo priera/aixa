@@ -9,31 +9,23 @@
 #include "Bitmap.h"
 
 class FreeTypeCharacterBitmapProvider {
- public:
-  struct GlyphMetrics {
-    GlyphMetrics(unsigned int top, unsigned int left, long advanceX)
-        : top(top), left(left), advanceX(advanceX) {}
+public:
+    FreeTypeCharacterBitmapProvider();
+    virtual ~FreeTypeCharacterBitmapProvider();
 
-    unsigned int top, left, advanceX;
-  };
+    Bitmap &getCharacter(char c, unsigned int pixelSize);
 
-  FreeTypeCharacterBitmapProvider();
-  virtual ~FreeTypeCharacterBitmapProvider();
+private:
+    using GlyphCache = std::unordered_map<char, Bitmap>;
+    using FontSizeCache = std::unordered_map<unsigned int, GlyphCache>;
 
-  Bitmap getCharacter(char c, unsigned int pixelSize = 80);
+    Bitmap &storeNewGlyph(char c, unsigned int pixelSize);
+    Bitmap *cacheLookup(char c, unsigned int pixelSize);
 
- private:
-  using GlyphCache = std::unordered_map<char, Bitmap>;
-  using FontSizeCache = std::unordered_map<unsigned int, GlyphCache>;
+    FT_Library ft;
 
-  const Bitmap &storeNewGlyph(char c, unsigned int pixelSize);
-  const Bitmap *cacheLookup(char c, unsigned int pixelSize);
-
-  FT_Library ft;
-
-  FT_Face face;
-  FontSizeCache cache;
-  std::vector<GlyphMetrics> metricsStorage;
+    FT_Face face;
+    FontSizeCache cache;
 };
 
 #endif  // AIXA_FREETYPECHARACTERBITMAPPROVIDER_H

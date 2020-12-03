@@ -5,35 +5,40 @@
 TextureCollection::TextureCollection(BitmapsProvider& bitmapsProvider) :
     QOpenGLFunctions(), bitmapsProvider(&bitmapsProvider) {
     initializeOpenGLFunctions();
+
+    for (unsigned char c = 0; c < 128; c++) {
+        getCharacterTexture(c, 80);
+    }
 }
 
-unsigned int TextureCollection::getCharacterTexture(char c) {
-    const auto& it = charTextures.find(c);
+TextureCollection::Texture& TextureCollection::getCharacterTexture(char c, unsigned int pixelSize) {
+    CharKey key = std::make_pair(c, pixelSize);
+    const auto& it = charTextures.find(key);
     if (it != charTextures.end()) {
         return it->second;
     }
 
-    charTextures[c] = buildTextureForCharacter(c);
-    return charTextures[c];
+    charTextures[key] = buildTextureForCharacter(c, pixelSize);
+    return charTextures[key];
 }
 
-unsigned int TextureCollection::buildTextureForCharacter(char c) {
+TextureCollection::Texture TextureCollection::buildTextureForCharacter(char c, unsigned int pixelSize) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glCheckError();
 
-    const auto bitmap = bitmapsProvider->getCharacter(c);
+    const auto bitmap = bitmapsProvider->getCharacter(c, pixelSize);
 
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    GLuint texId;
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
 
     assert(glGetError() == GL_NO_ERROR);
     glTexImage2D(GL_TEXTURE_2D, 0, bitmap.glStorage, bitmap.columns, bitmap.rows, 0, bitmap.glStorage,
                  GL_UNSIGNED_BYTE, &bitmap.bytes[0]);
 
     // Set texture options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -43,5 +48,5 @@ unsigned int TextureCollection::buildTextureForCharacter(char c) {
     glBindTexture(GL_TEXTURE_2D, 0);
     glCheckError();
 
-    return texture;
+    return {texId, bitmap};
 }

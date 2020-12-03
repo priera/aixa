@@ -13,13 +13,11 @@ class GraphicsEnvironment {
 public:
     GraphicsEnvironment(std::unique_ptr<Scene> scene, std::unique_ptr<DrawingWorker> drawingWorker,
                         std::unique_ptr<OpenGLWindow> openGLWindow,
-                        std::unique_ptr<BitmapsProvider> bitmapsProvider,
-                        std::unique_ptr<TextureCollection> textureCollection) :
+                        std::unique_ptr<BitmapsProvider> bitmapsProvider) :
         scene(std::move(scene)),
         drawingWorker(std::move(drawingWorker)),
         openGLWindow(std::move(openGLWindow)),
-        bitmapsProvider(std::move(bitmapsProvider)),
-        textureCollection(std::move(textureCollection)) {}
+        bitmapsProvider(std::move(bitmapsProvider)) {}
 
     virtual ~GraphicsEnvironment() = default;
 
@@ -44,7 +42,6 @@ private:
     std::unique_ptr<DrawingWorker> drawingWorker;
     std::shared_ptr<OpenGLWindow> openGLWindow;
     std::unique_ptr<BitmapsProvider> bitmapsProvider;
-    std::unique_ptr<TextureCollection> textureCollection;
 };
 
 #endif  // AIXA_SRC_MAINLIB_GUI_GRAPHICSENVIRONMENT_H

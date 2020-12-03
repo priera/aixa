@@ -4,22 +4,17 @@
 #include "ProceduralProvider.h"
 
 BitmapsProvider::BitmapsProvider() :
-        freeTypeProvider(std::make_unique<FreeTypeCharacterBitmapProvider>()),
-        spectrogramBitmapProvider(std::make_unique<SpectrogramBitmapProvider>())
-    { }
+    freeTypeProvider(std::make_unique<FreeTypeCharacterBitmapProvider>()),
+    spectrogramBitmapProvider(std::make_unique<SpectrogramBitmapProvider>()) {}
 
-Bitmap BitmapsProvider::getCharacter(char c) {
-    return freeTypeProvider->getCharacter(c);
+Bitmap BitmapsProvider::getCharacter(char c, unsigned int pixelSize) {
+    return freeTypeProvider->getCharacter(c, pixelSize);
 }
 
 Bitmap BitmapsProvider::getImage(const std::filesystem::path &path) {
     return ImagesProvider().getImage(path);
 }
 
-Bitmap BitmapsProvider::buildProcedural() {
-    return ProceduralProvider().buildBitmap();
-}
+Bitmap BitmapsProvider::buildProcedural() { return ProceduralProvider().buildBitmap(); }
 
-Bitmap BitmapsProvider::buildSpectrogram() {
-    return spectrogramBitmapProvider->buildBitmap();
-}
+Bitmap BitmapsProvider::buildSpectrogram() { return spectrogramBitmapProvider->buildBitmap(); }

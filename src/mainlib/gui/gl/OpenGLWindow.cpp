@@ -1,5 +1,6 @@
 #include "OpenGLWindow.h"
 
+#include <mainlib/gui/objects/ImmutableTextBox.h>
 #include <mainlib/gui/objects/SpectrogramPlane.h>
 #include <mainlib/gui/objects/TexturedPlane.h>
 
@@ -12,7 +13,7 @@
 #include "utils.h"
 
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context,
-                           BitmapsProvider &bitmapsProvider, TextureCollection &textureCollection) :
+                           BitmapsProvider &bitmapsProvider) :
     QWindow(),
     QOpenGLFunctions(),
     scene(&scene),
@@ -20,7 +21,7 @@ OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &contex
     initialized(false),
     centralNoteManager(nullptr),
     bitmapsProvider(&bitmapsProvider),
-    textureCollection(&textureCollection) {
+    textureCollection(nullptr) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
 
@@ -65,15 +66,23 @@ void OpenGLWindow::init() {
 
     glViewport(0, 0, width(), height());
 
+    this->textureCollection = new TextureCollection(*bitmapsProvider);
+
     centralNoteManager = std::make_unique<CentralNoteManager>(*textureCollection);
-    // scene->setMainObject(centralNoteManager.get());
+    scene->setMainObject(centralNoteManager.get());
 
-    auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
-    scene->setMainObject(texturedPlane);
+    // RenderText(shader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+    //    ImmutableTextBox(std::string text, unsigned int pixelSize, double x, double y, TextureCollection
+    //    &textureCollection);
+    auto textBox = new ImmutableTextBox("This is sample text", 48, 0.25f, 0.25f, *textureCollection);
+    // scene->setMainObject(textBox);
 
-    auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+    // auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
+    // scene->setMainObject(texturedPlane);
 
-    QTimer::singleShot(44000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); });
+    /*auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+
+    QTimer::singleShot(44000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); }); */
 
     context->doneCurrent();
 }

@@ -25,6 +25,8 @@ protected:
     void applyChildTransformations(RenderableObject &pObject) override;
 
 private:
+    static constexpr unsigned int NOTE_CHAR_SIZE = 80;
+
     TextureCollection *textureCollection;
 
     std::shared_ptr<NoteRenderable> frontNote;
