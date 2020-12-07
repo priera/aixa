@@ -1,23 +1,21 @@
 #include "DrawingWorker.h"
 
+#include <QtGui/QOffscreenSurface>
 #include <chrono>
 #include <thread>
 
-#include <QtGui/QOffscreenSurface>
-
+#include "GLContextManager.h"
 #include "OpenGLWindow.h"
 #include "mainlib/gui/scene/Scene.h"
-#include "GLContextManager.h"
 
-DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
-                             QSurface &contextSurface,
+DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context, QSurface &contextSurface,
                              Scene &scene) :
     QThread(),
-    frameRate(60), //TODO make this dependent on actual screen configuration
+    frameRate(60),  // TODO make this dependent on actual screen configuration
     context(std::move(context)),
     scene(&scene),
     offscreenSurface(&contextSurface) {
-
+    this->context->moveToThread(this);
 }
 
 void DrawingWorker::run() {
@@ -26,6 +24,7 @@ void DrawingWorker::run() {
     std::chrono::microseconds durationRender(iterationTimeus);
     auto ticksRender = durationRender.count();
 
+    context->create();
     context->makeCurrent(offscreenSurface);
 
     m_stop = false;

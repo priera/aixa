@@ -11,7 +11,6 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     auto &surface = GLContextManager::getInstance().getOffscreenSurface();
 
     auto drawingWorker = std::make_unique<DrawingWorker>(context, surface, *scene);
-    context_p->moveToThread(drawingWorker.get());
 
     context_p = GLContextManager::getInstance().createContext();
     context = std::unique_ptr<QOpenGLContext>(context_p);

@@ -3,12 +3,8 @@
 #include <mainlib/gui/gl/utils.h>
 
 TextureCollection::TextureCollection(BitmapsProvider& bitmapsProvider) :
-    QOpenGLFunctions(), bitmapsProvider(&bitmapsProvider) {
+    QOpenGLFunctions(QOpenGLContext::currentContext()->shareContext()), bitmapsProvider(&bitmapsProvider) {
     initializeOpenGLFunctions();
-
-    for (unsigned char c = 0; c < 128; c++) {
-        getCharacterTexture(c, 80);
-    }
 }
 
 TextureCollection::Texture& TextureCollection::getCharacterTexture(char c, unsigned int pixelSize) {
@@ -23,6 +19,9 @@ TextureCollection::Texture& TextureCollection::getCharacterTexture(char c, unsig
 }
 
 TextureCollection::Texture TextureCollection::buildTextureForCharacter(char c, unsigned int pixelSize) {
+    GLint previousPixelStore;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousPixelStore);
+
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glCheckError();
 
@@ -46,6 +45,10 @@ TextureCollection::Texture TextureCollection::buildTextureForCharacter(char c, u
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, previousPixelStore);
+
+    glFlush();
     glCheckError();
 
     return {texId, bitmap};
