@@ -6,7 +6,7 @@
 
 class ImmutableTextBox : public ShadedRenderableObject {
 public:
-    ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y,
+    ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y, float ratio,
                      TextureCollection &textureCollection);
     ~ImmutableTextBox() override = default;
 
@@ -18,7 +18,7 @@ protected:
 private:
     std::string text;
     unsigned int pixelSize;
-    float x, y;
+    float x, y, ratio;
     TextureCollection *textureCollection;
 
     unsigned int vertexAttr, vertexBuff;

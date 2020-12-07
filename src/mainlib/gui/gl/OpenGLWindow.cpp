@@ -69,21 +69,22 @@ void OpenGLWindow::init() {
     this->textureCollection = new TextureCollection(*bitmapsProvider);
 
     centralNoteManager = std::make_unique<CentralNoteManager>(*textureCollection);
-    scene->setMainObject(centralNoteManager.get());
+    // scene->setMainObject(centralNoteManager.get());
 
-    // RenderText(shader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-    //    ImmutableTextBox(std::string text, unsigned int pixelSize, double x, double y, TextureCollection
-    //    &textureCollection);
-    auto textBox = new ImmutableTextBox("This is sample text", 48, 0.25f, 0.25f, *textureCollection);
-    // scene->setMainObject(textBox);
+    int fontSize = 20;
+    float ratio = 0.02f / static_cast<float>(fontSize);  // * static_cast<float>(height());
+    std::cout << ratio << std::endl;                     // 0.0014f
+    auto textBox =
+        new ImmutableTextBox("This is sample text", fontSize, 0.02f, 0.02f, ratio, *textureCollection);
+    scene->setMainObject(textBox);
 
-    // auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
-    // scene->setMainObject(texturedPlane);
+    /*auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
+    scene->setMainObject(texturedPlane);
 
-    /*auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+    auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
 
-    QTimer::singleShot(44000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); }); */
-
+    QTimer::singleShot(44000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); });
+    */
     context->doneCurrent();
 }
 

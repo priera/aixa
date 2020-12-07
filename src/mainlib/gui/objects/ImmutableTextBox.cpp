@@ -4,7 +4,7 @@
 #include <mainlib/gui/gl/ShadersCollection.h>
 #include <mainlib/gui/gl/utils.h>
 
-ImmutableTextBox::ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y,
+ImmutableTextBox::ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y, float ratio,
                                    TextureCollection &textureCollection) :
     ShadedRenderableObject(ShadersCollection::Vertex::FRONT_CHARACTER, ShadersCollection::Fragment::CHARACTER,
                            Dimensions{0.9f, 1.125f, 0.1f}),
@@ -12,6 +12,7 @@ ImmutableTextBox::ImmutableTextBox(std::string text, unsigned int pixelSize, flo
     pixelSize(pixelSize),
     x(x),
     y(y),
+    ratio(ratio),
     textureCollection(&textureCollection) {}
 
 void ImmutableTextBox::init() {
@@ -33,6 +34,9 @@ void ImmutableTextBox::doMyRender() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    const auto textColor = QVector3D(0.7f, 0.7f, 0.7f);
+    program->setUniformValue("textColor", textColor);
+
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(vertexAttr);
 
@@ -42,11 +46,11 @@ void ImmutableTextBox::doMyRender() {
         const auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
         const auto &metrics = *(static_cast<GlyphMetrics *>(texture.bitmap.data.get()));
 
-        float xpos = xStart + metrics.left;
-        float ypos = y - (metrics.height - metrics.top);
+        float xpos = xStart + (metrics.left * ratio);
+        float ypos = y - (metrics.height * ratio - metrics.top * ratio);
 
-        float w = metrics.width;
-        float h = metrics.height;
+        float w = metrics.width * ratio;
+        float h = metrics.height * ratio;
 
         float vertices[6][4] = {
             {xpos, ypos + h, 0.0f, 0.0f}, {xpos, ypos, 0.0f, 1.0f},     {xpos + w, ypos, 1.0f, 1.0f},
@@ -58,8 +62,9 @@ void ImmutableTextBox::doMyRender() {
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        xStart += (metrics.advanceX >> 6U);  // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
-                                             // of 1/64th pixels by 64 to get amount of pixels))
+        xStart +=
+            (metrics.advanceX >> 6U) * ratio;  // bitshift by 6 to get value in pixels (2^6 = 64 (divide
+                                               // amount of 1/64th pixels by 64 to get amount of pixels))
     }
 
     glBindVertexArray(0);
