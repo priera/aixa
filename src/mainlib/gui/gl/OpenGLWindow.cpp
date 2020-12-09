@@ -3,6 +3,7 @@
 #include <mainlib/gui/objects/ImmutableTextBox.h>
 #include <mainlib/gui/objects/SpectrogramPlane.h>
 #include <mainlib/gui/objects/TexturedPlane.h>
+#include <mainlib/gui/objects/YScale.h>
 
 #include <QtCore/QTimer>
 #include <QtGui/QOpenGLContext>
@@ -68,22 +69,18 @@ void OpenGLWindow::init() {
 
     this->textureCollection = new TextureCollection(*bitmapsProvider);
 
-    centralNoteManager = std::make_unique<CentralNoteManager>(*textureCollection);
-    // scene->setMainObject(centralNoteManager.get());
+    /*centralNoteManager = std::make_unique<CentralNoteManager>(*textureCollection);
+    scene->setMainObject(centralNoteManager.get()); */
 
-    int fontSize = 20;
-    float ratio = 0.02f / static_cast<float>(fontSize);  // * static_cast<float>(height());
-    std::cout << ratio << std::endl;                     // 0.0014f
-    auto textBox =
-        new ImmutableTextBox("This is sample text", fontSize, 0.02f, 0.02f, ratio, *textureCollection);
-    scene->setMainObject(textBox);
+    auto yScale = new YScale(22050.0f, *textureCollection);
+    scene->setMainObject(yScale);
 
     /*auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
     scene->setMainObject(texturedPlane);
 
     auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
 
-    QTimer::singleShot(44000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); });
+    QTimer::singleShot(30000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); });
     */
     context->doneCurrent();
 }

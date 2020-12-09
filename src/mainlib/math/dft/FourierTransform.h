@@ -6,40 +6,29 @@
 #include "mainlib/math/types.h"
 
 namespace aixa::math {
-    class FourierTransform {
-    public:
-        explicit FourierTransform(unsigned int N) :
-            N(N) {};
+class FourierTransform {
+public:
+    explicit FourierTransform(unsigned int N) : N(N){};
 
-        virtual ~FourierTransform() = default;
+    virtual ~FourierTransform() = default;
 
-        const ComplexVector &applyTo(const DoubleVector &signal);
+    const ComplexVector &applyTo(const DoubleVector &signal);
 
-        constexpr double baseDiscreteFreq() const {
-            return (2 * M_PI) / N;
-        }
+    double baseDiscreteFreq() const { return (2 * M_PI) / N; }
 
-        constexpr double baseContinuousFreq(double samplePeriod) const {
-            return 1 / (N * samplePeriod);
-        }
+    double baseContinuousFreq(double samplePeriod) const { return 1 / (N * samplePeriod); }
 
-        constexpr double maxContinuousFreq(double samplePeriod) const {
-            return 1 / (2 * samplePeriod);
-        }
+    double maxContinuousFreq(double samplePeriod) const { return 1 / (2 * samplePeriod); }
 
-        constexpr std::size_t relevantSize() const {
-            return (N / 2) + 1;
-        }
+    std::size_t relevantSize() const { return (N / 2) + 1; }
 
-        constexpr unsigned int dimensionality() const {
-            return N;
-        }
+    unsigned int dimensionality() const { return N; }
 
-    protected:
-        virtual const ComplexVector &transform(const ComplexVector &complexSignal) = 0;
+protected:
+    virtual const ComplexVector &transform(const ComplexVector &complexSignal) = 0;
 
-        unsigned int N;
-    };
-}
+    unsigned int N;
+};
+}  // namespace aixa::math
 
-#endif //AIXA_SRC_MAINLIB_MATH_FOURIERTRANSFORM_H
+#endif  // AIXA_SRC_MAINLIB_MATH_FOURIERTRANSFORM_H

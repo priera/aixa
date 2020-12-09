@@ -7,8 +7,8 @@
 std::shared_ptr<Stream> SyntheticStreamFactory::probe() {
     using namespace std::chrono_literals;
 
-    //Let's do a regular pop song!!!!
-    //I–V–vi–IV chord progression
+    // Let's do a regular pop song!!!!
+    // I–V–vi–IV chord progression
     const auto C = Note(Note::Pitch::C, 4, Note::Modifier::NONE);
     const auto G = Note(Note::Pitch::G, 4, Note::Modifier::NONE);
     const auto A = Note(Note::Pitch::A, 5, Note::Modifier::NONE);
@@ -21,28 +21,14 @@ std::shared_ptr<Stream> SyntheticStreamFactory::probe() {
 
     auto now = SyntheticStream::Clock::now();
     std::vector<SyntheticStream::StreamStep> streamSteps = {
-        {
-                0, chordC, now
-        },
-        {
-                500, chordC, now + 2000ms
-        },
-        {
-                600, chordG, now + 3000ms
-        },
-        {
-                400, chordAm, now + 4000ms
-        },
-        {
-                500, chordF, now + 6000ms
-        },
-        { //Repeating two last steps, because current algorithm is wrong
-                500, chordC, now + 8000ms
-        },
-        {
-                500, chordC, now + 8000ms
-        }
-    };
+        {0, chordC, now},
+        {500, chordC, now + 3000ms},
+        {600, chordG, now + 5000ms},
+        {400, chordAm, now + 7000ms},
+        {500, chordF, now + 9000ms},
+        {// Repeating two last steps, because current algorithm is wrong
+         500, chordC, now + 11000ms},
+        {500, chordC, now + 11000ms}};
 
     const std::size_t signalSize = 4410;
     const double samplePeriod = 1.0 / 44100;

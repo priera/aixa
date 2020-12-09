@@ -1,13 +1,11 @@
 #include "ImmutableTextBox.h"
 
 #include <mainlib/gui/bitmap/GlyphMetrics.h>
-#include <mainlib/gui/gl/ShadersCollection.h>
 #include <mainlib/gui/gl/utils.h>
 
-ImmutableTextBox::ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y, float ratio,
-                                   TextureCollection &textureCollection) :
-    ShadedRenderableObject(ShadersCollection::Vertex::FRONT_CHARACTER, ShadersCollection::Fragment::CHARACTER,
-                           Dimensions{0.9f, 1.125f, 0.1f}),
+ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program, std::string text, unsigned int pixelSize,
+                                   float x, float y, float ratio, TextureCollection &textureCollection) :
+    RenderableObject(program, Dimensions{0.9f, 1.125f, 0.1f}),
     text(std::move(text)),
     pixelSize(pixelSize),
     x(x),

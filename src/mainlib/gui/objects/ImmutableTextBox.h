@@ -1,13 +1,13 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_OBJECTS_IMMUTABLETEXTBOX_H
 #define AIXA_SRC_MAINLIB_GUI_OBJECTS_IMMUTABLETEXTBOX_H
 
-#include <mainlib/gui/scene/ShadedRenderableObject.h>
+#include <mainlib/gui/scene/RenderableObject.h>
 #include <mainlib/gui/texture/TextureCollection.h>
 
-class ImmutableTextBox : public ShadedRenderableObject {
+class ImmutableTextBox : public RenderableObject {
 public:
-    ImmutableTextBox(std::string text, unsigned int pixelSize, float x, float y, float ratio,
-                     TextureCollection &textureCollection);
+    ImmutableTextBox(QOpenGLShaderProgram &program, std::string text, unsigned int pixelSize, float x,
+                     float y, float ratio, TextureCollection &textureCollection);
     ~ImmutableTextBox() override = default;
 
 protected:
