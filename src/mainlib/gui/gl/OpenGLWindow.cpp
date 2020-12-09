@@ -69,19 +69,25 @@ void OpenGLWindow::init() {
 
     this->textureCollection = new TextureCollection(*bitmapsProvider);
 
-    /*centralNoteManager = std::make_unique<CentralNoteManager>(*textureCollection);
-    scene->setMainObject(centralNoteManager.get()); */
+    /*centralNoteManager = std::make_shared<CentralNoteManager>(*textureCollection);
+    scene->addObject(centralNoteManager);
 
-    auto yScale = new YScale(22050.0f, *textureCollection);
-    scene->setMainObject(yScale);
-
-    /*auto texturedPlane = new TexturedPlane(*bitmapsProvider, "./data/container.jpg");
-    scene->setMainObject(texturedPlane);
-
-    auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
-
-    QTimer::singleShot(30000, [this, spectrogramPlane]() { scene->setMainObject(spectrogramPlane); });
+    auto texturedPlane = std::make_shared<TexturedPlane>(*bitmapsProvider, "./data/container.jpg");
+    scene->addObject(texturedPlane);
     */
+
+    QTimer::singleShot(30000, [this]() {
+        context->makeCurrent(this);
+
+        auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+        scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
+
+        auto yScale = std::make_shared<YScale>(22050.0f, *textureCollection);
+        scene->addObject(yScale);
+
+        context->doneCurrent();
+    });
+
     context->doneCurrent();
 }
 

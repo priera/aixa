@@ -11,17 +11,15 @@ public:
 
     virtual ~Scene() = default;
 
-    void setMainObject(ShadedRenderableObject *object) {
-        mainObject = object;
-    }
+    void addObject(std::shared_ptr<ShadedRenderableObject> object) { objects.push_back(std::move(object)); }
 
     void update();
     void draw();
 
 private:
     QMatrix4x4 projection;
-    ShadedRenderableObject *mainObject;
+
+    std::vector<std::shared_ptr<ShadedRenderableObject>> objects;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_GUI_GL_SCENE_H
+#endif  // AIXA_SRC_MAINLIB_GUI_GL_SCENE_H
