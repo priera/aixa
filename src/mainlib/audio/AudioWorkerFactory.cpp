@@ -1,5 +1,6 @@
 #include "AudioWorkerFactory.h"
 
+#include <mainlib/globals.h>
 #include <mainlib/math/dft/FourierTransformFactory.h>
 #include <mainlib/math/dft/SpectrogramBuilder.h>
 #include <mainlib/stream/StreamTypes.h>
@@ -7,9 +8,6 @@
 #include <iostream>
 
 #include "InterleavedBufferGenerator.h"
-
-// Kiddos, don't do this at home
-extern bool buildLogScales;
 
 using namespace aixa::math;
 
@@ -27,7 +25,7 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     auto volumeManager = std::make_unique<VolumeManager>();
 
     double sampleRate = 1.0 / streamParams.rate;
-    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build(buildLogScales);
+    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build(useLogScales);
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
     auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing,

@@ -1,5 +1,6 @@
 #include "OpenGLWindow.h"
 
+#include <mainlib/globals.h>
 #include <mainlib/gui/objects/ImmutableTextBox.h>
 #include <mainlib/gui/objects/SpectrogramPlane.h>
 #include <mainlib/gui/objects/TexturedPlane.h>
@@ -12,9 +13,6 @@
 
 #include "GLContextManager.h"
 #include "utils.h"
-
-// This is ugly, I know
-extern bool buildLogScales;
 
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context,
                            BitmapsProvider &bitmapsProvider) :
@@ -86,7 +84,7 @@ void OpenGLWindow::init() {
         scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
 
         YScale *yScale_p;
-        if (buildLogScales) {
+        if (useLogScales) {
             yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
         } else {
             yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);

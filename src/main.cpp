@@ -14,8 +14,6 @@ using namespace aixa::math;
 // static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 static const auto STREAM = "??";
 
-bool buildLogScales = false;
-
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
