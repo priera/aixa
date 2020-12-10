@@ -1,46 +1,38 @@
 #ifndef AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMBUILDER_H
 #define AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMBUILDER_H
 
-#include "SpectrogramComputer.h"
 #include "FourierTransformFactory.h"
+#include "SpectrogramComputer.h"
 
 namespace aixa::math {
-    class SpectrogramBuilder {
-    public:
-        explicit SpectrogramBuilder(double samplePeriod) :
-            samplePeriod(samplePeriod),
-            fourierImplementation(FourierTransformFactory::Implementations::FFT),
-            transformSize(2048),
-            logScale(false) {}
+class SpectrogramBuilder {
+public:
+    explicit SpectrogramBuilder(double samplePeriod) :
+        samplePeriod(samplePeriod),
+        fourierImplementation(FourierTransformFactory::Implementations::FFT),
+        transformSize(2048) {}
 
-        virtual ~SpectrogramBuilder() noexcept = default;
+    virtual ~SpectrogramBuilder() noexcept = default;
 
-        SpectrogramBuilder &setFourierTransform(FourierTransformFactory::Implementations impl) {
-            this->fourierImplementation = impl;
-            return *this;
-        }
+    SpectrogramBuilder &setFourierTransform(FourierTransformFactory::Implementations impl) {
+        this->fourierImplementation = impl;
+        return *this;
+    }
 
-        SpectrogramBuilder &setTransformSize(unsigned int transformSize) {
-            this->transformSize = transformSize;
-            return *this;
-        }
+    SpectrogramBuilder &setTransformSize(unsigned int transformSize) {
+        this->transformSize = transformSize;
+        return *this;
+    }
 
-        SpectrogramBuilder &useLogScale() {
-            this->logScale = true;
-            return *this;
-        }
+    SpectrogramComputer *build(bool useLogScale = false) const;
 
-        SpectrogramComputer *build() const;
+private:
+    Scale *buildScale(const FourierTransform &fourierTransform, bool useLogScale) const;
 
-    private:
-        Scale *buildScale(const FourierTransform &fourierTransform) const;
+    double samplePeriod;
+    FourierTransformFactory::Implementations fourierImplementation;
+    unsigned int transformSize;
+};
+}  // namespace aixa::math
 
-        double samplePeriod;
-        FourierTransformFactory::Implementations fourierImplementation;
-        unsigned int transformSize;
-        bool logScale;
-    };
-}
-
-
-#endif //AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMBUILDER_H
+#endif  // AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMBUILDER_H

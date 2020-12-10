@@ -13,6 +13,9 @@
 #include "GLContextManager.h"
 #include "utils.h"
 
+// This is ugly, I know
+extern bool buildLogScales;
+
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context,
                            BitmapsProvider &bitmapsProvider) :
     QWindow(),
@@ -82,7 +85,14 @@ void OpenGLWindow::init() {
         auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
         scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
 
-        auto yScale = std::make_shared<YScale>(22050.0f, *textureCollection);
+        YScale *yScale_p;
+        if (buildLogScales) {
+            yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
+        } else {
+            yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);
+        }
+
+        auto yScale = std::shared_ptr<YScale>(yScale_p);
         scene->addObject(yScale);
 
         context->doneCurrent();

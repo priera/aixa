@@ -7,11 +7,8 @@
 
 class YScale : public ShadedRenderableObject {
 public:
-    explicit YScale(float scaleMax, TextureCollection &textureCollection) :
-        ShadedRenderableObject(ShadersCollection::Vertex::FRONT_CHARACTER,
-                               ShadersCollection::Fragment::CHARACTER, Dimensions{0.9f, 1.125f, 0.1f}),
-        scaleMax(scaleMax),
-        textureCollection(&textureCollection) {}
+    static YScale *buildLinear(float scaleMax, unsigned int steps, TextureCollection &textureCollection);
+    static YScale *buildLogarithmic(float scaleMax, TextureCollection &textureCollection);
 
     ~YScale() override = default;
 
@@ -19,12 +16,19 @@ protected:
     void init() override;
 
 private:
-    constexpr static unsigned int STEPS = 10;
+    using ScaleContent = std::vector<std::pair<float, std::string>>;
+
     constexpr static int FONT_SIZE = 20;
     constexpr static float FONT_SCREEN_HEIGHT = 0.02f;
     constexpr static float RATIO = FONT_SCREEN_HEIGHT / static_cast<float>(FONT_SIZE);
 
-    float scaleMax;
+    YScale(ScaleContent textBoxesContent, TextureCollection &textureCollection) :
+        ShadedRenderableObject(ShadersCollection::Vertex::FRONT_CHARACTER,
+                               ShadersCollection::Fragment::CHARACTER, Dimensions{0.9f, 1.125f, 0.1f}),
+        scaleContent(std::move(textBoxesContent)),
+        textureCollection(&textureCollection) {}
+
+    ScaleContent scaleContent;
     TextureCollection *textureCollection;
 };
 

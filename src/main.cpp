@@ -1,19 +1,20 @@
 
 //#include "examples/AlsaExamples.h"
 
-#include <QApplication>
-
 #include <mainlib/audio/AudioWorkerFactory.h>
 #include <mainlib/audio/note/NoteSetter.h>
-
-#include <mainlib/gui/MainEventFilter.h>
 #include <mainlib/gui/GraphicsEnvironmentFactory.h>
+#include <mainlib/gui/MainEventFilter.h>
+
+#include <QApplication>
 
 using namespace std::chrono_literals;
 using namespace aixa::math;
 
-static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
-//static const auto STREAM = "??";
+// static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
+static const auto STREAM = "??";
+
+bool buildLogScales = false;
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -46,4 +47,3 @@ int main(int argc, char *argv[]) {
 
     return ret;
 }
-

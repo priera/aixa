@@ -1,12 +1,15 @@
 #include "AudioWorkerFactory.h"
 
-#include <iostream>
-
-#include <mainlib/stream/StreamTypes.h>
 #include <mainlib/math/dft/FourierTransformFactory.h>
 #include <mainlib/math/dft/SpectrogramBuilder.h>
+#include <mainlib/stream/StreamTypes.h>
+
+#include <iostream>
 
 #include "InterleavedBufferGenerator.h"
+
+// Kiddos, don't do this at home
+extern bool buildLogScales;
 
 using namespace aixa::math;
 
@@ -24,13 +27,11 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     auto volumeManager = std::make_unique<VolumeManager>();
 
     double sampleRate = 1.0 / streamParams.rate;
-    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build();
+    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build(buildLogScales);
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
-    auto publisher = std::make_unique<Publisher>(environment.platform,
-                                                 environment.samplesRing,
-                                                 std::move(volumeManager),
-                                                 std::move(spectrogramComputer));
+    auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing,
+                                                 std::move(volumeManager), std::move(spectrogramComputer));
 
     return std::make_unique<AudioWorker>(environment, std::move(streamReader), std::move(publisher));
 }
@@ -58,8 +59,8 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
     snd_pcm_sw_params_alloca(&alsaEnv.swparams);
 
     std::cout << "Playback device is " << alsaEnv.params.device << "\n";
-    std::cout << "Stream streamParams are " << streamParams.rate << "Hz, " << snd_pcm_format_name(streamParams.format)
-              << ", " << streamParams.channels << " channels\n";
+    std::cout << "Stream streamParams are " << streamParams.rate << "Hz, "
+              << snd_pcm_format_name(streamParams.format) << ", " << streamParams.channels << " channels\n";
 
     int err;
     std::stringstream s;
@@ -69,7 +70,8 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
         throw std::runtime_error(s.str());
     }
 
-    if ((err = snd_pcm_open(&alsaEnv.handle, alsaEnv.params.device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    if ((err = snd_pcm_open(&alsaEnv.handle, alsaEnv.params.device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) <
+        0) {
         s << "Playback open error: " << snd_strerror(err) << "\n";
         throw std::runtime_error(s.str());
     }
@@ -88,15 +90,14 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
     /*Notice the asymmetry: internally ALSA stores five buffers (500000 us of audio)
      * while buffersRing stores one second */
     const auto BUFFERS_FOR_ONE_SECOND = 1000000 / alsaEnv.params.period_time;
-    auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, alsaEnv.frame_size, streamParams.format);
+    auto bufferGenerator =
+        InterleavedBufferGenerator(streamParams.channels, alsaEnv.frame_size, streamParams.format);
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
 
     return AudioEnvironment(streamParams, alsaEnv, samplesRing);
 }
 
-int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
-                                    const AudioStreamParameters &parameters) {
-
+int AudioWorkerFactory::setHwParams(AlsaEnvironment &env, const AudioStreamParameters &parameters) {
     snd_pcm_t *handle = env.handle;
     snd_pcm_hw_params_t *params = env.hwparams;
 
@@ -135,7 +136,8 @@ int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
     /* set the count of channels */
     err = snd_pcm_hw_params_set_channels(handle, params, parameters.channels);
     if (err < 0) {
-        printf("Channels count (%u) not available for playbacks: %s\n", parameters.channels, snd_strerror(err));
+        printf("Channels count (%u) not available for playbacks: %s\n", parameters.channels,
+               snd_strerror(err));
         return err;
     }
 
@@ -190,9 +192,7 @@ int AudioWorkerFactory::setHwParams(AlsaEnvironment &env,
     return 0;
 }
 
-int AudioWorkerFactory::setSwParams(AlsaEnvironment &environment,
-                                    const AudioStreamParameters &parameters) {
-
+int AudioWorkerFactory::setSwParams(AlsaEnvironment &environment, const AudioStreamParameters &parameters) {
     snd_pcm_t *handle = environment.handle;
     snd_pcm_sw_params_t *swparams = environment.swparams;
 
@@ -206,8 +206,8 @@ int AudioWorkerFactory::setSwParams(AlsaEnvironment &environment,
 
     /* start the transfer when the buffer is almost full: */
     /* (buffer_size / avail_min) * avail_min */
-    err = snd_pcm_sw_params_set_start_threshold(handle, swparams, (environment.buffer_size / environment.frame_size) *
-                                                                  environment.frame_size);
+    err = snd_pcm_sw_params_set_start_threshold(
+        handle, swparams, (environment.buffer_size / environment.frame_size) * environment.frame_size);
     if (err < 0) {
         printf("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
         return err;
