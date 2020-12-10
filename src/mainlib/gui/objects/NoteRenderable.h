@@ -1,18 +1,16 @@
 #ifndef AIXA_NOTERENDERABLE_H
 #define AIXA_NOTERENDERABLE_H
 
-#include <mutex>
+#include <mainlib/gui/scene/RenderableObject.h>
 
 #include <QMatrix4x4>
-
-#include <mainlib/gui/scene/RenderableObject.h>
-#include <mainlib/gui/CharTextureProvider.h>
+#include <mutex>
 
 class NoteRenderable : public RenderableObject {
 public:
     NoteRenderable(QOpenGLShaderProgram &program, Dimensions dim);
 
-    void setCharacter(const CharTextureProvider::Character & charTex);
+    void setCharacterText(unsigned int charTex);
 
 protected:
     bool readyToInitialize() override;
@@ -25,9 +23,8 @@ private:
 
     std::mutex charUpdateMutex;
 
-    const CharTextureProvider::Character *character;
+    unsigned int charText;
     unsigned int VBO, VAO;
 };
 
-
-#endif //AIXA_NOTERENDERABLE_H
+#endif  // AIXA_NOTERENDERABLE_H

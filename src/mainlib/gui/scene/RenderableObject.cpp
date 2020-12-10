@@ -25,15 +25,14 @@ void RenderableObject::addChildObject(float z, std::shared_ptr<RenderableObject>
 }
 
 void RenderableObject::update() {
+    updateMatrix.setToIdentity();
     doMyUpdate();
 
     for (auto &child: children) {
         child.second->update();
         applyChildTransformations(*child.second);
+        child.second->updateDone();
     }
-
-    updateDone();
-    updateMatrix.setToIdentity();
 }
 
 void RenderableObject::updateDone() {

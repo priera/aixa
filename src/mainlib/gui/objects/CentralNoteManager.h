@@ -1,18 +1,17 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
 #define AIXA_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
 
+#include <mainlib/audio/note/Note.h>
+#include <mainlib/gui/bitmap/BitmapsProvider.h>
+#include <mainlib/gui/objects/NoteRenderable.h>
+#include <mainlib/gui/scene/ShadedRenderableObject.h>
+#include <mainlib/gui/texture/TextureCollection.h>
+
 #include <memory>
 
-#include <mainlib/audio/note/Note.h>
-#include <mainlib/gui/scene/ShadedRenderableObject.h>
-#include <mainlib/gui/objects/NoteRenderable.h>
-
-class CharTextureProvider;
-
-class CentralNoteManager :
-        public ShadedRenderableObject {
+class CentralNoteManager : public ShadedRenderableObject {
 public:
-    CentralNoteManager(BitmapsProvider &bitmapsProvider);
+    explicit CentralNoteManager(TextureCollection &textureCollection);
     ~CentralNoteManager() override = default;
 
     void setNewFrontNote(const Note &note) { newFrontChar = getNoteChar(note); }
@@ -26,15 +25,16 @@ protected:
     void applyChildTransformations(RenderableObject &pObject) override;
 
 private:
+    static constexpr unsigned int NOTE_CHAR_SIZE = 80;
+
+    TextureCollection *textureCollection;
+
     std::shared_ptr<NoteRenderable> frontNote;
     std::shared_ptr<NoteRenderable> backNote;
-
-    std::unique_ptr<CharTextureProvider> charTextureProvider;
 
     float targetAngle;
     char frontChar;
     char newFrontChar;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
+#endif  // AIXA_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H

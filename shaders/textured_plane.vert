@@ -10,6 +10,6 @@ uniform mat4 model;
 
 void main()
 {
-    gl_Position = projection * model * vec4(aPos.xy, 0.0, 1.0);
+    gl_Position = projection * model * vec4(aPos.xy, -20.0, 1.0);
     texCoords = aTexCoord;
 }

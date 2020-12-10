@@ -1,10 +1,9 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_GL_GLCONTEXTMANAGER_H
 #define AIXA_SRC_MAINLIB_GUI_GL_GLCONTEXTMANAGER_H
 
-#include <memory>
-
-#include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
+#include <QtGui/QOpenGLContext>
+#include <memory>
 
 class GLContextManager {
 public:
@@ -19,9 +18,10 @@ private:
 
     static GLContextManager *instance;
 
+    unsigned int contextId;
+
     std::unique_ptr<QOpenGLContext> sharedContext;
     std::unique_ptr<QOffscreenSurface> offscreenSurface;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_GUI_GL_GLCONTEXTMANAGER_H
+#endif  // AIXA_SRC_MAINLIB_GUI_GL_GLCONTEXTMANAGER_H

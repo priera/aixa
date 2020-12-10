@@ -1,28 +1,16 @@
 #include "CentralNoteManager.h"
 
-CentralNoteManager::CentralNoteManager(BitmapsProvider &bitmapsProvider) :
-    ShadedRenderableObject("./shaders/textured_plane.vert",
-                           "./shaders/character.frag",
-                           Dimensions{0.1f, 0.125f, 0.1f})
-    , targetAngle(-180)
-    , frontChar(' ')
-    , newFrontChar(' ')
-{
-    charTextureProvider = std::make_unique<CharTextureProvider>(bitmapsProvider);
-    //auto ch1 = charTextureProvider->getChar(' ');
-    //auto ch2 = charTextureProvider->getChar('G');
+#include <mainlib/gui/gl/ShadersCollection.h>
 
-    //frontNote = std::make_unique<NoteRenderable>(ch1, *program);
-    //backNote = std::make_unique<NoteRenderable>(ch2,*program);
+CentralNoteManager::CentralNoteManager(TextureCollection &textureCollection) :
+    ShadedRenderableObject(ShadersCollection::Vertex::TEXTURED_PLANE, ShadersCollection::Fragment::CHARACTER,
+                           Dimensions{0.9f, 1.125f, 0.1f}),
+    textureCollection(&textureCollection),
+    targetAngle(-180),
+    frontChar(' '),
+    newFrontChar(' ') {}
 
-    //addChildObject(0.05, frontNote.get());
-    //addChildObject(-0.05, backNote.get());
-
-}
-
-bool CentralNoteManager::readyToInitialize() {
-    return frontChar != ' ' && !frontNote;
-}
+bool CentralNoteManager::readyToInitialize() { return frontChar != ' ' && !frontNote; }
 
 void CentralNoteManager::init() {
     frontNote = std::make_shared<NoteRenderable>(*program, Dimensions{dim.width, dim.height, 0.0f});
@@ -30,15 +18,15 @@ void CentralNoteManager::init() {
     addChildObject(0.05, frontNote);
 }
 
-void CentralNoteManager::doMyUpdate(){
+void CentralNoteManager::doMyUpdate() {
     RenderableObject::doMyUpdate();
 
     if (frontChar != newFrontChar) {
         frontChar = newFrontChar;
 
         if (frontNote) {
-            auto &charTex = charTextureProvider->getChar(frontChar);
-            frontNote->setCharacter(charTex);
+            const auto &charTex = textureCollection->getCharacterTexture(frontChar, NOTE_CHAR_SIZE);
+            frontNote->setCharacterText(charTex.id);
         }
     }
 }
@@ -48,4 +36,3 @@ void CentralNoteManager::applyChildTransformations(RenderableObject &pObject) {
 
     pObject.moveCenterAt(0, 0, zCord);
 }
-

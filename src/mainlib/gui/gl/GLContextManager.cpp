@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <iostream>
+#include <sstream>
 
 GLContextManager *GLContextManager::instance = nullptr;
 
@@ -20,19 +21,21 @@ void GLContextManager::release() {
     }
 }
 
-GLContextManager::GLContextManager() {
+GLContextManager::GLContextManager() : contextId(1) {
     QSurfaceFormat format;
     format.setSamples(16);
     format.setMajorVersion(3);
     format.setMinorVersion(3);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setRenderableType(QSurfaceFormat::OpenGL);
+    format.setOption(QSurfaceFormat::DebugContext);
 
     offscreenSurface = std::make_unique<QOffscreenSurface>();
     offscreenSurface->setFormat(format);
     offscreenSurface->create();
 
     sharedContext = std::make_unique<QOpenGLContext>();
+    sharedContext->setObjectName("shared OpenGL context");
     sharedContext->setFormat(offscreenSurface->format());
     sharedContext->create();
 
@@ -40,12 +43,12 @@ GLContextManager::GLContextManager() {
 }
 
 QOpenGLContext *GLContextManager::createContext() {
+    std::stringstream s;
+    s << "context" << contextId++;
+
     auto context = new QOpenGLContext();
-
+    context->setObjectName(QString::fromStdString(s.str()));
     context->setShareContext(sharedContext.get());
-    QSurfaceFormat sf = context->format();
-
-    //sf.setOption(QSurfaceFormat::DebugContext);
 
     return context;
 }

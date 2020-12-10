@@ -11,7 +11,6 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     auto &surface = GLContextManager::getInstance().getOffscreenSurface();
 
     auto drawingWorker = std::make_unique<DrawingWorker>(context, surface, *scene);
-    context_p->moveToThread(drawingWorker.get());
 
     context_p = GLContextManager::getInstance().createContext();
     context = std::unique_ptr<QOpenGLContext>(context_p);
@@ -21,12 +20,9 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context, *bitmapsProvider);
     openGlWindow->resize(appInitialSize.width(), appInitialSize.height());
 
-    QObject::connect(drawingWorker.get(), &DrawingWorker::computeLoopDone,
-                     openGlWindow.get(), &OpenGLWindow::renderNow,
-                     Qt::QueuedConnection);
+    QObject::connect(drawingWorker.get(), &DrawingWorker::computeLoopDone, openGlWindow.get(),
+                     &OpenGLWindow::renderNow, Qt::QueuedConnection);
 
-    return std::make_unique<GraphicsEnvironment>(std::move(scene),
-                                                 std::move(drawingWorker),
-                                                 std::move(openGlWindow),
-                                                 std::move(bitmapsProvider));
+    return std::make_unique<GraphicsEnvironment>(std::move(scene), std::move(drawingWorker),
+                                                 std::move(openGlWindow), std::move(bitmapsProvider));
 }
