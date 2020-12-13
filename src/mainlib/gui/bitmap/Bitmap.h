@@ -7,7 +7,7 @@
 struct Bitmap {
     unsigned int rows, columns;
     int glStorage;
-    std::vector<unsigned char> bytes;
+    std::shared_ptr<std::vector<unsigned char>> bytes;
     std::shared_ptr<void> data;
 };
 

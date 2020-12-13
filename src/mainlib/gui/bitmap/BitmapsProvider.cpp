@@ -1,11 +1,13 @@
 #include "BitmapsProvider.h"
 
+#include <mainlib/globals.h>
+
 #include "ImagesProvider.h"
 #include "ProceduralProvider.h"
 
 BitmapsProvider::BitmapsProvider() :
     freeTypeProvider(std::make_unique<FreeTypeCharacterBitmapProvider>()),
-    spectrogramBitmapProvider(std::make_unique<SpectrogramBitmapProvider>()) {}
+    spectrogramBitmapProvider(std::make_unique<SpectrogramBitmapProvider>(SPECTROGRAM_SIZE)) {}
 
 Bitmap BitmapsProvider::getCharacter(char c, unsigned int pixelSize) {
     return freeTypeProvider->getCharacter(c, pixelSize);

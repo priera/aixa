@@ -84,7 +84,7 @@ void OpenGLWindow::init() {
         scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
 
         YScale *yScale_p;
-        if (useLogScales) {
+        if (USE_LOG_SCALES) {
             yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
         } else {
             yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);

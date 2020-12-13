@@ -63,7 +63,7 @@ void SpectrogramPlane::init() {
     auto bmp = bitmapsProvider->buildSpectrogram();
 
     glTexImage2D(GL_TEXTURE_2D, 0, bmp.glStorage, bmp.columns, bmp.rows, 0, bmp.glStorage, GL_UNSIGNED_BYTE,
-                 &bmp.bytes[0]);
+                 &((*bmp.bytes)[0]));
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);

@@ -25,7 +25,7 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     auto volumeManager = std::make_unique<VolumeManager>();
 
     double sampleRate = 1.0 / streamParams.rate;
-    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build(useLogScales);
+    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build(USE_LOG_SCALES);
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
     auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing,

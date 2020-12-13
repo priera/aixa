@@ -33,7 +33,7 @@ TextureCollection::Texture TextureCollection::buildTextureForCharacter(char c, u
 
     assert(glGetError() == GL_NO_ERROR);
     glTexImage2D(GL_TEXTURE_2D, 0, bitmap.glStorage, bitmap.columns, bitmap.rows, 0, bitmap.glStorage,
-                 GL_UNSIGNED_BYTE, &bitmap.bytes[0]);
+                 GL_UNSIGNED_BYTE, &((*bitmap.bytes)[0]));
 
     // Set texture options
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

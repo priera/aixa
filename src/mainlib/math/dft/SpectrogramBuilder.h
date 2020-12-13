@@ -1,6 +1,8 @@
 #ifndef AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMBUILDER_H
 #define AIXA_SRC_MAINLIB_MATH_DFT_SPECTROGRAMBUILDER_H
 
+#include <mainlib/globals.h>
+
 #include "FourierTransformFactory.h"
 #include "SpectrogramComputer.h"
 
@@ -10,7 +12,7 @@ public:
     explicit SpectrogramBuilder(double samplePeriod) :
         samplePeriod(samplePeriod),
         fourierImplementation(FourierTransformFactory::Implementations::FFT),
-        transformSize(2048) {}
+        transformSize(FOURIER_TRANSFORM_SIZE) {}
 
     virtual ~SpectrogramBuilder() noexcept = default;
 
