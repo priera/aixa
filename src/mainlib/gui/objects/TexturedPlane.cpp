@@ -3,7 +3,7 @@
 #include <mainlib/gui/gl/ShadersCollection.h>
 #include <mainlib/gui/gl/utils.h>
 
-TexturedPlane::TexturedPlane(BitmapsProvider &bitmapsProvider, std::filesystem::path texturePath) :
+TexturedPlane::TexturedPlane(BitmapBuilders &bitmapsProvider, std::filesystem::path texturePath) :
     ShadedRenderableObject(ShadersCollection::Vertex::TEXTURED_PLANE, ShadersCollection::Fragment::TEXTURE_2D,
                            Dimensions{1.0f, 1.0f, 0.0f}),
     bitmapsProvider(&bitmapsProvider),
@@ -65,7 +65,7 @@ void TexturedPlane::init() {
     auto bmp = bitmapsProvider->buildProcedural();
 
     glTexImage2D(GL_TEXTURE_2D, 0, bmp.glStorage, bmp.columns, bmp.rows, 0, bmp.glStorage, GL_UNSIGNED_BYTE,
-                 &((*bmp.bytes)[0]));
+                 &bmp.bytes[0]);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);

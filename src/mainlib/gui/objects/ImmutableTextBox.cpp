@@ -41,8 +41,8 @@ void ImmutableTextBox::doMyRender() {
     float xStart = x;
 
     for (auto c : text) {
-        const auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
-        const auto &metrics = *(static_cast<GlyphMetrics *>(texture.bitmap.data.get()));
+        auto texture = textureCollection->getCharacterTexture(c, pixelSize);
+        const auto metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
 
         float xpos = xStart + (metrics.left * ratio);
         float ypos = y - (metrics.height * ratio - metrics.top * ratio);
@@ -55,7 +55,7 @@ void ImmutableTextBox::doMyRender() {
 
             {xpos, ypos + h, 0.0f, 0.0f}, {xpos + w, ypos, 1.0f, 1.0f}, {xpos + w, ypos + h, 1.0f, 0.0f}};
 
-        glBindTexture(GL_TEXTURE_2D, texture.id);
+        texture.use();
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuff);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 

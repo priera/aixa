@@ -3,10 +3,11 @@
 #include <mainlib/gui/gl/ShadersCollection.h>
 #include <mainlib/gui/gl/utils.h>
 
-SpectrogramPlane::SpectrogramPlane(BitmapsProvider &bitmapsProvider) :
+SpectrogramPlane::SpectrogramPlane(SharedBitmapProvider bitmapProvider, const DynamicTexture &texture) :
     ShadedRenderableObject(ShadersCollection::Vertex::TEXTURED_PLANE, ShadersCollection::Fragment::TEXTURE_2D,
                            Dimensions{1.0f, 1.0f, 0.0f}),
-    bitmapsProvider(&bitmapsProvider) {}
+    bitmapProvider(std::move(bitmapProvider)),
+    texture(texture) {}
 
 SpectrogramPlane::~SpectrogramPlane() noexcept {
     if (isInitialized()) {
@@ -51,34 +52,15 @@ void SpectrogramPlane::init() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    auto bmp = bitmapsProvider->buildSpectrogram();
-
-    glTexImage2D(GL_TEXTURE_2D, 0, bmp.glStorage, bmp.columns, bmp.rows, 0, bmp.glStorage, GL_UNSIGNED_BYTE,
-                 &((*bmp.bytes)[0]));
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     glCheckError();
 }
 
 void SpectrogramPlane::doMyRender() {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    texture.use();
 
     glBindVertexArray(VAO);
-
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
     glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+
+    texture.done();
 }

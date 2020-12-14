@@ -3,13 +3,14 @@
 using namespace std::chrono_literals;
 
 NoteRenderable::NoteRenderable(QOpenGLShaderProgram &program, Dimensions dim) :
-    RenderableObject(program, dim), charText(0) {}
+    RenderableObject(program, dim), charText(nullptr) {}
 
 void NoteRenderable::updateOnCharData() { angle = 0.0; }
 
-void NoteRenderable::setCharacterText(const unsigned int charTex) {
+void NoteRenderable::setCharacterText(Texture &charTex) {
     std::lock_guard<std::mutex> l(charUpdateMutex);
-    this->charText = charTex;
+    auto newText = new Texture(charTex);
+    this->charText = std::shared_ptr<Texture>(newText);
 
     updateOnCharData();
 
@@ -30,13 +31,14 @@ void NoteRenderable::doMyRender() {
     glActiveTexture(GL_TEXTURE0);
 
     glBindVertexArray(VAO);
-    glBindTexture(GL_TEXTURE_2D, charText);
+    charText->use();
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
     glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+
+    charText->done();
+
     glDisable(GL_BLEND);
 
     assert(glGetError() == GL_NO_ERROR);
@@ -68,4 +70,4 @@ void NoteRenderable::init() {
     assert(glGetError() == GL_NO_ERROR);
 }
 
-bool NoteRenderable::readyToInitialize() { return charText > 0; }
+bool NoteRenderable::readyToInitialize() { return charText != nullptr; }

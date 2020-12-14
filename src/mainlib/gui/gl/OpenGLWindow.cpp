@@ -15,14 +15,14 @@
 #include "utils.h"
 
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context,
-                           BitmapsProvider &bitmapsProvider) :
+                           BitmapBuilders &bitmapBuilders) :
     QWindow(),
     QOpenGLFunctions(),
     scene(&scene),
     context(std::move(context)),
     initialized(false),
     centralNoteManager(nullptr),
-    bitmapsProvider(&bitmapsProvider),
+    bitmapBuilders(&bitmapBuilders),
     textureCollection(nullptr) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
@@ -68,7 +68,7 @@ void OpenGLWindow::init() {
 
     glViewport(0, 0, width(), height());
 
-    this->textureCollection = new TextureCollection(*bitmapsProvider);
+    this->textureCollection = new TextureCollection(*bitmapBuilders);
 
     /*centralNoteManager = std::make_shared<CentralNoteManager>(*textureCollection);
     scene->addObject(centralNoteManager);
@@ -77,10 +77,11 @@ void OpenGLWindow::init() {
     scene->addObject(texturedPlane);
     */
 
-    QTimer::singleShot(30000, [this]() {
+    QTimer::singleShot(10000, [this]() {
         context->makeCurrent(this);
 
-        auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
+        auto spectrogramTexture = this->textureCollection->buildSpectrogramTexture();
+        auto spectrogramPlane = new SpectrogramPlane(bitmapBuilders->spectrogram(), spectrogramTexture);
         scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
 
         YScale *yScale_p;

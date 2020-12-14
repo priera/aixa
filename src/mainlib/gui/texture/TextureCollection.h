@@ -1,21 +1,20 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_TEXTURE_TEXTURECOLLECTION_H
 #define AIXA_SRC_MAINLIB_GUI_TEXTURE_TEXTURECOLLECTION_H
 
-#include <mainlib/gui/bitmap/BitmapsProvider.h>
+#include <mainlib/gui/bitmap/BitmapBuilders.h>
 
 #include <QtGui/QOpenGLFunctions>
 
+#include "DynamicTexture.h"
+#include "Texture.h"
+
 class TextureCollection : public QOpenGLFunctions {
 public:
-    struct Texture {
-        unsigned int id;
-        Bitmap bitmap;
-    };
-
-    explicit TextureCollection(BitmapsProvider &bitmapsProvider);
+    explicit TextureCollection(BitmapBuilders &bitmapBuilders);
     virtual ~TextureCollection() noexcept = default;
 
     Texture &getCharacterTexture(char c, unsigned int pixelSize);
+    DynamicTexture buildSpectrogramTexture();
 
 private:
     using CharKey = std::pair<char, unsigned int>;
@@ -31,7 +30,7 @@ private:
 
     Texture buildTextureForCharacter(char c, unsigned int pixelSize);
 
-    BitmapsProvider *bitmapsProvider;
+    BitmapBuilders *bitmapBuilders;
 
     std::unordered_map<CharKey, Texture, PairHash> charTextures;
 };

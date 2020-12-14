@@ -4,12 +4,14 @@
 #include <filesystem>
 
 #include "Bitmap.h"
+#include "BitmapProvider.h"
 
-class ImagesProvider {
+class ImagesProvider : public BitmapProvider {
 public:
+    explicit ImagesProvider(std::filesystem::path path);
 
-    Bitmap getImage(const std::filesystem::path &path);
+private:
+    std::filesystem::path path;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_GUI_BITMAP_IMAGESPROVIDER_H
+#endif  // AIXA_SRC_MAINLIB_GUI_BITMAP_IMAGESPROVIDER_H

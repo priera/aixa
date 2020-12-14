@@ -1,22 +1,23 @@
-#ifndef AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPSPROVIDER_H
-#define AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPSPROVIDER_H
+#ifndef AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPBUILDERS_H
+#define AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPBUILDERS_H
 
 #include <filesystem>
 #include <memory>
 
 #include "Bitmap.h"
+#include "BitmapProvider.h"
 #include "FreeTypeCharacterBitmapProvider.h"
 #include "SpectrogramBitmapProvider.h"
 
-class BitmapsProvider {
+class BitmapBuilders {
 public:
-    BitmapsProvider();
-    virtual ~BitmapsProvider() = default;
+    BitmapBuilders();
+    virtual ~BitmapBuilders() = default;
 
-    Bitmap getCharacter(char c, unsigned int pixelSize);
-    Bitmap getImage(const std::filesystem::path &path);
+    SharedBitmapProvider getCharacter(char c, unsigned int pixelSize);
+    SharedBitmapProvider imageProvider(const std::filesystem::path &path);
     Bitmap buildProcedural();
-    Bitmap buildSpectrogram();
+    SharedBitmapProvider spectrogram();
 
     std::shared_ptr<aixa::math::SpectrogramConsumer> getSpectrogramConsumer() {
         return spectrogramBitmapProvider;
@@ -27,4 +28,4 @@ private:
     std::shared_ptr<SpectrogramBitmapProvider> spectrogramBitmapProvider;
 };
 
-#endif  // AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPSPROVIDER_H
+#endif  // AIXA_SRC_MAINLIB_GUI_BITMAP_BITMAPBUILDERS_H

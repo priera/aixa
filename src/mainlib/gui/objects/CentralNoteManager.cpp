@@ -25,8 +25,8 @@ void CentralNoteManager::doMyUpdate() {
         frontChar = newFrontChar;
 
         if (frontNote) {
-            const auto &charTex = textureCollection->getCharacterTexture(frontChar, NOTE_CHAR_SIZE);
-            frontNote->setCharacterText(charTex.id);
+            auto charTex = textureCollection->getCharacterTexture(frontChar, NOTE_CHAR_SIZE);
+            frontNote->setCharacterText(charTex);
         }
     }
 }
