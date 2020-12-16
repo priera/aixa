@@ -15,14 +15,14 @@
 #include "utils.h"
 
 OpenGLWindow::OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context,
-                           BitmapsProvider &bitmapsProvider) :
+                           BitmapBuilders &bitmapBuilders) :
     QWindow(),
     QOpenGLFunctions(),
     scene(&scene),
     context(std::move(context)),
     initialized(false),
     centralNoteManager(nullptr),
-    bitmapsProvider(&bitmapsProvider),
+    bitmapBuilders(&bitmapBuilders),
     textureCollection(nullptr) {
     setSurfaceType(QWindow::OpenGLSurface);
 }
@@ -64,37 +64,24 @@ void OpenGLWindow::init() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     glViewport(0, 0, width(), height());
 
-    this->textureCollection = new TextureCollection(*bitmapsProvider);
+    this->textureCollection = new TextureCollection(*bitmapBuilders);
 
-    /*centralNoteManager = std::make_shared<CentralNoteManager>(*textureCollection);
-    scene->addObject(centralNoteManager);
+    auto spectrogramTexture = this->textureCollection->buildSpectrogramTexture();
+    auto spectrogramPlane = new SpectrogramPlane(bitmapBuilders->spectrogram(), spectrogramTexture);
+    scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
 
-    auto texturedPlane = std::make_shared<TexturedPlane>(*bitmapsProvider, "./data/container.jpg");
-    scene->addObject(texturedPlane);
-    */
+    YScale *yScale_p;
+    if (USE_LOG_SCALES) {
+        yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
+    } else {
+        yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);
+    }
 
-    QTimer::singleShot(30000, [this]() {
-        context->makeCurrent(this);
-
-        auto spectrogramPlane = new SpectrogramPlane(*bitmapsProvider);
-        scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
-
-        YScale *yScale_p;
-        if (useLogScales) {
-            yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
-        } else {
-            yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);
-        }
-
-        auto yScale = std::shared_ptr<YScale>(yScale_p);
-        scene->addObject(yScale);
-
-        context->doneCurrent();
-    });
+    auto yScale = std::shared_ptr<YScale>(yScale_p);
+    scene->addObject(yScale);
+    glCheckError();
 
     context->doneCurrent();
 }

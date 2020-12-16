@@ -15,7 +15,7 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     context_p = GLContextManager::getInstance().createContext();
     context = std::unique_ptr<QOpenGLContext>(context_p);
 
-    auto bitmapsProvider = std::make_unique<BitmapsProvider>();
+    auto bitmapsProvider = std::make_unique<BitmapBuilders>();
 
     auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context, *bitmapsProvider);
     openGlWindow->resize(appInitialSize.width(), appInitialSize.height());

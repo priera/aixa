@@ -2,6 +2,7 @@
 #define AIXA_NOTERENDERABLE_H
 
 #include <mainlib/gui/scene/RenderableObject.h>
+#include <mainlib/gui/texture/Texture.h>
 
 #include <QMatrix4x4>
 #include <mutex>
@@ -10,7 +11,7 @@ class NoteRenderable : public RenderableObject {
 public:
     NoteRenderable(QOpenGLShaderProgram &program, Dimensions dim);
 
-    void setCharacterText(unsigned int charTex);
+    void setCharacterText(Texture &charTex);
 
 protected:
     bool readyToInitialize() override;
@@ -23,7 +24,7 @@ private:
 
     std::mutex charUpdateMutex;
 
-    unsigned int charText;
+    std::shared_ptr<Texture> charText;
     unsigned int VBO, VAO;
 };
 

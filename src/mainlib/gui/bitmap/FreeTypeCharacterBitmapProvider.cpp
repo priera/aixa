@@ -51,9 +51,9 @@ Bitmap &FreeTypeCharacterBitmapProvider::storeNewGlyph(char c, unsigned int pixe
                                                   face->glyph->bitmap.width, face->glyph->bitmap.rows,
                                                   face->glyph->advance.x);
 
-    const auto &built =
-        cache[pixelSize].emplace(c, Bitmap{face->glyph->bitmap.rows, face->glyph->bitmap.width, GL_RED,
-                                           std::vector<unsigned char>(buffer, buffer + byteSize), metrics});
+    auto bitmapData = std::vector<unsigned char>(buffer, buffer + byteSize);
+    const auto &built = cache[pixelSize].emplace(
+        c, Bitmap{face->glyph->bitmap.rows, face->glyph->bitmap.width, GL_RED, bitmapData, metrics});
 
     return built.first->second;
 }

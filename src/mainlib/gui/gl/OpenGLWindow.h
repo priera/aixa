@@ -14,7 +14,7 @@ class OpenGLWindow : public QWindow, public NotesListener, protected QOpenGLFunc
     Q_OBJECT
 
 public:
-    OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapsProvider &bitmapsProvider);
+    OpenGLWindow(Scene &scene, std::unique_ptr<QOpenGLContext> &context, BitmapBuilders &bitmapBuilders);
 
     ~OpenGLWindow() override;
 
@@ -37,7 +37,7 @@ private:
     Scene *scene;
     std::unique_ptr<QOpenGLContext> context;
     std::unique_ptr<CentralNoteManager> centralNoteManager;
-    BitmapsProvider *bitmapsProvider;
+    BitmapBuilders *bitmapBuilders;
     TextureCollection *textureCollection;
 };
 

@@ -2,12 +2,12 @@
 
 #include <mainlib/gui/gl/utils.h>
 
-TextureCollection::TextureCollection(BitmapsProvider& bitmapsProvider) :
-    QOpenGLFunctions(QOpenGLContext::currentContext()->shareContext()), bitmapsProvider(&bitmapsProvider) {
+TextureCollection::TextureCollection(BitmapBuilders& bitmapBuilders) :
+    QOpenGLFunctions(QOpenGLContext::currentContext()->shareContext()), bitmapBuilders(&bitmapBuilders) {
     initializeOpenGLFunctions();
 }
 
-TextureCollection::Texture& TextureCollection::getCharacterTexture(char c, unsigned int pixelSize) {
+Texture& TextureCollection::getCharacterTexture(char c, unsigned int pixelSize) {
     CharKey key = std::make_pair(c, pixelSize);
     const auto& it = charTextures.find(key);
     if (it != charTextures.end()) {
@@ -18,14 +18,15 @@ TextureCollection::Texture& TextureCollection::getCharacterTexture(char c, unsig
     return charTextures[key];
 }
 
-TextureCollection::Texture TextureCollection::buildTextureForCharacter(char c, unsigned int pixelSize) {
+Texture TextureCollection::buildTextureForCharacter(char c, unsigned int pixelSize) {
     GLint previousPixelStore;
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousPixelStore);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glCheckError();
 
-    const auto bitmap = bitmapsProvider->getCharacter(c, pixelSize);
+    const auto bitmapBuilder = bitmapBuilders->getCharacter(c, pixelSize);
+    auto bitmap = bitmapBuilder->get();
 
     GLuint texId;
     glGenTextures(1, &texId);
@@ -51,5 +52,29 @@ TextureCollection::Texture TextureCollection::buildTextureForCharacter(char c, u
     glFlush();  // make immediately available to the other contexts
     glCheckError();
 
-    return {texId, bitmap};
+    return Texture(texId, bitmap);
+}
+
+DynamicTexture TextureCollection::buildSpectrogramTexture() {
+    GLuint texId;
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    const auto bmpBuilder = bitmapBuilders->spectrogram();
+    const auto bmp = bmpBuilder->get();
+
+    glTexImage2D(GL_TEXTURE_2D, 0, bmp.glStorage, bmp.columns, bmp.rows, 0, bmp.glStorage, GL_UNSIGNED_BYTE,
+                 &bmp.bytes[0]);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glCheckError();
+
+    return DynamicTexture(texId, bmpBuilder);
 }

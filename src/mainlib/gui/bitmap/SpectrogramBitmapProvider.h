@@ -1,20 +1,20 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_BITMAP_SPECTROGRAMBITMAPPROVIDER_H
 #define AIXA_SRC_MAINLIB_GUI_BITMAP_SPECTROGRAMBITMAPPROVIDER_H
 
-#include <QtGui/QColor>
-
 #include <mainlib/math/dft/SpectrogramFragment.h>
 
+#include <QtGui/QColor>
+#include <mutex>
+
 #include "Bitmap.h"
+#include "BitmapProvider.h"
 
-class SpectrogramBitmapProvider : public aixa::math::SpectrogramConsumer {
+class SpectrogramBitmapProvider : public aixa::math::SpectrogramConsumer, public BitmapProvider {
 public:
-
+    explicit SpectrogramBitmapProvider(unsigned int height);
     ~SpectrogramBitmapProvider() override = default;
 
     void sendNewValue(aixa::math::SpectrogramFragment&& fragment) override;
-
-    Bitmap buildBitmap();
 
 private:
     static constexpr double MAX_DB = 60;
@@ -28,19 +28,18 @@ private:
     static constexpr int MAX_B = 20;
 
     static constexpr unsigned int WIDTH = 768;
-    static constexpr unsigned int COL_REPETITIONS = 1;
     static constexpr auto PIXEL_SIZE = 4 * sizeof(unsigned char);
 
-    void fillTexel(std::vector<unsigned char> &vector, unsigned int baseRow, unsigned int baseCol, double sample);
+    inline void fillTexel(unsigned int row, unsigned int col, double sample);
 
     QColor computeColor(double db);
 
     inline int project(double value, int min, int max);
 
-    std::vector<std::vector<double>> spectrogram;
     unsigned int height;
-    unsigned long rowRepetitions;
+
+    std::vector<unsigned char> bitmapData;
+    std::size_t lastColumn;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_GUI_BITMAP_SPECTROGRAMBITMAPPROVIDER_H
+#endif  // AIXA_SRC_MAINLIB_GUI_BITMAP_SPECTROGRAMBITMAPPROVIDER_H

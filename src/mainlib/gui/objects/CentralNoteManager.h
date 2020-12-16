@@ -2,7 +2,7 @@
 #define AIXA_SRC_MAINLIB_GUI_CENTRALNOTEMANAGER_H
 
 #include <mainlib/audio/note/Note.h>
-#include <mainlib/gui/bitmap/BitmapsProvider.h>
+#include <mainlib/gui/bitmap/BitmapBuilders.h>
 #include <mainlib/gui/objects/NoteRenderable.h>
 #include <mainlib/gui/scene/ShadedRenderableObject.h>
 #include <mainlib/gui/texture/TextureCollection.h>

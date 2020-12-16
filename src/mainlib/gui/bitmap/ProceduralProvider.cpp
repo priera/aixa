@@ -4,8 +4,6 @@
 
 Bitmap ProceduralProvider::buildBitmap() {
     /*QImage could had been used also for doing this*/
-
-    //TODO: support sizes not multiple of 256
     const unsigned int width = 512;
     const unsigned int height = 512;
     const auto pixelSize = 4 * sizeof(unsigned char);
@@ -32,5 +30,5 @@ Bitmap ProceduralProvider::buildBitmap() {
         }
     }
 
-    return { height, width, GL_RGBA, bytes};
+    return {height, width, GL_RGBA, bytes, nullptr};
 }

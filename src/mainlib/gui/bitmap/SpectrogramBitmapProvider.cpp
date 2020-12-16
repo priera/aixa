@@ -2,55 +2,42 @@
 
 #include <GL/gl.h>
 
+SpectrogramBitmapProvider::SpectrogramBitmapProvider(unsigned int height) :
+    height(height), bitmapData(WIDTH * height * PIXEL_SIZE, 0), lastColumn(0) {
+    Bitmap bmp = {height, WIDTH, GL_RGBA, bitmapData, nullptr};
+
+    this->setBitmap(std::move(bmp));
+}
+
 void SpectrogramBitmapProvider::sendNewValue(aixa::math::SpectrogramFragment&& fragment) {
-    //TODO: block spectrogram updating when building bitmap
-    for (auto& slice: fragment.slices) {
-        spectrogram.emplace_back(std::move(slice));
-    }
+    unsigned int col = lastColumn;
 
-}
-
-Bitmap SpectrogramBitmapProvider::buildBitmap() {
-    //TODO: support sizes not multiple of 256
-    height = spectrogram[0].size();
-    rowRepetitions = 1;
-
-    std::vector<unsigned char> bytes(WIDTH * height * PIXEL_SIZE, 0);
-    for (unsigned int i = 0; i < height / rowRepetitions; i++) {
-        for (unsigned int j = 0; j < WIDTH / COL_REPETITIONS; j++) {
-            //Notice that iterating the image in row-major order implies iterating the data in column-major order (cache inefficient!!!)
-            auto sample = spectrogram[j][i];
-            fillTexel(bytes, i, j, sample);
+    for (const auto& slice : fragment.slices) {
+        for (unsigned int i = 0; i < height; i++) {
+            auto sample = slice[i];
+            fillTexel(i, col, sample);
         }
+        col = (col + 1) % WIDTH;
     }
 
-    return { height, WIDTH, GL_RGBA, bytes};
+    lastColumn = col;
+
+    // Copying full bitmapData each time is updated in order to prevent some glitches on the render side
+    Bitmap bmp = {height, WIDTH, GL_RGBA, bitmapData, nullptr};
+    this->setBitmap(std::move(bmp));
 }
 
-void SpectrogramBitmapProvider::fillTexel(std::vector<unsigned char> &bytes,
-                                          unsigned int baseRow,
-                                          unsigned int baseCol,
-                                          double sample) {
-    //This isn't, in fact, a good approach. Implies too many cache misses for very few pixels updated
-    // Could be suitable for GPUs, nevertheless
+void SpectrogramBitmapProvider::fillTexel(unsigned int row, unsigned int col, double sample) {
     auto color = computeColor(sample);
 
-    auto rowAddress = baseRow * rowRepetitions * WIDTH * PIXEL_SIZE;
-    const auto baseColOffset = baseCol * COL_REPETITIONS * PIXEL_SIZE;
+    auto rowAddress = row * WIDTH * PIXEL_SIZE;
+    const auto colOffset = col * PIXEL_SIZE;
+    const auto baseAddress = rowAddress + colOffset;
 
-    for (auto row = 0; row < rowRepetitions; row++) {
-        for (auto col = 0; col < COL_REPETITIONS; col++) {
-            const auto colOffset = baseColOffset + (col * PIXEL_SIZE);
-            const auto baseAddress = rowAddress + colOffset;
-
-            bytes[baseAddress] = color.red();
-            bytes[baseAddress + 1] = color.green();
-            bytes[baseAddress + 2] = color.blue();
-            bytes[baseAddress + 3] = 255;
-        }
-        rowAddress += WIDTH * PIXEL_SIZE;
-    }
-
+    bitmapData[baseAddress] = color.red();
+    bitmapData[baseAddress + 1] = color.green();
+    bitmapData[baseAddress + 2] = color.blue();
+    bitmapData[baseAddress + 3] = 255;
 }
 
 QColor SpectrogramBitmapProvider::computeColor(double db) {
