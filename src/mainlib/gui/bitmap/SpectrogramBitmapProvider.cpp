@@ -10,19 +10,17 @@ SpectrogramBitmapProvider::SpectrogramBitmapProvider(unsigned int height) :
 }
 
 void SpectrogramBitmapProvider::sendNewValue(aixa::math::SpectrogramFragment&& fragment) {
-    const std::size_t slicesCount = fragment.slices.size();
+    unsigned int col = lastColumn;
+
     for (const auto& slice : fragment.slices) {
-        unsigned int startCol = lastColumn;
-        for (std::size_t j = 0; j < slicesCount; j++) {
-            unsigned int col = (startCol + j) % WIDTH;
-            for (unsigned int i = 0; i < height; i++) {
-                auto sample = slice[i];
-                fillTexel(i, col, sample);
-            }
+        for (unsigned int i = 0; i < height; i++) {
+            auto sample = slice[i];
+            fillTexel(i, col, sample);
         }
+        col = (col + 1) % WIDTH;
     }
 
-    lastColumn = (lastColumn + slicesCount) % WIDTH;
+    lastColumn = col;
 
     // Copying full bitmapData each time is updated in order to prevent some glitches on the render side
     Bitmap bmp = {height, WIDTH, GL_RGBA, bitmapData, nullptr};

@@ -64,38 +64,24 @@ void OpenGLWindow::init() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     glViewport(0, 0, width(), height());
 
     this->textureCollection = new TextureCollection(*bitmapBuilders);
 
-    /*centralNoteManager = std::make_shared<CentralNoteManager>(*textureCollection);
-    scene->addObject(centralNoteManager);
+    auto spectrogramTexture = this->textureCollection->buildSpectrogramTexture();
+    auto spectrogramPlane = new SpectrogramPlane(bitmapBuilders->spectrogram(), spectrogramTexture);
+    scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
 
-    auto texturedPlane = std::make_shared<TexturedPlane>(*bitmapsProvider, "./data/container.jpg");
-    scene->addObject(texturedPlane);
-    */
+    YScale *yScale_p;
+    if (USE_LOG_SCALES) {
+        yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
+    } else {
+        yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);
+    }
 
-    QTimer::singleShot(10000, [this]() {
-        context->makeCurrent(this);
-
-        auto spectrogramTexture = this->textureCollection->buildSpectrogramTexture();
-        auto spectrogramPlane = new SpectrogramPlane(bitmapBuilders->spectrogram(), spectrogramTexture);
-        scene->addObject(std::shared_ptr<SpectrogramPlane>(spectrogramPlane));
-
-        YScale *yScale_p;
-        if (USE_LOG_SCALES) {
-            yScale_p = YScale::buildLogarithmic(22050.0f, *textureCollection);
-        } else {
-            yScale_p = YScale::buildLinear(22050.0f, 10, *textureCollection);
-        }
-
-        auto yScale = std::shared_ptr<YScale>(yScale_p);
-        scene->addObject(yScale);
-
-        context->doneCurrent();
-    });
+    auto yScale = std::shared_ptr<YScale>(yScale_p);
+    scene->addObject(yScale);
+    glCheckError();
 
     context->doneCurrent();
 }
