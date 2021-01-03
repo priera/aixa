@@ -5,11 +5,10 @@
 
 class StreamTypes {
 public:
-    static std::unique_ptr<StreamFactory> getMatchingStreamFactory(const std::string & streamPath);
+    static std::unique_ptr<StreamFactory> getMatchingStreamFactory(const std::string &streamPath);
 
 private:
-    static void validateFileStreamPath(const std::string &streamPath);
+    static std::string validateFileStreamPath(const std::string &streamPath);
 };
 
-
-#endif //AIXA_SRC_MAINLIB_STREAM_STREAMTYPES_H
+#endif  // AIXA_SRC_MAINLIB_STREAM_STREAMTYPES_H

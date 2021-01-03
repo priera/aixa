@@ -11,8 +11,8 @@
 using namespace std::chrono_literals;
 using namespace aixa::math;
 
-// static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
-static const auto STREAM = "??";
+static const auto STREAM = "/home/pedro/alsaTests/amics.mp3";
+// static const auto STREAM = "??";
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

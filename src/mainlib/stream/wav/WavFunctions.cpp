@@ -4,84 +4,82 @@
 
 namespace WavFunctions {
 
-    size_t readHeader(FileReader &reader, unsigned int &fileSize) {
-        std::string riffTag, waveTag;
+size_t readHeader(FileReader &reader, unsigned int &fileSize) {
+    std::string riffTag, waveTag;
 
-        reader.nextIdTag(riffTag);
-        reader.nextWord(fileSize);
-        reader.nextIdTag(waveTag);
+    reader.nextIdTag(riffTag);
+    reader.nextWord(fileSize);
+    reader.nextIdTag(waveTag);
 
-        if (riffTag != "RIFF" || waveTag != "WAVE") {
-            throw std::runtime_error("incorrect header");
-        }
-
-        return 4; //2 bytes riffTag  + 2 bytes for waveTag
+    if (riffTag != "RIFF" || waveTag != "WAVE") {
+        throw std::runtime_error("incorrect header");
     }
 
-    size_t readFormat(FileReader &reader, unsigned int size, WavFormat &format) {
-        const unsigned int PCM_COMPRESSION_CODE = 1;
+    return 4;  // 2 bytes riffTag  + 2 bytes for waveTag
+}
 
-        if (size < 16)
-            throw std::runtime_error("Insufficient format");
+size_t readFormat(FileReader &reader, unsigned int size, WavFormat &format) {
+    const unsigned int PCM_COMPRESSION_CODE = 1;
 
-        reader.nextTwoBytes(format.compressionCode);
-        reader.nextTwoBytes(format.channels);
-        reader.nextWord(format.samplingRate);
-        reader.nextWord(format.bytesPerSecond);
-        reader.nextTwoBytes(format.blockAlign);
-        reader.nextTwoBytes(format.bitsPerSample);
+    if (size < 16) throw std::runtime_error("Insufficient format");
 
-        if (format.compressionCode != PCM_COMPRESSION_CODE)
-            throw std::runtime_error("Not supported compression code");
+    reader.nextTwoBytes(format.compressionCode);
+    reader.nextTwoBytes(format.channels);
+    reader.nextWord(format.samplingRate);
+    reader.nextWord(format.bytesPerSecond);
+    reader.nextTwoBytes(format.blockAlign);
+    reader.nextTwoBytes(format.bitsPerSample);
 
-        unsigned char dummy;
-        for (unsigned int toSkip = size - 16; toSkip > 0; toSkip -= 1) {
-            reader.nextByte(dummy);
-        }
+    if (format.compressionCode != PCM_COMPRESSION_CODE)
+        throw std::runtime_error("Not supported compression code");
 
-        return size;
+    for (unsigned int toSkip = size - 16; toSkip > 0; toSkip -= 1) {
+        reader.nextByte();
     }
 
-    std::vector<std::string> extractListData(FileReader &f, unsigned int size) {
-        std::vector<std::string> ret;
+    return size;
+}
 
-        std::string infoTag;
-        f.nextIdTag(infoTag);
-        size -= 4;
+std::vector<std::string> extractListData(FileReader &f, unsigned int size) {
+    std::vector<std::string> ret;
 
-        while (size > 0) {
-            std::string infoIdTag;
-            f.nextIdTag(infoIdTag);
+    std::string infoTag;
+    f.nextIdTag(infoTag);
+    size -= 4;
 
-            unsigned int textSize;
-            f.nextWord(textSize);
+    while (size > 0) {
+        std::string infoIdTag;
+        f.nextIdTag(infoIdTag);
 
-            std::string infoText(textSize, '\0');
-            f.readString(infoText, textSize);
+        unsigned int textSize;
+        f.nextWord(textSize);
 
-            size -= 8 + textSize;
-            ret.push_back(infoText);
-        }
+        std::string infoText(textSize, '\0');
+        f.readString(infoText, textSize);
 
-        return ret;
+        size -= 8 + textSize;
+        ret.push_back(infoText);
     }
 
-    size_t skipUntilDataChunk(FileReader &reader) {
-        size_t ret = 0;
+    return ret;
+}
 
-        std::string tag;
-        unsigned int size;
+size_t skipUntilDataChunk(FileReader &reader) {
+    size_t ret = 0;
+
+    std::string tag;
+    unsigned int size;
+    reader.nextChunkInfo(tag, size);
+    ret += 8;
+
+    while (tag != "data") {
+        reader.skipBytes(size);
+        ret += size;
+
         reader.nextChunkInfo(tag, size);
         ret += 8;
-
-        while (tag != "data") {
-            reader.skipBytes(size);
-            ret += size;
-
-            reader.nextChunkInfo(tag, size);
-            ret += 8;
-        }
-
-        return ret;
     }
+
+    return ret;
 }
+}  // namespace WavFunctions

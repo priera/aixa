@@ -1,19 +1,15 @@
 #include "FileReader.h"
 
-FileReader::FileReader(const std::string & path) {
+FileReader::FileReader(const std::string &path) {
     f.open(path.c_str(), std::ios_base::binary);
     if (!f.is_open()) {
         throw std::runtime_error("Failed to open stream");
     }
 }
 
-FileReader::~FileReader() {
-    f.close();
-}
+FileReader::~FileReader() { f.close(); }
 
-void FileReader::seekToBeginning() {
-    f.seekg(0);
-}
+void FileReader::seekToBeginning() { f.seekg(0); }
 
 void FileReader::nextIdTag(std::string &str) {
     f.read(&wt.bytes[0], 4);
@@ -31,22 +27,20 @@ void FileReader::nextTwoBytes(unsigned int &hw) {
     hw = wt.word;
 }
 
-void FileReader::nextByte(unsigned char &b) {
+unsigned char FileReader::nextByte() {
+    unsigned char b;
     f >> b;
+    return b;
 }
 
-void FileReader::readString(std::string &str, unsigned int size) {
-    f.read(&str[0], size);
-}
+void FileReader::readString(std::string &str, unsigned int size) { f.read(&str[0], size); }
 
 void FileReader::nextChunkInfo(std::string &idTag, unsigned int &chunkSize) {
     nextIdTag(idTag);
     nextWord(chunkSize);
 }
 
-void FileReader::skipBytes(long count) {
-    f.seekg(f.tellg() + count);
-}
+void FileReader::skipBytes(long count) { f.seekg(f.tellg() + count); }
 
 std::streamsize FileReader::extractBytes(char *buff, size_t count) {
     f.read(buff, count);

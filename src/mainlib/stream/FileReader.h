@@ -1,9 +1,8 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_FILEREADER_H
 #define AIXA_SRC_MAINLIB_STREAM_FILEREADER_H
 
-
-#include <string>
 #include <fstream>
+#include <string>
 
 class FileReader {
 public:
@@ -16,7 +15,7 @@ public:
     void nextIdTag(std::string &str);
     void nextWord(unsigned int &w);
     void nextTwoBytes(unsigned int &hw);
-    void nextByte(unsigned char &b);
+    unsigned char nextByte();
     void readString(std::string &str, unsigned int size);
     void skipBytes(long count);
     std::streamsize extractBytes(char *buff, size_t count);
@@ -32,5 +31,4 @@ private:
     WordType wt;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_STREAM_FILEREADER_H
+#endif  // AIXA_SRC_MAINLIB_STREAM_FILEREADER_H
