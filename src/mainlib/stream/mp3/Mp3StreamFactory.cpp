@@ -7,11 +7,15 @@
 std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     FileReader f(streamPath);
 
-    auto firstFrame = mp3Functions::skipID3data(f);
-    if (firstFrame.usesCRC) {
+    auto header = FrameHeader();
+    mp3Functions::seekToNextFrame(f, header);
+
+    if (header.usesCRC) {
         f.nextByte();
         f.nextByte();
     }
+
+    auto sideInfo = mp3Functions::decodeSideInformation(f, header);
 
     return nullptr;
 }

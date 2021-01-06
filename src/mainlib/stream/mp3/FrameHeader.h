@@ -38,25 +38,43 @@ struct FrameHeader {
     bool msStereo;
     bool intensityStereo;
 
-    bool isMono() const { return mode == Mode::SINGLE_CHANNEL; }
+    std::size_t channels() const { return (mode == Mode::SINGLE_CHANNEL) ? 1 : 2; }
 };
 
 constexpr std::size_t NR_CHANNELS = 2;
 constexpr std::size_t NR_GRANULES = 2;
-constexpr std::size_t NR_SCALEBANDS = 4;
+constexpr std::size_t NR_REGIONS = 3;
+constexpr std::size_t NR_GAIN_WINDOWS = 3;
 
-struct GranuleSideInformation {
-    unsigned short part2_3_length[NR_CHANNELS];
-    unsigned short bigValues[NR_CHANNELS];
-    char globalGain[NR_CHANNELS];
-    unsigned char scaleFactorCompression[NR_CHANNELS];
-    bool windowSwitching[NR_CHANNELS];
+struct GranuleChannelSideInfo {
+    enum class BlockType : unsigned char
+    {
+        NORMAL = 0,
+        START,
+        THREE_SHORT,
+        END
+    };
+
+    unsigned short part2_3_length;
+    unsigned short bigValues;
+    unsigned char globalGain;
+    unsigned char scaleFactorCompression;
+    bool windowSwitching;
+    BlockType blockType;
+    bool mixedBlockFlag;
+    unsigned char tableSelect[NR_REGIONS];
+    unsigned char subBlockGain[NR_GAIN_WINDOWS];
+    unsigned char region0_count;
+    unsigned char region1_count;
+    bool preFlag;
+    bool scaleFactorScale;
+    bool count1TableSelect;
 };
 
 struct SideInformation {
     unsigned short mainDataBegin;
-    bool scaleFactorSharing[NR_CHANNELS][NR_SCALEBANDS];
-    GranuleSideInformation granules[NR_GRANULES];
+    unsigned char scaleFactorSharing[NR_CHANNELS];
+    GranuleChannelSideInfo granules[NR_GRANULES][NR_CHANNELS];
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMEHEADER_H

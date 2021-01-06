@@ -66,21 +66,70 @@ FrameHeader decodeHeader(ByteReader& reader, unsigned char secondByte) {
     return ret;
 }
 
-void decodeSideInformation(ByteReader& reader, const FrameHeader& header) {
+constexpr std::size_t REGIONS_NORMAL = 3;
+constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;
+
+void setRegionCountForGranule(GranuleChannelSideInfo& chGranule);
+
+SideInformation decodeSideInformation(ByteReader& reader, const FrameHeader& header) {
+    const auto channels = header.channels();
+
     auto sideInfo = SideInformation();
 
-    auto mainDataBegin = reader.nextNBits(9);
-    unsigned char bitsToSkip = (header.isMono()) ? 5 : 3;
+    sideInfo.mainDataBegin = reader.nextNBits(9);
+    unsigned char bitsToSkip = (channels == 1) ? 5 : 3;
     reader.skipNBits(bitsToSkip);
 
-    auto share = reader.nextNBits(4);
-    auto part2_3_length = reader.nextNBits(12);
-    auto bigValues = reader.nextNBits(9);
-    auto globalGain = reader.nextNBits(8);
-    auto scalefactorCompress = reader.nextNBits(4);
-    auto windowSwitching = reader.nextNBits(1);
+    for (std::size_t i = 0; i < channels; i++) {
+        sideInfo.scaleFactorSharing[i] = reader.nextNBits(4);
+    }
 
-    auto b = reader.nextByte();
+    for (auto& granule : sideInfo.granules) {
+        for (std::size_t ch = 0; ch < channels; ch++) {
+            auto& chSideInfo = granule[ch];
+            chSideInfo.part2_3_length = reader.nextNBits(12);
+            chSideInfo.bigValues = reader.nextNBits(9);
+            chSideInfo.globalGain = reader.nextNBits(8);
+            chSideInfo.scaleFactorCompression = reader.nextNBits(4);
+            chSideInfo.windowSwitching = reader.nextBit();
+
+            if (chSideInfo.windowSwitching) {
+                chSideInfo.blockType = static_cast<GranuleChannelSideInfo::BlockType>(reader.nextNBits(2));
+                chSideInfo.mixedBlockFlag = reader.nextBit();
+                for (std::size_t i = 0; i < REGIONS_WINDOW_SWITCHING; i++)
+                    chSideInfo.tableSelect[i] = reader.nextNBits(5);
+                for (std::size_t i = 0; i < NR_GAIN_WINDOWS; i++)
+                    chSideInfo.subBlockGain[i] = reader.nextNBits(3);
+
+                setRegionCountForGranule(chSideInfo);
+            } else {
+                chSideInfo.blockType = GranuleChannelSideInfo::BlockType::NORMAL;
+                for (std::size_t i = 0; i < REGIONS_NORMAL; i++)
+                    chSideInfo.tableSelect[i] = reader.nextNBits(5);
+                chSideInfo.region0_count = reader.nextNBits(4);
+                chSideInfo.region1_count = reader.nextNBits(3);
+            }
+
+            chSideInfo.preFlag = reader.nextBit();
+            chSideInfo.scaleFactorScale = reader.nextBit();
+            chSideInfo.count1TableSelect = reader.nextBit();
+        }
+    }
+
+    return sideInfo;
+}
+
+void setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
+    if (chGranule.blockType == GranuleChannelSideInfo::BlockType::NORMAL)
+        throw std::runtime_error("Not valid block type");
+
+    if (chGranule.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT && !chGranule.mixedBlockFlag) {
+        chGranule.region0_count = 8;
+    } else {
+        chGranule.region0_count = 7;
+    }
+
+    chGranule.region1_count = 20 - chGranule.region0_count;
 }
 
 }  // namespace mp3Functions

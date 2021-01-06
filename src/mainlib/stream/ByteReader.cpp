@@ -24,9 +24,11 @@ unsigned short ByteReader::nextShort() {
 }
 
 unsigned char ByteReader::nextByte() {
-    unsigned char b;
-    f >> b;
-    return b;
+    if (lastByteRemBits == 0) {
+        return privNextByte();
+    } else {
+        return nextNBits(8);
+    }
 }
 
 unsigned short ByteReader::nextNBits(unsigned char n) {
@@ -45,18 +47,21 @@ unsigned short ByteReader::nextNBits(unsigned char n) {
         // Last byte does only have a part of the requested bits.
         unsigned char toRead = n - lastByteRemBits;
         unsigned char b;
-        for (unsigned char i = 0; i < toRead; i += 8) {
-            b = nextByte();
+        unsigned char i;
+        for (i = 0; i < toRead; i += 8) {
+            b = privNextByte();
             unsigned char toExtract = (toRead - i > 8) ? 8 : toRead - i;
             ret = (ret << toExtract) + (b >> (8 - toExtract));
         }
 
         lastByte = b;
-        lastByteRemBits = 8 - (toRead % 8);
+        lastByteRemBits = i - toRead;
 
         return ret;
     }
 }
+
+bool ByteReader::nextBit() { return nextNBits(1); }
 
 void ByteReader::skipNBits(unsigned char n) { nextNBits(n); }
 

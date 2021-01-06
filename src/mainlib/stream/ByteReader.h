@@ -2,6 +2,7 @@
 #define AIXA_SRC_MAINLIB_STREAM_BYTEREADER_H
 
 #include <fstream>
+#include <iostream>
 
 class ByteReader {
 public:
@@ -12,6 +13,7 @@ public:
     unsigned short nextShort();
     unsigned char nextByte();
     unsigned short nextNBits(unsigned char n);
+    bool nextBit();
     void skipNBits(unsigned char n);
 
     void skipBytes(long count);
@@ -25,6 +27,12 @@ private:
         unsigned int word;
         char bytes[4];
     };
+
+    unsigned char privNextByte() {
+        char b;
+        f.read(&b, 1);
+        return b;
+    }
 
     WordType wt;
 

@@ -12,7 +12,7 @@ bool seekToNextFrame(FileReader& f, FrameHeader& header);
 
 FrameHeader decodeHeader(ByteReader& reader, unsigned char secondByte);
 
-void decodeSideInformation(ByteReader& reader, const FrameHeader& header);
+SideInformation decodeSideInformation(ByteReader& reader, const FrameHeader& header);
 
 }  // namespace mp3Functions
 
