@@ -16,6 +16,8 @@ public:
     void nextWord(unsigned int &w);
     void nextTwoBytes(unsigned int &hw);
     unsigned char nextByte();
+    unsigned short nextNBits(unsigned char n, unsigned char ahead, unsigned char aheadCount,
+                             unsigned char &remainder, unsigned char &remainderCount);
     void readString(std::string &str, unsigned int size);
     void skipBytes(long count);
     std::streamsize extractBytes(char *buff, size_t count);

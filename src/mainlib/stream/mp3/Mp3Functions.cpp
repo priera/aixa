@@ -11,10 +11,7 @@ static std::unordered_map<unsigned char, unsigned int> BIT_RATE_DICTIONARY = {
 
 static std::vector<unsigned int> SAMPLING_FREQS = {44100, 48000, 32000};
 
-FrameHeader skipID3data(FileReader& f) {
-    // Actually, I do not check for any ID3 stuff. Just skip bytes until a valid header is found
-    // A byte-alignment for the header is assumed.
-
+bool seekToNextFrame(FileReader& f, FrameHeader& header) {
     unsigned char b;
     bool headerFound = false;
     bool headerStartRead = false;
@@ -22,7 +19,7 @@ FrameHeader skipID3data(FileReader& f) {
         b = f.nextByte();
 
         if (headerStartRead) {
-            if (b & 0xF0) {
+            if ((b & 0xF0) == 0xF0) {
                 headerFound = true;
             } else {
                 headerStartRead = false;
@@ -32,9 +29,10 @@ FrameHeader skipID3data(FileReader& f) {
         }
     }
 
-    if (f.ended()) throw std::runtime_error("Invalid mp3 file");
+    if (f.ended()) return false;
 
-    return decodeHeader(f, b);
+    header = decodeHeader(f, b);
+    return true;
 }
 
 FrameHeader decodeHeader(FileReader& reader, unsigned char secondByte) {
@@ -66,6 +64,22 @@ FrameHeader decodeHeader(FileReader& reader, unsigned char secondByte) {
     ret.intensityStereo = b & 0x10;
 
     return ret;
+}
+
+void decodeSideInformation(FileReader& reader, const FrameHeader& header) {
+    auto sideInfo = SideInformation();
+    unsigned char remainder, remainderCount;
+
+    auto mainDataBegin = reader.nextNBits(9, 0, 0, remainder, remainderCount);
+
+    auto share = reader.nextNBits(4, remainder, 2, remainder, remainderCount);
+    auto part2_3_length = reader.nextNBits(12, remainder, remainderCount, remainder, remainderCount);
+    auto bigValues = reader.nextNBits(9, remainder, remainderCount, remainder, remainderCount);
+    auto globalGain = reader.nextNBits(8, remainder, remainderCount, remainder, remainderCount);
+    auto scalefactorCompress = reader.nextNBits(4, remainder, remainderCount, remainder, remainderCount);
+    auto windowSwitching = reader.nextNBits(1, remainder, remainderCount, remainder, remainderCount);
+
+    auto b = reader.nextByte();
 }
 
 }  // namespace mp3Functions

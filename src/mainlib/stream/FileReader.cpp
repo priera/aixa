@@ -1,5 +1,8 @@
 #include "FileReader.h"
 
+#include <cassert>
+#include <iostream>
+
 FileReader::FileReader(const std::string &path) {
     f.open(path.c_str(), std::ios_base::binary);
     if (!f.is_open()) {
@@ -31,6 +34,38 @@ unsigned char FileReader::nextByte() {
     unsigned char b;
     f >> b;
     return b;
+}
+
+unsigned short FileReader::nextNBits(unsigned char n, unsigned char ahead, unsigned char aheadCount,
+                                     unsigned char &remainder, unsigned char &remainderCount) {
+    assert(n <= 16);
+    assert(aheadCount < n);
+
+    unsigned char mask = (1 << aheadCount) - 1;
+    unsigned short ret = ahead & mask;
+
+    if (n <= aheadCount) {
+        // Requested bits are in the ahead byte. No more data reads are needed
+        unsigned char diff = aheadCount - n;
+        ret >>= diff;
+        remainder = ahead;
+        remainderCount = diff;
+        return ret;
+    } else {
+        // Ahead byte does only have a part of the requested bits.
+        unsigned char toRead = n - aheadCount;
+        unsigned char lastByte;
+        for (unsigned char i = 0; i < toRead; i += 8) {
+            lastByte = nextByte();
+            unsigned char toExtract = (toRead - i > 8) ? 8 : toRead - i;
+            ret = (ret << toExtract) + (lastByte >> (8 - toExtract));
+        }
+
+        remainder = lastByte;
+        remainderCount = 8 - (toRead % 8);
+
+        return ret;
+    }
 }
 
 void FileReader::readString(std::string &str, unsigned int size) { f.read(&str[0], size); }
