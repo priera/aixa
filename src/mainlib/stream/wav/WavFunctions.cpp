@@ -8,7 +8,7 @@ size_t readHeader(FileReader &reader, unsigned int &fileSize) {
     std::string riffTag, waveTag;
 
     reader.nextIdTag(riffTag);
-    reader.nextWord(fileSize);
+    fileSize = reader.nextWord();
     reader.nextIdTag(waveTag);
 
     if (riffTag != "RIFF" || waveTag != "WAVE") {
@@ -23,12 +23,12 @@ size_t readFormat(FileReader &reader, unsigned int size, WavFormat &format) {
 
     if (size < 16) throw std::runtime_error("Insufficient format");
 
-    reader.nextTwoBytes(format.compressionCode);
-    reader.nextTwoBytes(format.channels);
-    reader.nextWord(format.samplingRate);
-    reader.nextWord(format.bytesPerSecond);
-    reader.nextTwoBytes(format.blockAlign);
-    reader.nextTwoBytes(format.bitsPerSample);
+    format.compressionCode = reader.nextShort();
+    format.channels = reader.nextShort();
+    format.samplingRate = reader.nextWord();
+    format.bytesPerSecond = reader.nextWord();
+    format.blockAlign = reader.nextShort();
+    format.bitsPerSample = reader.nextShort();
 
     if (format.compressionCode != PCM_COMPRESSION_CODE)
         throw std::runtime_error("Not supported compression code");
@@ -51,8 +51,7 @@ std::vector<std::string> extractListData(FileReader &f, unsigned int size) {
         std::string infoIdTag;
         f.nextIdTag(infoIdTag);
 
-        unsigned int textSize;
-        f.nextWord(textSize);
+        unsigned int textSize = f.nextWord();
 
         std::string infoText(textSize, '\0');
         f.readString(infoText, textSize);

@@ -35,7 +35,7 @@ bool seekToNextFrame(FileReader& f, FrameHeader& header) {
     return true;
 }
 
-FrameHeader decodeHeader(FileReader& reader, unsigned char secondByte) {
+FrameHeader decodeHeader(ByteReader& reader, unsigned char secondByte) {
     auto ret = FrameHeader();
 
     ret.version = (secondByte & 0x08) ? FrameHeader::Version::MPEG_1 : FrameHeader::Version::MPEG_2;
@@ -66,18 +66,19 @@ FrameHeader decodeHeader(FileReader& reader, unsigned char secondByte) {
     return ret;
 }
 
-void decodeSideInformation(FileReader& reader, const FrameHeader& header) {
+void decodeSideInformation(ByteReader& reader, const FrameHeader& header) {
     auto sideInfo = SideInformation();
-    unsigned char remainder, remainderCount;
 
-    auto mainDataBegin = reader.nextNBits(9, 0, 0, remainder, remainderCount);
+    auto mainDataBegin = reader.nextNBits(9);
+    unsigned char bitsToSkip = (header.isMono()) ? 5 : 3;
+    reader.skipNBits(bitsToSkip);
 
-    auto share = reader.nextNBits(4, remainder, 2, remainder, remainderCount);
-    auto part2_3_length = reader.nextNBits(12, remainder, remainderCount, remainder, remainderCount);
-    auto bigValues = reader.nextNBits(9, remainder, remainderCount, remainder, remainderCount);
-    auto globalGain = reader.nextNBits(8, remainder, remainderCount, remainder, remainderCount);
-    auto scalefactorCompress = reader.nextNBits(4, remainder, remainderCount, remainder, remainderCount);
-    auto windowSwitching = reader.nextNBits(1, remainder, remainderCount, remainder, remainderCount);
+    auto share = reader.nextNBits(4);
+    auto part2_3_length = reader.nextNBits(12);
+    auto bigValues = reader.nextNBits(9);
+    auto globalGain = reader.nextNBits(8);
+    auto scalefactorCompress = reader.nextNBits(4);
+    auto windowSwitching = reader.nextNBits(1);
 
     auto b = reader.nextByte();
 }
