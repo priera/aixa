@@ -17,6 +17,8 @@ public:
     bool decodeNextFrame(FrameHeader& header);
 
 private:
+    static constexpr unsigned int SAMPLES_PER_FRAME = 1152;
+
     static constexpr std::size_t REGIONS_NORMAL = 3;
     static constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;
 

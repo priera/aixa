@@ -1,5 +1,6 @@
 #include "Mp3Decoder.h"
 
+#include <cmath>
 #include <unordered_map>
 #include <vector>
 
@@ -9,12 +10,16 @@ std::unordered_map<unsigned char, unsigned int> Mp3Decoder::bitRateDictionary = 
 
 std::vector<unsigned int> Mp3Decoder::samplingFreqs = {44100, 48000, 32000};
 
-Mp3Decoder::Mp3Decoder(const std::string& path) : f(path) {}
+Mp3Decoder::Mp3Decoder(const std::string& path) : f(path), header() {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     if (!seekToNextFrame()) {
         return false;
     }
+
+    float byteRate = (static_cast<float>(header.bitrate * 1000) / 8);
+    unsigned int frameSize = (SAMPLES_PER_FRAME * byteRate) / header.samplingFreq;
+    frameSize += (header.isPadded) ? 1 : 0;
 
     if (header.usesCRC) {
         f.nextByte();
