@@ -4,9 +4,9 @@
 #include <mainlib/stream/ByteReader.h>
 #include <mainlib/stream/FileReader.h>
 
-#include <unordered_map>
 #include <vector>
 
+#include "ByteReservoir.h"
 #include "FrameHeader.h"
 
 class Mp3Decoder {
@@ -22,7 +22,10 @@ private:
     static constexpr std::size_t REGIONS_NORMAL = 3;
     static constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;
 
-    static std::unordered_map<unsigned char, unsigned int> bitRateDictionary;
+    static constexpr unsigned int SIDE_INFO_SIZE_MONO = 17;
+    static constexpr unsigned int SIDE_INFO_SIZE_DUAL = 32;
+
+    static std::vector<unsigned int> bitRateList;
     static std::vector<unsigned int> samplingFreqs;
 
     bool seekToNextFrame();
@@ -32,6 +35,8 @@ private:
 
     FileReader f;
     FrameHeader header;
+    ByteReservoir reservoir;
+    unsigned int bytesRead;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H

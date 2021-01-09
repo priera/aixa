@@ -1,16 +1,13 @@
 #include "Mp3Decoder.h"
 
-#include <cmath>
-#include <unordered_map>
 #include <vector>
 
-std::unordered_map<unsigned char, unsigned int> Mp3Decoder::bitRateDictionary = {
-    {1, 32},  {2, 40},  {3, 48},   {4, 56},   {5, 64},   {6, 80},   {7, 96},
-    {8, 112}, {9, 128}, {10, 160}, {11, 192}, {12, 224}, {13, 256}, {14, 320}};
+std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
+                                                     112, 128, 160, 192, 224, 256, 320};
 
 std::vector<unsigned int> Mp3Decoder::samplingFreqs = {44100, 48000, 32000};
 
-Mp3Decoder::Mp3Decoder(const std::string& path) : f(path), header() {}
+Mp3Decoder::Mp3Decoder(const std::string& path) : f(path), header(), bytesRead(0) {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     if (!seekToNextFrame()) {
@@ -27,6 +24,12 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     }
 
     auto sideInfo = decodeSideInformation(header);
+    if (sideInfo.mainDataBegin > 0) {
+        auto extracted = reservoir.extract(sideInfo.mainDataBegin);
+    }
+
+    unsigned int pending = frameSize - bytesRead;
+    reservoir.append(pending, f);
 
     retHeader = header;
     return true;
@@ -68,7 +71,7 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
 
     unsigned char bitRateIndex = (b & 0xF0) >> 4;
     if (bitRateIndex == 0 || bitRateIndex >= 15) throw std::runtime_error("Not supported MP3 format");
-    header.bitrate = bitRateDictionary[bitRateIndex];
+    header.bitrate = bitRateList[bitRateIndex - 1];
 
     std::size_t freqIndex = (b & 0x0A) >> 2;
     if (freqIndex > 2) throw std::runtime_error("Not supported MP3 format");
@@ -81,6 +84,8 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
 
     header.msStereo = b & 0x20;
     header.intensityStereo = b & 0x10;
+
+    bytesRead = 4;
 }
 
 SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
@@ -125,6 +130,10 @@ SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
             chSideInfo.count1TableSelect = f.nextBit();
         }
     }
+
+    auto sideInfoSize = (channels == 1) ? SIDE_INFO_SIZE_MONO : SIDE_INFO_SIZE_DUAL;
+    bytesRead += sideInfoSize;
+    reservoir.advanceReservoir(sideInfoSize);
 
     return sideInfo;
 }
