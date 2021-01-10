@@ -7,7 +7,7 @@ std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80
 
 std::vector<unsigned int> Mp3Decoder::samplingFreqs = {44100, 48000, 32000};
 
-Mp3Decoder::Mp3Decoder(const std::string& path) : f(path), header(), bytesRead(0) {}
+Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader) : f(std::move(reader)), header(), bytesRead(0) {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     if (!seekToNextFrame()) {
@@ -19,8 +19,10 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     frameSize += (header.isPadded) ? 1 : 0;
 
     if (header.usesCRC) {
-        f.nextByte();
-        f.nextByte();
+        f->nextByte();
+        f->nextByte();
+        bytesRead += 2;
+        reservoir.advanceReservoir(2);
     }
 
     auto sideInfo = decodeSideInformation(header);
@@ -29,7 +31,7 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     }
 
     unsigned int pending = frameSize - bytesRead;
-    reservoir.append(pending, f);
+    reservoir.append(pending, *f);
 
     retHeader = header;
     return true;
@@ -39,8 +41,8 @@ bool Mp3Decoder::seekToNextFrame() {
     unsigned char b;
     bool headerFound = false;
     bool headerStartRead = false;
-    while (!headerFound && !f.ended()) {
-        b = f.nextByte();
+    while (!headerFound && !f->ended()) {
+        b = f->nextByte();
 
         if (headerStartRead) {
             if ((b & 0xF0) == 0xF0) {
@@ -53,7 +55,7 @@ bool Mp3Decoder::seekToNextFrame() {
         }
     }
 
-    if (f.ended()) return false;
+    if (f->ended()) return false;
 
     decodeHeader(b);
     return true;
@@ -67,7 +69,7 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
     if (!(header.version == FrameHeader::Version::MPEG_1 && header.layer == FrameHeader::Layer::LAYER_3))
         throw std::runtime_error("Not supported MP3 format");
 
-    unsigned char b = f.nextByte();
+    unsigned char b = f->nextByte();
 
     unsigned char bitRateIndex = (b & 0xF0) >> 4;
     if (bitRateIndex == 0 || bitRateIndex >= 15) throw std::runtime_error("Not supported MP3 format");
@@ -79,7 +81,7 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
 
     header.isPadded = b & 0x02;
 
-    b = f.nextByte();
+    b = f->nextByte();
     header.mode = static_cast<FrameHeader::Mode>(b >> 6);
 
     header.msStereo = b & 0x20;
@@ -93,41 +95,42 @@ SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
 
     auto sideInfo = SideInformation();
 
-    sideInfo.mainDataBegin = f.nextNBits(9);
+    sideInfo.mainDataBegin = f->nextNBits(9);
     unsigned char bitsToSkip = (channels == 1) ? 5 : 3;
-    f.skipNBits(bitsToSkip);
+    f->skipNBits(bitsToSkip);
 
     for (std::size_t i = 0; i < channels; i++) {
-        sideInfo.scaleFactorSharing[i] = f.nextNBits(4);
+        sideInfo.scaleFactorSharing[i] = f->nextNBits(4);
     }
 
     for (auto& granule : sideInfo.granules) {
         for (std::size_t ch = 0; ch < channels; ch++) {
             auto& chSideInfo = granule[ch];
-            chSideInfo.part2_3_length = f.nextNBits(12);
-            chSideInfo.bigValues = f.nextNBits(9);
-            chSideInfo.globalGain = f.nextNBits(8);
-            chSideInfo.scaleFactorCompression = f.nextNBits(4);
-            chSideInfo.windowSwitching = f.nextBit();
+            chSideInfo.part2_3_length = f->nextNBits(12);
+            chSideInfo.bigValues = f->nextNBits(9);
+            chSideInfo.globalGain = f->nextNBits(8);
+            chSideInfo.scaleFactorCompression = f->nextNBits(4);
+            chSideInfo.windowSwitching = f->nextBit();
 
             if (chSideInfo.windowSwitching) {
-                chSideInfo.blockType = static_cast<GranuleChannelSideInfo::BlockType>(f.nextNBits(2));
-                chSideInfo.mixedBlockFlag = f.nextBit();
+                chSideInfo.blockType = static_cast<GranuleChannelSideInfo::BlockType>(f->nextNBits(2));
+                chSideInfo.mixedBlockFlag = f->nextBit();
                 for (std::size_t i = 0; i < REGIONS_WINDOW_SWITCHING; i++)
-                    chSideInfo.tableSelect[i] = f.nextNBits(5);
-                for (std::size_t i = 0; i < NR_GAIN_WINDOWS; i++) chSideInfo.subBlockGain[i] = f.nextNBits(3);
+                    chSideInfo.tableSelect[i] = f->nextNBits(5);
+                for (std::size_t i = 0; i < NR_GAIN_WINDOWS; i++)
+                    chSideInfo.subBlockGain[i] = f->nextNBits(3);
 
                 setRegionCountForGranule(chSideInfo);
             } else {
                 chSideInfo.blockType = GranuleChannelSideInfo::BlockType::NORMAL;
-                for (std::size_t i = 0; i < REGIONS_NORMAL; i++) chSideInfo.tableSelect[i] = f.nextNBits(5);
-                chSideInfo.region0_count = f.nextNBits(4);
-                chSideInfo.region1_count = f.nextNBits(3);
+                for (std::size_t i = 0; i < REGIONS_NORMAL; i++) chSideInfo.tableSelect[i] = f->nextNBits(5);
+                chSideInfo.region0_count = f->nextNBits(4);
+                chSideInfo.region1_count = f->nextNBits(3);
             }
 
-            chSideInfo.preFlag = f.nextBit();
-            chSideInfo.scaleFactorScale = f.nextBit();
-            chSideInfo.count1TableSelect = f.nextBit();
+            chSideInfo.preFlag = f->nextBit();
+            chSideInfo.scaleFactorScale = f->nextBit();
+            chSideInfo.count1TableSelect = f->nextBit();
         }
     }
 

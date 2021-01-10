@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_BYTERESERVOIR_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_BYTERESERVOIR_H
 
-#include <mainlib/stream/ByteReader.h>
+#include <mainlib/stream/in/BasicByteReader.h>
 
 #include <vector>
 

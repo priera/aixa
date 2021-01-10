@@ -1,9 +1,9 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
 
-#include <mainlib/stream/ByteReader.h>
-#include <mainlib/stream/FileReader.h>
+#include <mainlib/stream/in/BasicByteReader.h>
 
+#include <memory>
 #include <vector>
 
 #include "ByteReservoir.h"
@@ -11,7 +11,8 @@
 
 class Mp3Decoder {
 public:
-    explicit Mp3Decoder(const std::string& path);
+    explicit Mp3Decoder(std::unique_ptr<ByteReader> reader);
+
     virtual ~Mp3Decoder() = default;
 
     bool decodeNextFrame(FrameHeader& header);
@@ -33,7 +34,7 @@ private:
     SideInformation decodeSideInformation(const FrameHeader& header);
     void setRegionCountForGranule(GranuleChannelSideInfo& chGranule);
 
-    FileReader f;
+    std::unique_ptr<ByteReader> f;
     FrameHeader header;
     ByteReservoir reservoir;
     unsigned int bytesRead;

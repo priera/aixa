@@ -3,11 +3,12 @@
 
 #include <string>
 
-#include "ByteReader.h"
+#include "BasicByteReader.h"
 
-class FileReader : public ByteReader {
+class FileReader : public BasicByteReader {
 public:
-    explicit FileReader(const std::string &path) : ByteReader(path) {}
+    static FileReader *buildForFile(const std::string &path);
+
     ~FileReader() override = default;
 
     void seekToBeginning();
@@ -15,7 +16,9 @@ public:
     void nextChunkInfo(std::string &idTag, unsigned int &chunkSize);
     void nextIdTag(std::string &str);
     void readString(std::string &str, unsigned int size);
-    bool ended() const;
+
+protected:
+    explicit FileReader(std::ifstream in) : BasicByteReader(std::move(in)) {}
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_FILEREADER_H
