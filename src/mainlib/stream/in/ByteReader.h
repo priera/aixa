@@ -15,6 +15,7 @@ public:
     virtual bool nextBit() = 0;
     virtual void skipNBits(unsigned char n) = 0;
     virtual bool ended() const = 0;
+    virtual long tellg() const = 0;
     virtual void skipBytes(long count) = 0;
     virtual std::streamsize extractBytes(char *buff, std::size_t count) = 0;
 };

@@ -32,9 +32,7 @@ void ByteReservoir::append(unsigned int remainingBytes, ByteReader& reader) {
     capacity += toRead;
 }
 
-void ByteReservoir::advanceReservoir(unsigned int nBytes) {
-    currentPos = (currentPos + nBytes) % RESERVOIR_SIZE;
-}
+void ByteReservoir::advance(unsigned int nBytes) { currentPos = (currentPos + nBytes) % RESERVOIR_SIZE; }
 
 std::vector<char> ByteReservoir::extract(unsigned int nBytes) {
     std::vector<char> ret(nBytes);

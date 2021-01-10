@@ -10,17 +10,19 @@
 template <class ReadOperations>
 class BasicByteReader : public ByteReader {
 public:
-    explicit BasicByteReader(ReadOperations ops) : ops(std::move(ops)), lastByteRemBits(0) {}
+    explicit BasicByteReader(ReadOperations ops) : ops(std::move(ops)), lastByteRemBits(0), bytesRead(0) {}
     ~BasicByteReader() override = default;
 
     unsigned int nextWord() override {
         ops.readNBytes(&wt.bytes[0], 4);
+        bytesRead += 4;
         return wt.word;
     }
 
     unsigned short nextShort() override {
         wt.word = 0;
         ops.readNBytes(&wt.bytes[0], 2);
+        bytesRead += 2;
         return wt.word;
     }
 
@@ -72,6 +74,8 @@ public:
         return ops.readNBytes(buff, count);
     }
 
+    long tellg() const override { return bytesRead; }
+
     bool ended() const override { return ops.ended(); }
 
 private:
@@ -85,6 +89,7 @@ private:
     unsigned char privNextByte() {
         char b;
         ops.readNBytes(&b, 1);
+        bytesRead++;
         return b;
     }
 
@@ -92,6 +97,8 @@ private:
 
     unsigned char lastByte;
     unsigned char lastByteRemBits;
+
+    long bytesRead;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_BYTEREADER_H

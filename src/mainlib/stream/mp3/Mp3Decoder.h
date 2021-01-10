@@ -8,10 +8,11 @@
 
 #include "ByteReservoir.h"
 #include "FrameHeader.h"
+#include "MainDataReader.h"
 
 class Mp3Decoder {
 public:
-    explicit Mp3Decoder(std::unique_ptr<ByteReader> reader);
+    Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader);
 
     virtual ~Mp3Decoder() = default;
 
@@ -31,13 +32,14 @@ private:
 
     bool seekToNextFrame();
     void decodeHeader(unsigned char secondByte);
+    void skipCRC();
     SideInformation decodeSideInformation(const FrameHeader& header);
     void setRegionCountForGranule(GranuleChannelSideInfo& chGranule);
 
     std::unique_ptr<ByteReader> f;
     FrameHeader header;
-    ByteReservoir reservoir;
-    unsigned int bytesRead;
+    std::unique_ptr<MainDataReader> mainDataReader;
+    unsigned int bytesInHeaders;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H

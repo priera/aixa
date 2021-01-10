@@ -7,7 +7,11 @@ std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80
 
 std::vector<unsigned int> Mp3Decoder::samplingFreqs = {44100, 48000, 32000};
 
-Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader) : f(std::move(reader)), header(), bytesRead(0) {}
+Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader) :
+    f(std::move(reader)),
+    header(),
+    bytesInHeaders(0),
+    mainDataReader(std::move(mainDataReader)) {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     if (!seekToNextFrame()) {
@@ -18,20 +22,13 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     unsigned int frameSize = (SAMPLES_PER_FRAME * byteRate) / header.samplingFreq;
     frameSize += (header.isPadded) ? 1 : 0;
 
-    if (header.usesCRC) {
-        f->nextByte();
-        f->nextByte();
-        bytesRead += 2;
-        reservoir.advanceReservoir(2);
-    }
+    skipCRC();
 
     auto sideInfo = decodeSideInformation(header);
-    if (sideInfo.mainDataBegin > 0) {
-        auto extracted = reservoir.extract(sideInfo.mainDataBegin);
-    }
+    mainDataReader->startFrame(sideInfo.mainDataBegin);
 
-    unsigned int pending = frameSize - bytesRead;
-    reservoir.append(pending, *f);
+    unsigned int pending = frameSize - bytesInHeaders - mainDataReader->tellg();
+    mainDataReader->frameEnded(pending * 8);
 
     retHeader = header;
     return true;
@@ -87,7 +84,16 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
     header.msStereo = b & 0x20;
     header.intensityStereo = b & 0x10;
 
-    bytesRead = 4;
+    bytesInHeaders = 4;
+}
+
+void Mp3Decoder::skipCRC() {
+    if (header.usesCRC) {
+        f->nextByte();
+        f->nextByte();
+        bytesInHeaders += 2;
+        mainDataReader->advanceReservoir(2);
+    }
 }
 
 SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
@@ -135,8 +141,8 @@ SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
     }
 
     auto sideInfoSize = (channels == 1) ? SIDE_INFO_SIZE_MONO : SIDE_INFO_SIZE_DUAL;
-    bytesRead += sideInfoSize;
-    reservoir.advanceReservoir(sideInfoSize);
+    bytesInHeaders += sideInfoSize;
+    mainDataReader->advanceReservoir(sideInfoSize);
 
     return sideInfo;
 }

@@ -6,7 +6,8 @@
 
 std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     auto reader = std::make_unique<FileReader>(streamPath);
-    Mp3Decoder decoder(std::move(reader));
+    auto mainDataReader = std::make_unique<MainDataReader>(*reader);
+    Mp3Decoder decoder(std::move(reader), std::move(mainDataReader));
 
     auto header = FrameHeader();
     decoder.decodeNextFrame(header);

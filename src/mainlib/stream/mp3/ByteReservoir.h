@@ -48,7 +48,7 @@ public:
     virtual ~ByteReservoir() noexcept = default;
 
     void append(unsigned int remainingBytes, ByteReader &reader);
-    void advanceReservoir(unsigned int nBytes);
+    void advance(unsigned int nBytes);
     std::vector<char> extract(unsigned int nBytes);
     std::unique_ptr<ByteReader> readerForPast(unsigned int nBytes);
     bool consumed() const { return capacity == 0; }
