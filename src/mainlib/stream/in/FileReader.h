@@ -4,21 +4,17 @@
 #include <string>
 
 #include "BasicByteReader.h"
+#include "InStreamOperations.h"
 
-class FileReader : public BasicByteReader {
+class FileReader : public BasicByteReader<InStreamOperations> {
 public:
-    static FileReader *buildForFile(const std::string &path);
+    explicit FileReader(const std::string &path) : BasicByteReader(InStreamOperations(path)) {}
 
     ~FileReader() override = default;
-
-    void seekToBeginning();
 
     void nextChunkInfo(std::string &idTag, unsigned int &chunkSize);
     void nextIdTag(std::string &str);
     void readString(std::string &str, unsigned int size);
-
-protected:
-    explicit FileReader(std::ifstream in) : BasicByteReader(std::move(in)) {}
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_FILEREADER_H

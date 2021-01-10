@@ -1,6 +1,9 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_IN_BYTEREADER_H
 #define AIXA_SRC_MAINLIB_STREAM_IN_BYTEREADER_H
 
+#include <cstddef>
+#include <ios>
+
 class ByteReader {
 public:
     virtual ~ByteReader() = default;

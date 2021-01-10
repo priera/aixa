@@ -10,7 +10,7 @@
 class WavStream : public Stream {
 public:
     WavStream(const std::string &filePath, WavFormat format) :
-        f(FileReader::buildForFile(filePath)),
+        f(std::make_unique<FileReader>(filePath)),
         format(format) {
         if (format.bitsPerSample != 16) {
             throw std::runtime_error("Not allowed WAV stream format");

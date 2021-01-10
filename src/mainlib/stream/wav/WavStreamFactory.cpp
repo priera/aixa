@@ -15,7 +15,7 @@ std::shared_ptr<Stream> WavStreamFactory::probe() {
     auto realFileSize = fs::file_size(filePath);
     if (realFileSize < PROBING_BYTES) throw std::runtime_error("Invalid input file");
 
-    auto f = std::unique_ptr<FileReader>(FileReader::buildForFile(filePath));
+    auto f = std::make_unique<FileReader>(filePath);
 
     unsigned int size;
     WavFunctions::readHeader(*f, size);

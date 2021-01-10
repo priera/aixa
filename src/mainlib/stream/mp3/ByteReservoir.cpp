@@ -1,6 +1,10 @@
 #include "ByteReservoir.h"
 
-ByteReservoir::ByteReservoir() : reservoir(RESERVOIR_SIZE, 0), readBuffer(RESERVOIR_SIZE), currentPos(0) {}
+ByteReservoir::ByteReservoir() :
+    reservoir(RESERVOIR_SIZE, 0),
+    readBuffer(RESERVOIR_SIZE),
+    currentPos(0),
+    capacity(0) {}
 
 void ByteReservoir::append(unsigned int remainingBytes, ByteReader& reader) {
     unsigned int toRead;
@@ -25,6 +29,7 @@ void ByteReservoir::append(unsigned int remainingBytes, ByteReader& reader) {
     }
 
     currentPos = (currentPos + toRead) % RESERVOIR_SIZE;
+    capacity += toRead;
 }
 
 void ByteReservoir::advanceReservoir(unsigned int nBytes) {
@@ -42,4 +47,16 @@ std::vector<char> ByteReservoir::extract(unsigned int nBytes) {
     }
 
     return ret;
+}
+
+std::unique_ptr<ByteReader> ByteReservoir::readerForPast(unsigned int nBytes) {
+    unsigned int startPos;
+    if (nBytes < currentPos) {
+        startPos = currentPos - nBytes;
+    } else {
+        startPos = RESERVOIR_SIZE - (nBytes - currentPos);
+    }
+
+    ByteReservoirOperations ops(*this, startPos, nBytes);
+    return std::make_unique<BasicByteReader<ByteReservoirOperations>>(ops);
 }
