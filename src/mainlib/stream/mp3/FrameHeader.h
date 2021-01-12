@@ -44,7 +44,10 @@ struct FrameHeader {
 constexpr std::size_t NR_CHANNELS = 2;
 constexpr std::size_t NR_GRANULES = 2;
 constexpr std::size_t NR_REGIONS = 3;
-constexpr std::size_t NR_GAIN_WINDOWS = 3;
+constexpr std::size_t NR_SHORT_WINDOWS = 3;
+constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
+constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
+constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
 
 struct GranuleChannelSideInfo {
     enum class BlockType : unsigned char
@@ -63,7 +66,7 @@ struct GranuleChannelSideInfo {
     BlockType blockType;
     bool mixedBlockFlag;
     unsigned char tableSelect[NR_REGIONS];
-    unsigned char subBlockGain[NR_GAIN_WINDOWS];
+    unsigned char subBlockGain[NR_SHORT_WINDOWS];
     unsigned char region0_count;
     unsigned char region1_count;
     bool preFlag;
@@ -73,8 +76,17 @@ struct GranuleChannelSideInfo {
 
 struct SideInformation {
     unsigned short mainDataBegin;
-    unsigned char scaleFactorSharing[NR_CHANNELS];
+    bool scaleFactorSharing[NR_CHANNELS][NR_SUB_BAND_GROUPS];
     GranuleChannelSideInfo granules[NR_GRANULES][NR_CHANNELS];
+};
+
+struct GranuleChannelContent {
+    int longWindowScaleFactorBands[NR_LONG_WINDOW_BANDS];
+    int shortWindowScaleFactorBands[NR_SHORT_WINDOWS][NR_SHORT_WINDOW_BANDS];
+};
+
+struct MainDataContent {
+    GranuleChannelContent granules[NR_GRANULES][NR_CHANNELS];
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMEHEADER_H

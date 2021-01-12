@@ -7,11 +7,20 @@ std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80
 
 std::vector<unsigned int> Mp3Decoder::samplingFreqs = {44100, 48000, 32000};
 
+std::vector<std::vector<unsigned char>> Mp3Decoder::scaleFactorsCompression = {
+    {0, 0, 0, 0, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4},
+    {0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3}};
+
+std::vector<std::vector<unsigned int>> Mp3Decoder::scaleFactorBandsGroups = {{0, 6, 12}, {0, 6, 11, 16, 21}};
+
 Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader) :
     f(std::move(reader)),
     header(),
     bytesInHeaders(0),
-    mainDataReader(std::move(mainDataReader)) {}
+    currentFrameSize(0),
+    mainDataReader(std::move(mainDataReader)),
+    sideInfo(),
+    mainDataContent() {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     if (!seekToNextFrame()) {
@@ -19,16 +28,14 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     }
 
     float byteRate = (static_cast<float>(header.bitrate * 1000) / 8);
-    unsigned int frameSize = (SAMPLES_PER_FRAME * byteRate) / header.samplingFreq;
-    frameSize += (header.isPadded) ? 1 : 0;
+    currentFrameSize = (SAMPLES_PER_FRAME * byteRate) / header.samplingFreq;
+    currentFrameSize += (header.isPadded) ? 1 : 0;
 
     skipCRC();
 
-    auto sideInfo = decodeSideInformation(header);
-    mainDataReader->startFrame(sideInfo.mainDataBegin);
+    decodeSideInformation();
 
-    unsigned int pending = frameSize - bytesInHeaders - mainDataReader->tellg();
-    mainDataReader->frameEnded(pending * 8);
+    decodeMainData();
 
     retHeader = header;
     return true;
@@ -96,17 +103,18 @@ void Mp3Decoder::skipCRC() {
     }
 }
 
-SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
+void Mp3Decoder::decodeSideInformation() {
     const auto channels = header.channels();
 
-    auto sideInfo = SideInformation();
+    sideInfo = SideInformation();
 
     sideInfo.mainDataBegin = f->nextNBits(9);
     unsigned char bitsToSkip = (channels == 1) ? 5 : 3;
     f->skipNBits(bitsToSkip);
 
     for (std::size_t i = 0; i < channels; i++) {
-        sideInfo.scaleFactorSharing[i] = f->nextNBits(4);
+        for (std::size_t group = 0; group < NR_SUB_BAND_GROUPS; group++)
+            sideInfo.scaleFactorSharing[i][group] = f->nextBit();
     }
 
     for (auto& granule : sideInfo.granules) {
@@ -123,7 +131,7 @@ SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
                 chSideInfo.mixedBlockFlag = f->nextBit();
                 for (std::size_t i = 0; i < REGIONS_WINDOW_SWITCHING; i++)
                     chSideInfo.tableSelect[i] = f->nextNBits(5);
-                for (std::size_t i = 0; i < NR_GAIN_WINDOWS; i++)
+                for (std::size_t i = 0; i < NR_SHORT_WINDOWS; i++)
                     chSideInfo.subBlockGain[i] = f->nextNBits(3);
 
                 setRegionCountForGranule(chSideInfo);
@@ -143,8 +151,6 @@ SideInformation Mp3Decoder::decodeSideInformation(const FrameHeader& header) {
     auto sideInfoSize = (channels == 1) ? SIDE_INFO_SIZE_MONO : SIDE_INFO_SIZE_DUAL;
     bytesInHeaders += sideInfoSize;
     mainDataReader->advanceReservoir(sideInfoSize);
-
-    return sideInfo;
 }
 
 void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
@@ -158,4 +164,57 @@ void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
     }
 
     chGranule.region1_count = 20 - chGranule.region0_count;
+}
+
+void Mp3Decoder::decodeMainData() {
+    mainDataReader->startFrame(sideInfo.mainDataBegin);
+
+    const auto channels = header.channels();
+    bool readingSecondGranule = false;
+    for (unsigned int i = 0; i < NR_GRANULES; i++) {
+        for (unsigned int channel = 0; channel < channels; channel++) {
+            const auto& channelInfo = sideInfo.granules[i][channel];
+            auto& channelContent = mainDataContent.granules[i][channel];
+            readChannelScaleFactors(channelInfo, channelContent, channel, readingSecondGranule);
+        }
+
+        readingSecondGranule = true;
+    }
+
+    unsigned int pending = currentFrameSize - bytesInHeaders - mainDataReader->tellg();
+    mainDataReader->frameEnded(pending * 8);
+}
+
+void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
+                                         GranuleChannelContent& channelContent, unsigned int channel,
+                                         bool readingSecondGranule) {
+    const unsigned char slen1 = scaleFactorsCompression[0][channelSideInfo.scaleFactorCompression];
+    const unsigned char slen2 = scaleFactorsCompression[1][channelSideInfo.scaleFactorCompression];
+
+    if (channelSideInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
+        if (channelSideInfo.mixedBlockFlag)
+            throw std::runtime_error("Not supported (yet) reading these scale factors");
+
+        for (unsigned int group = 0; group < 2; group++) {
+            const unsigned int subBandStart = scaleFactorBandsGroups[0][group];
+            const unsigned int subBandEnd = scaleFactorBandsGroups[0][group + 1];
+            unsigned char toRead = (group == 0) ? slen1 : slen2;
+            for (unsigned int i = subBandStart; i < subBandEnd; i++) {
+                for (unsigned int window = 0; window < NR_SHORT_WINDOWS; window++) {
+                    channelContent.shortWindowScaleFactorBands[window][i] = mainDataReader->nextNBits(toRead);
+                }
+            }
+        }
+    } else {
+        for (unsigned int group = 0; group < NR_SUB_BAND_GROUPS; group++) {
+            if (!(readingSecondGranule && sideInfo.scaleFactorSharing[channel][group])) {
+                const unsigned int subBandStart = scaleFactorBandsGroups[1][group];
+                const unsigned int subBandEnd = scaleFactorBandsGroups[1][group + 1];
+                unsigned char toRead = (group < 2) ? slen1 : slen2;
+                for (unsigned int i = subBandStart; i < subBandEnd; i++) {
+                    channelContent.longWindowScaleFactorBands[i] = mainDataReader->nextNBits(toRead);
+                }
+            }
+        }
+    }
 }

@@ -29,17 +29,27 @@ private:
 
     static std::vector<unsigned int> bitRateList;
     static std::vector<unsigned int> samplingFreqs;
+    static std::vector<std::vector<unsigned int>> scaleFactorBandsGroups;
+    static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
 
     bool seekToNextFrame();
     void decodeHeader(unsigned char secondByte);
     void skipCRC();
-    SideInformation decodeSideInformation(const FrameHeader& header);
+    void decodeSideInformation();
     void setRegionCountForGranule(GranuleChannelSideInfo& chGranule);
+
+    void decodeMainData();
+    void readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
+                                 GranuleChannelContent& channelContent, unsigned int channel,
+                                 bool readingSecondGranule);
 
     std::unique_ptr<ByteReader> f;
     FrameHeader header;
     std::unique_ptr<MainDataReader> mainDataReader;
     unsigned int bytesInHeaders;
+    unsigned int currentFrameSize;
+    SideInformation sideInfo;
+    MainDataContent mainDataContent;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
