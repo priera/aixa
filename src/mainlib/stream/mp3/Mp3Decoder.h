@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "ByteReservoir.h"
-#include "FrameHeader.h"
 #include "MainDataReader.h"
+#include "types.h"
 
 class Mp3Decoder {
 public:
