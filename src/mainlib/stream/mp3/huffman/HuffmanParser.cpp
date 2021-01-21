@@ -6,7 +6,7 @@ HuffmanParser::HuffmanParser(const std::filesystem::path& filePath) : f(filePath
     }
 }
 
-Huffman HuffmanParser::buildFromFile() {
+Huffman HuffmanParser::buildFromFile(ByteReader& reader) {
     std::vector<Huffman::Tree> tables(Huffman::NR_HUFFMAN_TABLES);
     Huffman::Tree lastTree;
 
@@ -41,7 +41,7 @@ Huffman HuffmanParser::buildFromFile() {
 
     if (!fileProcessed) throw std::runtime_error("Invalid huffman file");
 
-    return Huffman(tables);
+    return Huffman(tables, reader);
 }
 
 Huffman::Tree HuffmanParser::decodeTableHeader(const std::string& def) {

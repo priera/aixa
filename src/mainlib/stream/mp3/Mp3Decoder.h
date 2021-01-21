@@ -2,6 +2,7 @@
 #define AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
 
 #include <mainlib/stream/in/BasicByteReader.h>
+#include <mainlib/stream/mp3/huffman/Huffman.h>
 
 #include <memory>
 #include <vector>
@@ -12,7 +13,8 @@
 
 class Mp3Decoder {
 public:
-    Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader);
+    Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader,
+               const Huffman& huffman);
 
     virtual ~Mp3Decoder() = default;
 
@@ -46,6 +48,7 @@ private:
     std::unique_ptr<ByteReader> f;
     FrameHeader header;
     std::unique_ptr<MainDataReader> mainDataReader;
+    Huffman huffman;
     unsigned int bytesInHeaders;
     unsigned int currentFrameSize;
     SideInformation sideInfo;

@@ -13,12 +13,14 @@ std::vector<std::vector<unsigned char>> Mp3Decoder::scaleFactorsCompression = {
 
 std::vector<std::vector<unsigned int>> Mp3Decoder::scaleFactorBandsGroups = {{0, 6, 12}, {0, 6, 11, 16, 21}};
 
-Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader) :
+Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader,
+                       const Huffman& huffman) :
     f(std::move(reader)),
     header(),
     bytesInHeaders(0),
     currentFrameSize(0),
     mainDataReader(std::move(mainDataReader)),
+    huffman(huffman),
     sideInfo(),
     mainDataContent() {}
 

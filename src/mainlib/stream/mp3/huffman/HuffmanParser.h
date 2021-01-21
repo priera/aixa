@@ -1,6 +1,8 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_HUFFMANPARSER_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_HUFFMANPARSER_H
 
+#include <mainlib/stream/in/ByteReader.h>
+
 #include <fstream>
 
 #include "Huffman.h"
@@ -9,7 +11,7 @@ class HuffmanParser {
 public:
     explicit HuffmanParser(const std::filesystem::path& filePath);
 
-    Huffman buildFromFile();
+    Huffman buildFromFile(ByteReader& reader);
 
 private:
     static constexpr unsigned char MAX_OFFSET = 250;
