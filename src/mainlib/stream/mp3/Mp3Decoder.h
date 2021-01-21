@@ -3,6 +3,7 @@
 
 #include <mainlib/stream/in/BasicByteReader.h>
 #include <mainlib/stream/mp3/huffman/Huffman.h>
+#include <mainlib/stream/mp3/huffman/HuffmanSet.h>
 
 #include <memory>
 #include <vector>
@@ -14,7 +15,7 @@
 class Mp3Decoder {
 public:
     Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader,
-               const Huffman& huffman);
+               std::unique_ptr<HuffmanSet> huffmanSet);
 
     virtual ~Mp3Decoder() = default;
 
@@ -23,7 +24,7 @@ public:
 private:
     static constexpr unsigned int SAMPLES_PER_FRAME = 1152;
 
-    static constexpr std::size_t REGIONS_NORMAL = 3;
+    static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
     static constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;
 
     static constexpr unsigned int SIDE_INFO_SIZE_MONO = 17;
@@ -44,11 +45,12 @@ private:
     void readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
                                  GranuleChannelContent& channelContent, unsigned int channel,
                                  bool readingSecondGranule);
+    void entropyDecode(const GranuleChannelSideInfo& channelInfo, GranuleChannelContent& content);
 
     std::unique_ptr<ByteReader> f;
     FrameHeader header;
     std::unique_ptr<MainDataReader> mainDataReader;
-    Huffman huffman;
+    std::unique_ptr<HuffmanSet> huffmanSet;
     unsigned int bytesInHeaders;
     unsigned int currentFrameSize;
     SideInformation sideInfo;

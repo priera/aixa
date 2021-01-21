@@ -29,17 +29,18 @@ public:
 
     static constexpr std::size_t NR_HUFFMAN_TABLES = 34;
 
-    Huffman(std::vector<Tree> tables, ByteReader& reader) : tables(std::move(tables)), reader(&reader) {}
+    explicit Huffman(Tree table) : table(std::move(table)) {}
     virtual ~Huffman() = default;
 
-    void decode(std::size_t table, int& x, int& y);
+    void decode(ByteReader& reader, int& x, int& y) const;
+
+    const Tree& getTable() const { return table; }
 
 private:
-    const Symbols& extractSymbolFromTree(const Node& node);
-    int addLinbitsToSymbol(unsigned char symbol, int length, unsigned int linbits);
+    const Symbols& extractSymbolFromTree(ByteReader& reader, const Node& node) const;
+    int addLinbitsToSymbol(ByteReader& reader, unsigned char symbol, int length, unsigned int linbits) const;
 
-    std::vector<Tree> tables;
-    ByteReader* reader;
+    Tree table;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_H

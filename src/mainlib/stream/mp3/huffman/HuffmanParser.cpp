@@ -6,8 +6,8 @@ HuffmanParser::HuffmanParser(const std::filesystem::path& filePath) : f(filePath
     }
 }
 
-Huffman HuffmanParser::buildFromFile(ByteReader& reader) {
-    std::vector<Huffman::Tree> tables(Huffman::NR_HUFFMAN_TABLES);
+HuffmanSet* HuffmanParser::build() {
+    std::vector<std::unique_ptr<Huffman>> tables(Huffman::NR_HUFFMAN_TABLES);
     Huffman::Tree lastTree;
 
     bool fileProcessed = false;
@@ -34,14 +34,14 @@ Huffman HuffmanParser::buildFromFile(ByteReader& reader) {
         }
 
         if (storeTable) {
-            tables[lastTree.id] = lastTree;
+            tables[lastTree.id] = std::make_unique<Huffman>(lastTree);
             lastTree = Huffman::Tree();
         }
     }
 
     if (!fileProcessed) throw std::runtime_error("Invalid huffman file");
 
-    return Huffman(tables, reader);
+    return new HuffmanSet(tables);
 }
 
 Huffman::Tree HuffmanParser::decodeTableHeader(const std::string& def) {
@@ -120,11 +120,11 @@ void HuffmanParser::buildNodeOfIndex(Huffman::Node& parent, std::size_t i,
     }
 }
 
-void HuffmanParser::buildReferenceTree(const std::vector<Huffman::Tree>& tables, Huffman::Tree& tree,
-                                       const std::string& referenceId) {
+void HuffmanParser::buildReferenceTree(const std::vector<std::unique_ptr<Huffman>>& tables,
+                                       Huffman::Tree& tree, const std::string& referenceId) {
     std::stringstream s(referenceId);
     std::size_t id;
     s >> id;
 
-    tree.root = tables[id].root;
+    tree.root = tables[id]->getTable().root;
 }

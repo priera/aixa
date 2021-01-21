@@ -6,12 +6,13 @@
 #include <fstream>
 
 #include "Huffman.h"
+#include "HuffmanSet.h"
 
 class HuffmanParser {
 public:
     explicit HuffmanParser(const std::filesystem::path& filePath);
 
-    Huffman buildFromFile(ByteReader& reader);
+    HuffmanSet* build();
 
 private:
     static constexpr unsigned char MAX_OFFSET = 250;
@@ -21,7 +22,7 @@ private:
     std::vector<Huffman::Symbols> extractSerializedTree();
     void buildNodeOfIndex(Huffman::Node& node, std::size_t i,
                           const std::vector<Huffman::Symbols>& serializedTree);
-    void buildReferenceTree(const std::vector<Huffman::Tree>& tables, Huffman::Tree& tree,
+    void buildReferenceTree(const std::vector<std::unique_ptr<Huffman>>& tables, Huffman::Tree& tree,
                             const std::string& referenceId);
 
     std::ifstream f;

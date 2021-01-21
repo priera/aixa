@@ -48,6 +48,7 @@ constexpr std::size_t NR_SHORT_WINDOWS = 3;
 constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
+constexpr std::size_t NR_GRANULE_FREQ_LINES = 576;
 
 struct GranuleChannelSideInfo {
     enum class BlockType : unsigned char
@@ -83,6 +84,7 @@ struct SideInformation {
 struct GranuleChannelContent {
     int longWindowScaleFactorBands[NR_LONG_WINDOW_BANDS];
     int shortWindowScaleFactorBands[NR_SHORT_WINDOWS][NR_SHORT_WINDOW_BANDS];
+    std::vector<int> freqLines{NR_GRANULE_FREQ_LINES};
 };
 
 struct MainDataContent {

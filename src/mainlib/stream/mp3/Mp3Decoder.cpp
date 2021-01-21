@@ -14,13 +14,13 @@ std::vector<std::vector<unsigned char>> Mp3Decoder::scaleFactorsCompression = {
 std::vector<std::vector<unsigned int>> Mp3Decoder::scaleFactorBandsGroups = {{0, 6, 12}, {0, 6, 11, 16, 21}};
 
 Mp3Decoder::Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader,
-                       const Huffman& huffman) :
+                       std::unique_ptr<HuffmanSet> huffmanSet) :
     f(std::move(reader)),
     header(),
     bytesInHeaders(0),
     currentFrameSize(0),
     mainDataReader(std::move(mainDataReader)),
-    huffman(huffman),
+    huffmanSet(std::move(huffmanSet)),
     sideInfo(),
     mainDataContent() {}
 
@@ -139,7 +139,8 @@ void Mp3Decoder::decodeSideInformation() {
                 setRegionCountForGranule(chSideInfo);
             } else {
                 chSideInfo.blockType = GranuleChannelSideInfo::BlockType::NORMAL;
-                for (std::size_t i = 0; i < REGIONS_NORMAL; i++) chSideInfo.tableSelect[i] = f->nextNBits(5);
+                for (std::size_t i = 0; i < REGIONS_NORMAL_BLOCK; i++)
+                    chSideInfo.tableSelect[i] = f->nextNBits(5);
                 chSideInfo.region0_count = f->nextNBits(4);
                 chSideInfo.region1_count = f->nextNBits(3);
             }
@@ -178,6 +179,7 @@ void Mp3Decoder::decodeMainData() {
             const auto& channelInfo = sideInfo.granules[i][channel];
             auto& channelContent = mainDataContent.granules[i][channel];
             readChannelScaleFactors(channelInfo, channelContent, channel, readingSecondGranule);
+            entropyDecode(channelInfo, channelContent);
         }
 
         readingSecondGranule = true;
@@ -218,5 +220,37 @@ void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSi
                 }
             }
         }
+    }
+}
+
+void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, GranuleChannelContent& content) {
+    if (channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
+        throw std::runtime_error("TODO Huffman decoding of short windows not supported");
+    }
+
+    if (channelInfo.bigValues == 0) {
+        content.freqLines.assign(NR_GRANULE_FREQ_LINES, 0);
+        return;
+    }
+
+    unsigned int region0Samples = channelInfo.region0_count + 1;
+    unsigned int region1Samples = channelInfo.region1_count + 1;
+    unsigned int region2Samples = (2 * channelInfo.bigValues) - (region0Samples + region1Samples);
+    std::vector<unsigned int> regionsBoundaries = {region0Samples, region1Samples, region2Samples};
+
+    unsigned int freqLinesDecoded = 0;
+    unsigned int regionFreqLines;
+    for (std::size_t i = 0; i < REGIONS_NORMAL_BLOCK; i++) {
+        const auto& table = huffmanSet->getTable(channelInfo.tableSelect[i]);
+        regionFreqLines = 0;
+        while (regionFreqLines < regionsBoundaries[i]) {
+            int x, y;
+            table.decode(*mainDataReader, x, y);
+            regionFreqLines += 2;
+            content.freqLines.push_back(x);
+            content.freqLines.push_back(y);
+            std::cout << "Decoded " << freqLinesDecoded << " " << x << " " << y << std::endl;
+        }
+        freqLinesDecoded += regionFreqLines;
     }
 }
