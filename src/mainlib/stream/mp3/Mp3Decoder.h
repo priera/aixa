@@ -5,6 +5,7 @@
 #include <mainlib/stream/mp3/huffman/Huffman.h>
 #include <mainlib/stream/mp3/huffman/HuffmanSet.h>
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -22,6 +23,11 @@ public:
     bool decodeNextFrame(FrameHeader& header);
 
 private:
+    struct BandIndexes {
+        std::vector<unsigned int> longWindow;
+        std::vector<unsigned int> shortWindow;
+    };
+
     static constexpr unsigned int SAMPLES_PER_FRAME = 1152;
 
     static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
@@ -34,6 +40,7 @@ private:
     static std::vector<unsigned int> samplingFreqs;
     static std::vector<std::vector<unsigned int>> scaleFactorBandsGroups;
     static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
+    static std::map<int, BandIndexes> samplingFreqBandIndexes;
 
     bool seekToNextFrame();
     void decodeHeader(unsigned char secondByte);
