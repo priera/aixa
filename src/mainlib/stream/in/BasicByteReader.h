@@ -68,10 +68,15 @@ public:
 
     void skipNBits(unsigned char n) override { nextNBits(n); }
 
-    void skipBytes(long count) override { ops.skipNBytes(count); }
+    void skipBytes(long count) override {
+        ops.skipNBytes(count);
+        bytesRead += count;
+    }
 
     std::streamsize extractBytes(char *buff, std::size_t count) override {
-        return ops.readNBytes(buff, count);
+        auto ret = ops.readNBytes(buff, count);
+        bytesRead += count;
+        return ret;
     }
 
     long tellg() const override { return bytesRead; }
@@ -90,6 +95,7 @@ private:
         char b;
         ops.readNBytes(&b, 1);
         bytesRead++;
+        std::cout << "bytes read: " << bytesRead << std::endl;
         return b;
     }
 

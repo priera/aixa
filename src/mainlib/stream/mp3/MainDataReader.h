@@ -7,10 +7,10 @@
 
 class MainDataReader : public ByteReader {
 public:
-    explicit MainDataReader(ByteReader &inStream) :
+    explicit MainDataReader(std::unique_ptr<ByteReader> inStream) :
         reservoir(),
         reservoirReader(nullptr),
-        inStream(&inStream),
+        inStream(std::move(inStream)),
         inStreamRead(0),
         currentReader(nullptr) {}
     ~MainDataReader() override = default;
@@ -66,14 +66,14 @@ public:
 private:
     void checkReader() {
         if (currentReader == reservoirReader.get() && reservoir.consumed()) {
-            currentReader = inStream;
+            currentReader = inStream.get();
             reservoirReader = nullptr;
         }
     }
 
     ByteReservoir reservoir;
     std::unique_ptr<ByteReader> reservoirReader;
-    ByteReader *inStream;
+    std::unique_ptr<ByteReader> inStream;
 
     long inStreamRead;
     ByteReader *currentReader;

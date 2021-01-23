@@ -15,8 +15,7 @@
 
 class Mp3Decoder {
 public:
-    Mp3Decoder(std::unique_ptr<ByteReader> reader, std::unique_ptr<MainDataReader> mainDataReader,
-               std::unique_ptr<HuffmanSet> huffmanSet);
+    Mp3Decoder(std::unique_ptr<MainDataReader> reader, std::unique_ptr<HuffmanSet> huffmanSet);
 
     virtual ~Mp3Decoder() = default;
 
@@ -54,9 +53,8 @@ private:
                                  bool readingSecondGranule);
     void entropyDecode(const GranuleChannelSideInfo& channelInfo, GranuleChannelContent& content);
 
-    std::unique_ptr<ByteReader> f;
     FrameHeader header;
-    std::unique_ptr<MainDataReader> mainDataReader;
+    std::unique_ptr<MainDataReader> reader;
     std::unique_ptr<HuffmanSet> huffmanSet;
     unsigned int bytesInHeaders;
     unsigned int currentFrameSize;

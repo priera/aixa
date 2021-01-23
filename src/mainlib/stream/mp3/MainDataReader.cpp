@@ -5,7 +5,7 @@ void MainDataReader::startFrame(unsigned int mainDataBegin) {
         reservoirReader = reservoir.readerForPast(mainDataBegin);
         currentReader = reservoirReader.get();
     } else {
-        currentReader = inStream;
+        currentReader = inStream.get();
     }
     inStreamRead = inStream->tellg();
 }
