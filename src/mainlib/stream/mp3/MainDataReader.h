@@ -61,7 +61,6 @@ public:
 
     void startFrame(unsigned int mainDataBegin);
     void frameEnded(unsigned int remainingBits);
-    void advanceReservoir(unsigned int nBytes);
 
 private:
     void checkReader() {

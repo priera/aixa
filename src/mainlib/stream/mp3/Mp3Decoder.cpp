@@ -2,6 +2,8 @@
 
 #include <vector>
 
+static int i = 0;
+
 std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
                                                      112, 128, 160, 192, 224, 256, 320};
 
@@ -49,6 +51,7 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     decodeMainData();
 
     retHeader = header;
+    i++;
     return true;
 }
 
@@ -110,7 +113,6 @@ void Mp3Decoder::skipCRC() {
         reader->nextByte();
         reader->nextByte();
         bytesInHeaders += 2;
-        reader->advanceReservoir(2);
     }
 }
 
@@ -162,7 +164,6 @@ void Mp3Decoder::decodeSideInformation() {
 
     auto sideInfoSize = (channels == 1) ? SIDE_INFO_SIZE_MONO : SIDE_INFO_SIZE_DUAL;
     bytesInHeaders += sideInfoSize;
-    reader->advanceReservoir(sideInfoSize);
 }
 
 void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
@@ -179,6 +180,9 @@ void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
 }
 
 void Mp3Decoder::decodeMainData() {
+    if (i == 175) {
+        char a = 3;
+    }
     reader->startFrame(sideInfo.mainDataBegin);
 
     const auto channels = header.channels();

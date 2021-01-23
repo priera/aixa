@@ -23,16 +23,12 @@ void ByteReservoir::append(unsigned int remainingBytes, ByteReader& reader) {
     std::copy(readBuffer.begin(), readBuffer.begin() + toCopy, reservoir.begin() + currentPos);
 
     if (toRead > remainingReservoir) {
-        toCopy = toRead - remainingReservoir;
-        std::copy(readBuffer.begin() + remainingReservoir, readBuffer.begin() + remainingReservoir + toCopy,
-                  reservoir.begin());
+        std::copy(readBuffer.begin() + remainingReservoir, readBuffer.begin() + toRead, reservoir.begin());
     }
 
     currentPos = (currentPos + toRead) % RESERVOIR_SIZE;
-    capacity += toRead;
+    capacity = std::min(capacity + toRead, RESERVOIR_SIZE);
 }
-
-void ByteReservoir::advance(unsigned int nBytes) { currentPos = (currentPos + nBytes) % RESERVOIR_SIZE; }
 
 std::vector<char> ByteReservoir::extract(unsigned int nBytes) {
     std::vector<char> ret(nBytes);

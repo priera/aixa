@@ -16,6 +16,5 @@ void MainDataReader::frameEnded(unsigned int remainingBits) {
     }
 
     reservoir.append(remainingBits / 8, *inStream);
+    currentReader = inStream.get();
 }
-
-void MainDataReader::advanceReservoir(unsigned int nBytes) { reservoir.advance(nBytes); }
