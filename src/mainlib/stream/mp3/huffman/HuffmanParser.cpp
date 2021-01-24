@@ -65,17 +65,18 @@ std::vector<Huffman::Symbols> HuffmanParser::extractSerializedTree() {
     std::getline(f, line);
     line = line.substr(0, line.size() - 1);
     std::vector<Huffman::Symbols> serializedTree;
+    unsigned int nodesCaptured;
 
     while (line.size() > 1) {
-        std::stringstream s(line);
+        std::istringstream s(line);
         auto& hexStream = s >> std::hex;
-        while (hexStream) {
-            unsigned int s1, s2;
+        nodesCaptured = 0;
+        while (hexStream && nodesCaptured < MAX_NODES_PER_LINE) {
+            int s1, s2;
             hexStream >> s1 >> s2;
-
             serializedTree.emplace_back(s1, s2);
+            nodesCaptured++;
         }
-
         std::getline(f, line);
         line = line.substr(0, line.size() - 1);
     }
@@ -112,8 +113,8 @@ void HuffmanParser::buildNodeOfIndex(Huffman::Node& parent, std::size_t i,
         parent.left = std::make_unique<Huffman::Node>();
         parent.right = std::make_unique<Huffman::Node>();
 
-        auto onesOffset = computeNextOffset(i, true);
         auto zeroesOffset = computeNextOffset(i, false);
+        auto onesOffset = computeNextOffset(i, true);
 
         buildNodeOfIndex(*parent.left, zeroesOffset, serializedTree);
         buildNodeOfIndex(*parent.right, onesOffset, serializedTree);

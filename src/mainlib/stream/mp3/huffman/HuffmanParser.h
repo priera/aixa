@@ -16,6 +16,7 @@ public:
 
 private:
     static constexpr unsigned char MAX_OFFSET = 250;
+    static constexpr unsigned int MAX_NODES_PER_LINE = 12;
 
     Huffman::Tree decodeTableHeader(const std::string& def);
     void buildTree(Huffman::Tree& tree);
