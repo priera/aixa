@@ -55,9 +55,10 @@ Huffman::Tree HuffmanParser::decodeTableHeader(const std::string& def) {
 void HuffmanParser::buildTree(Huffman::Tree& tree) {
     auto serializedTree = extractSerializedTree();
 
-    tree.root = std::make_shared<Huffman::Node>();
-
-    if (!serializedTree.empty()) buildNodeOfIndex(*tree.root, 0, serializedTree);
+    if (!serializedTree.empty()) {
+        tree.root = std::make_shared<Huffman::Node>();
+        buildNodeOfIndex(*tree.root, 0, serializedTree);
+    }
 }
 
 std::vector<Huffman::Symbols> HuffmanParser::extractSerializedTree() {
@@ -127,5 +128,9 @@ void HuffmanParser::buildReferenceTree(const std::vector<std::unique_ptr<Huffman
     std::size_t id;
     s >> id;
 
-    tree.root = tables[id]->getTable().root;
+    auto referenced = tables[id]->getTable().root;
+    if (!referenced) {
+        throw std::runtime_error("Referencing wrong table");
+    }
+    tree.root = referenced;
 }

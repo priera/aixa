@@ -72,7 +72,7 @@ struct GranuleChannelSideInfo {
     unsigned char region1_count;
     bool preFlag;
     bool scaleFactorScale;
-    bool count1TableSelect;
+    unsigned char count1TableSelect;
 };
 
 struct SideInformation {

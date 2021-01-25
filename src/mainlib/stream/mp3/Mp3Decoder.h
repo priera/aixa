@@ -27,7 +27,8 @@ private:
         std::vector<unsigned int> shortWindow;
     };
 
-    static constexpr unsigned int SAMPLES_PER_FRAME = 1152;
+    static constexpr unsigned int SAMPLES_PER_GRANULE = 576;
+    static constexpr unsigned int SAMPLES_PER_FRAME = SAMPLES_PER_GRANULE * 2;
 
     static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
     static constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;

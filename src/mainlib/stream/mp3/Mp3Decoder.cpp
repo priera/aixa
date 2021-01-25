@@ -237,18 +237,18 @@ void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSi
 }
 
 void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, GranuleChannelContent& content) {
-    if (channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
-        throw std::runtime_error("TODO Huffman decoding of short windows not supported");
-    }
+    unsigned int region0Samples;
+    unsigned int region1Samples;
 
-    if (channelInfo.bigValues == 0) {
-        content.freqLines.assign(NR_GRANULE_FREQ_LINES, 0);
-        return;
+    if (channelInfo.windowSwitching &&
+        channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
+        region0Samples = 36; /* sfb[9/3]*3=36 */
+        region1Samples = SAMPLES_PER_GRANULE;
+    } else {
+        const auto& indexesTable = samplingFreqBandIndexes[header.samplingFreq].longWindow;
+        region0Samples = indexesTable[channelInfo.region0_count + 1];
+        region1Samples = indexesTable[channelInfo.region0_count + channelInfo.region1_count + 2];
     }
-
-    const auto& indexesTable = samplingFreqBandIndexes[header.samplingFreq].longWindow;
-    unsigned int region0Samples = indexesTable[channelInfo.region0_count + 1];
-    unsigned int region1Samples = indexesTable[channelInfo.region0_count + channelInfo.region1_count + 2];
 
     unsigned int freqLinesDecoded = 0;
     while (freqLinesDecoded < 2 * channelInfo.bigValues) {
@@ -267,4 +267,14 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, Granul
         content.freqLines.push_back(y);
         freqLinesDecoded += 2;
     }
+
+    std::cout << "Entropy: " << reader->tellg() << " " << channelInfo.bigValues << " "
+              << channelInfo.part2_3_length << std::endl;
+
+    /*const auto& count1Table = huffmanSet->getTable(32 + channelInfo.count1TableSelect);
+    unsigned int decodedRegion1 = 0;
+    while(decodedRegion1 < channelInfo.part2_3_length /* WRONG * /) {
+
+        freqLinesDecoded += 4;
+    } */
 }

@@ -1,7 +1,7 @@
 #include "Huffman.h"
 
 void Huffman::decode(ByteReader& reader, int& x, int& y) const {
-    if (table.id == 0) {
+    if (!table.root) {
         x = 0;
         y = 0;
         return;
