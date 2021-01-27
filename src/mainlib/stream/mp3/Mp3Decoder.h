@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
 
-#include <mainlib/stream/in/BasicByteReader.h>
+#include <mainlib/stream/in/BasicBitReader.h>
 #include <mainlib/stream/mp3/huffman/Huffman.h>
 #include <mainlib/stream/mp3/huffman/HuffmanSet.h>
 

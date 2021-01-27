@@ -6,7 +6,7 @@ ByteReservoir::ByteReservoir() :
     currentPos(0),
     capacity(0) {}
 
-void ByteReservoir::append(unsigned int remainingBytes, ByteReader& reader) {
+void ByteReservoir::append(unsigned int remainingBytes, BitInputReader& reader) {
     unsigned int toRead;
     if (remainingBytes > RESERVOIR_SIZE) {
         toRead = RESERVOIR_SIZE;
@@ -43,7 +43,7 @@ std::vector<char> ByteReservoir::extract(unsigned int nBytes) {
     return ret;
 }
 
-std::unique_ptr<ByteReader> ByteReservoir::readerForPast(unsigned int nBytes) {
+std::unique_ptr<BitInputReader> ByteReservoir::readerForPast(unsigned int nBytes) {
     unsigned int startPos;
     if (nBytes < currentPos) {
         startPos = currentPos - nBytes;
@@ -52,5 +52,5 @@ std::unique_ptr<ByteReader> ByteReservoir::readerForPast(unsigned int nBytes) {
     }
 
     ByteReservoirOperations ops(*this, startPos, nBytes);
-    return std::make_unique<BasicByteReader<ByteReservoirOperations>>(ops);
+    return std::make_unique<BasicBitReader<ByteReservoirOperations>>(ops);
 }

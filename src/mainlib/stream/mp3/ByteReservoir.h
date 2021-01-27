@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_BYTERESERVOIR_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_BYTERESERVOIR_H
 
-#include <mainlib/stream/in/BasicByteReader.h>
+#include <mainlib/stream/in/BasicBitReader.h>
 
 #include <memory>
 #include <vector>
@@ -47,9 +47,9 @@ public:
     explicit ByteReservoir();
     virtual ~ByteReservoir() noexcept = default;
 
-    void append(unsigned int remainingBytes, ByteReader &reader);
+    void append(unsigned int remainingBytes, BitInputReader &reader);
     std::vector<char> extract(unsigned int nBytes);
-    std::unique_ptr<ByteReader> readerForPast(unsigned int nBytes);
+    std::unique_ptr<BitInputReader> readerForPast(unsigned int nBytes);
     bool consumed() const { return capacity == 0; }
 
 private:

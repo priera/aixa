@@ -3,12 +3,12 @@
 
 #include <string>
 
-#include "BasicByteReader.h"
+#include "BasicBitReader.h"
 #include "InStreamOperations.h"
 
-class FileReader : public BasicByteReader<InStreamOperations> {
+class FileReader : public BasicBitReader<InStreamOperations> {
 public:
-    explicit FileReader(const std::string &path) : BasicByteReader(InStreamOperations(path)) {}
+    explicit FileReader(const std::string &path) : BasicBitReader(InStreamOperations(path)) {}
 
     ~FileReader() override = default;
 

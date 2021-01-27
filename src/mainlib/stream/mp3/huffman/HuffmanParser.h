@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_HUFFMANPARSER_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_HUFFMANPARSER_H
 
-#include <mainlib/stream/in/ByteReader.h>
+#include <mainlib/stream/in/BitInputReader.h>
 
 #include <fstream>
 

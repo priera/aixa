@@ -7,14 +7,15 @@ void MainDataReader::startFrame(unsigned int mainDataBegin) {
     } else {
         currentReader = inStream.get();
     }
-    inStreamRead = inStream->tellg();
+    inStreamRead = inStream->bitsRead() / S_BYTE;
+    myBitsRead = 0;
 }
 
 void MainDataReader::frameEnded(unsigned int remainingBits) {
-    if (remainingBits % 8 != 0) {
+    if (remainingBits % S_BYTE != 0) {
         throw std::runtime_error("Remaining bytes is not an integer number of bytes");
     }
 
-    reservoir.append(remainingBits / 8, *inStream);
+    reservoir.append(remainingBits / S_BYTE, *inStream);
     currentReader = inStream.get();
 }

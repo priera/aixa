@@ -1,6 +1,6 @@
 #include "Huffman.h"
 
-void Huffman::decode(ByteReader& reader, int& x, int& y) const {
+void Huffman::decode(BitInputReader& reader, int& x, int& y) const {
     if (!table.root) {
         x = 0;
         y = 0;
@@ -15,7 +15,8 @@ void Huffman::decode(ByteReader& reader, int& x, int& y) const {
     y = addLinbitsToSymbol(reader, symbol.second, table.yLength, table.linbits);
 }
 
-const Huffman::Symbols& Huffman::extractSymbolFromTree(ByteReader& reader, const Huffman::Node& node) const {
+const Huffman::Symbols& Huffman::extractSymbolFromTree(BitInputReader& reader,
+                                                       const Huffman::Node& node) const {
     if (!node.left) {
         return node.symbols;
     } else {
@@ -24,7 +25,7 @@ const Huffman::Symbols& Huffman::extractSymbolFromTree(ByteReader& reader, const
     }
 }
 
-int Huffman::addLinbitsToSymbol(ByteReader& reader, unsigned char symbol, int length,
+int Huffman::addLinbitsToSymbol(BitInputReader& reader, unsigned char symbol, int length,
                                 unsigned int linbits) const {
     int ret = symbol;
     if (linbits && ret == length - 1) {

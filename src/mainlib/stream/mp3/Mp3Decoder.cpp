@@ -1,5 +1,6 @@
 #include "Mp3Decoder.h"
 
+#include <iostream>
 #include <vector>
 
 static int i = 0;
@@ -180,7 +181,7 @@ void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
 }
 
 void Mp3Decoder::decodeMainData() {
-    if (i == 175) {
+    if (i >= 175) {
         char a = 3;
     }
     reader->startFrame(sideInfo.mainDataBegin);
@@ -198,7 +199,7 @@ void Mp3Decoder::decodeMainData() {
         readingSecondGranule = true;
     }
 
-    unsigned int pending = currentFrameSize - bytesInHeaders - reader->tellg();
+    unsigned int pending = currentFrameSize - bytesInHeaders - reader->streamConsumedBytes();
     reader->frameEnded(pending * 8);
 }
 
@@ -268,10 +269,8 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, Granul
         freqLinesDecoded += 2;
     }
 
-    std::cout << "Entropy: " << reader->tellg() << " " << channelInfo.bigValues << " "
-              << channelInfo.part2_3_length << std::endl;
-
-    /*const auto& count1Table = huffmanSet->getTable(32 + channelInfo.count1TableSelect);
+    std::cout << reader->bitsRead() << " " << channelInfo.part2_3_length << std::endl;
+    /* const auto& count1Table = huffmanSet->getTable(32 + channelInfo.count1TableSelect);
     unsigned int decodedRegion1 = 0;
     while(decodedRegion1 < channelInfo.part2_3_length /* WRONG * /) {
 

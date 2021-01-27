@@ -1,7 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_HUFFMAN_H
 
-#include <mainlib/stream/in/ByteReader.h>
+#include <mainlib/stream/in/BitInputReader.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -32,13 +32,14 @@ public:
     explicit Huffman(Tree table) : table(std::move(table)) {}
     virtual ~Huffman() = default;
 
-    void decode(ByteReader& reader, int& x, int& y) const;
+    void decode(BitInputReader& reader, int& x, int& y) const;
 
     const Tree& getTable() const { return table; }
 
 private:
-    const Symbols& extractSymbolFromTree(ByteReader& reader, const Node& node) const;
-    int addLinbitsToSymbol(ByteReader& reader, unsigned char symbol, int length, unsigned int linbits) const;
+    const Symbols& extractSymbolFromTree(BitInputReader& reader, const Node& node) const;
+    int addLinbitsToSymbol(BitInputReader& reader, unsigned char symbol, int length,
+                           unsigned int linbits) const;
 
     Tree table;
 };
