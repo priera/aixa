@@ -52,7 +52,8 @@ private:
     void readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
                                  GranuleChannelContent& channelContent, unsigned int channel,
                                  bool readingSecondGranule);
-    void entropyDecode(const GranuleChannelSideInfo& channelInfo, GranuleChannelContent& content);
+    void entropyDecode(const GranuleChannelSideInfo& channelInfo, unsigned long channelStart,
+                       GranuleChannelContent& content);
 
     FrameHeader header;
     std::unique_ptr<MainDataReader> reader;

@@ -1,40 +1,60 @@
 #include "Huffman.h"
 
-void Huffman::decode(BitInputReader& reader, int& x, int& y) const {
+void Huffman::decodeBigValues(BitInputReader& reader, int& s1, int& s2) const {
+    extractSymbol(reader, s1, s2);
+
+    addLinbitsToSymbol(reader, s1, table.xLength, table.linbits);
+    addLinbitsToSymbol(reader, s2, table.yLength, table.linbits);
+}
+
+void Huffman::decodeCount1(BitInputReader& reader, int& s1, int& s2, int& s3, int& s4) const {
+    auto checkInverseSymbol = [&reader](int& s) {
+        if (s != 0) s *= (reader.nextBit()) ? -1 : 1;
+    };
+
+    int temp;
+    extractSymbol(reader, s1, temp);
+
+    s3 = (temp >> 3) & 1;
+    s4 = (temp >> 2) & 1;
+    s1 = (temp >> 1) & 1;
+    s2 = temp & 1;
+
+    checkInverseSymbol(s3);
+    checkInverseSymbol(s4);
+    checkInverseSymbol(s1);
+    checkInverseSymbol(s2);
+}
+
+void Huffman::extractSymbol(BitInputReader& reader, int& s1, int& s2) const {
     if (!table.root) {
-        x = 0;
-        y = 0;
+        s1 = 0;
+        s2 = 0;
         return;
     }
 
-    const auto& symbol = extractSymbolFromTree(reader, *table.root);
-
-    if (table.id == 32 || table.id == 33) throw std::runtime_error("Not supported yet huff decoding");
-
-    x = addLinbitsToSymbol(reader, symbol.first, table.xLength, table.linbits);
-    y = addLinbitsToSymbol(reader, symbol.second, table.yLength, table.linbits);
+    const auto& symbol = extractSymbolFromNode(reader, *table.root);
+    s1 = symbol.first;
+    s2 = symbol.second;
 }
 
-const Huffman::Symbols& Huffman::extractSymbolFromTree(BitInputReader& reader,
+const Huffman::Symbols& Huffman::extractSymbolFromNode(BitInputReader& reader,
                                                        const Huffman::Node& node) const {
     if (!node.left) {
         return node.symbols;
     } else {
         const auto& nextTree = (reader.nextBit()) ? *node.right : *node.left;
-        return extractSymbolFromTree(reader, nextTree);
+        return extractSymbolFromNode(reader, nextTree);
     }
 }
 
-int Huffman::addLinbitsToSymbol(BitInputReader& reader, unsigned char symbol, int length,
-                                unsigned int linbits) const {
-    int ret = symbol;
-    if (linbits && ret == length - 1) {
-        ret += reader.nextNBits(linbits);
+void Huffman::addLinbitsToSymbol(BitInputReader& reader, int& symbol, int length,
+                                 unsigned int linbits) const {
+    if (linbits && symbol == length - 1) {
+        symbol += reader.nextNBits(linbits);
     }
 
-    if (ret != 0) {
-        ret *= (reader.nextBit()) ? -1 : 1;
+    if (symbol != 0) {
+        symbol *= (reader.nextBit()) ? -1 : 1;
     }
-
-    return ret;
 }

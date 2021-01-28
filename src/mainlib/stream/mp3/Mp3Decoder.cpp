@@ -192,8 +192,9 @@ void Mp3Decoder::decodeMainData() {
         for (unsigned int channel = 0; channel < channels; channel++) {
             const auto& channelInfo = sideInfo.granules[i][channel];
             auto& channelContent = mainDataContent.granules[i][channel];
+            auto channelStart = reader->bitsRead();
             readChannelScaleFactors(channelInfo, channelContent, channel, readingSecondGranule);
-            entropyDecode(channelInfo, channelContent);
+            entropyDecode(channelInfo, channelStart, channelContent);
         }
 
         readingSecondGranule = true;
@@ -237,7 +238,8 @@ void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSi
     }
 }
 
-void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, GranuleChannelContent& content) {
+void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, unsigned long channelStart,
+                               GranuleChannelContent& content) {
     unsigned int region0Samples;
     unsigned int region1Samples;
 
@@ -263,17 +265,24 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, Granul
         }
         const auto& table = huffmanSet->getTable(channelInfo.tableSelect[tableIndex]);
         int x, y;
-        table.decode(*reader, x, y);
+        table.decodeBigValues(*reader, x, y);
         content.freqLines.push_back(x);
         content.freqLines.push_back(y);
         freqLinesDecoded += 2;
     }
 
-    std::cout << reader->bitsRead() << " " << channelInfo.part2_3_length << std::endl;
-    /* const auto& count1Table = huffmanSet->getTable(32 + channelInfo.count1TableSelect);
-    unsigned int decodedRegion1 = 0;
-    while(decodedRegion1 < channelInfo.part2_3_length /* WRONG * /) {
-
+    const auto& count1Table = huffmanSet->getTable(32 + channelInfo.count1TableSelect);
+    while (reader->bitsRead() < channelStart + channelInfo.part2_3_length) {
+        int x, y, v, w;
+        count1Table.decodeCount1(*reader, x, y, v, w);
+        content.freqLines.push_back(v);
+        content.freqLines.push_back(w);
+        content.freqLines.push_back(x);
+        content.freqLines.push_back(y);
         freqLinesDecoded += 4;
-    } */
+    }
+
+    for (; freqLinesDecoded < NR_GRANULE_FREQ_LINES; freqLinesDecoded++) {
+        content.freqLines.push_back(0);
+    }
 }

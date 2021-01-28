@@ -32,14 +32,16 @@ public:
     explicit Huffman(Tree table) : table(std::move(table)) {}
     virtual ~Huffman() = default;
 
-    void decode(BitInputReader& reader, int& x, int& y) const;
+    void decodeBigValues(BitInputReader& reader, int& s1, int& s2) const;
+
+    void decodeCount1(BitInputReader& reader, int& s1, int& s2, int& s3, int& s4) const;
 
     const Tree& getTable() const { return table; }
 
 private:
-    const Symbols& extractSymbolFromTree(BitInputReader& reader, const Node& node) const;
-    int addLinbitsToSymbol(BitInputReader& reader, unsigned char symbol, int length,
-                           unsigned int linbits) const;
+    void extractSymbol(BitInputReader& reader, int& s1, int& s2) const;
+    const Symbols& extractSymbolFromNode(BitInputReader& reader, const Node& node) const;
+    void addLinbitsToSymbol(BitInputReader& reader, int& symbol, int length, unsigned int linbits) const;
 
     Tree table;
 };
