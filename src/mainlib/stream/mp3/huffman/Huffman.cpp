@@ -8,8 +8,9 @@ void Huffman::decodeBigValues(BitInputReader& reader, int& s1, int& s2) const {
 }
 
 void Huffman::decodeCount1(BitInputReader& reader, int& s1, int& s2, int& s3, int& s4) const {
-    auto checkInverseSymbol = [&reader](int& s) {
-        if (s != 0) s *= (reader.nextBit()) ? -1 : 1;
+    auto checkInvertSymbol = [&reader](int& s) {
+        if (s != 0)
+            s *= (reader.nextBit()) ? -1 : 1;
     };
 
     int temp;
@@ -20,10 +21,10 @@ void Huffman::decodeCount1(BitInputReader& reader, int& s1, int& s2, int& s3, in
     s1 = (temp >> 1) & 1;
     s2 = temp & 1;
 
-    checkInverseSymbol(s3);
-    checkInverseSymbol(s4);
-    checkInverseSymbol(s1);
-    checkInverseSymbol(s2);
+    checkInvertSymbol(s3);
+    checkInvertSymbol(s4);
+    checkInvertSymbol(s1);
+    checkInvertSymbol(s2);
 }
 
 void Huffman::extractSymbol(BitInputReader& reader, int& s1, int& s2) const {
@@ -48,7 +49,9 @@ const Huffman::Symbols& Huffman::extractSymbolFromNode(BitInputReader& reader,
     }
 }
 
-void Huffman::addLinbitsToSymbol(BitInputReader& reader, int& symbol, int length,
+void Huffman::addLinbitsToSymbol(BitInputReader& reader,
+                                 int& symbol,
+                                 int length,
                                  unsigned int linbits) const {
     if (linbits && symbol == length - 1) {
         symbol += reader.nextNBits(linbits);
