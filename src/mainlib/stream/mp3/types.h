@@ -2,6 +2,7 @@
 #define AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H
 
 #include <cstddef>
+#include <vector>
 
 struct FrameHeader {
     enum class Version
@@ -49,6 +50,8 @@ constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
 constexpr std::size_t NR_GRANULE_FREQ_LINES = 576;
+constexpr std::size_t NR_FREQ_BANDS = 32;
+constexpr std::size_t NR_SAMPLES_PER_BAND = 18;
 
 struct GranuleChannelSideInfo {
     enum class BlockType : unsigned char
@@ -81,10 +84,24 @@ struct SideInformation {
     GranuleChannelSideInfo granules[NR_GRANULES][NR_CHANNELS];
 };
 
+using ShortWindowScaleFactors = std::vector<std::vector<int>>;
+using FrequencyBands = std::vector<std::vector<int>>;
+
 struct GranuleChannelContent {
-    int longWindowScaleFactorBands[NR_LONG_WINDOW_BANDS];
-    int shortWindowScaleFactorBands[NR_SHORT_WINDOWS][NR_SHORT_WINDOW_BANDS];
-    std::vector<int> freqLines{NR_GRANULE_FREQ_LINES};
+    GranuleChannelContent() :
+        longWindowScaleFactorBands(NR_LONG_WINDOW_BANDS), shortWindowScaleFactorBands(NR_SHORT_WINDOWS),
+        freqBands(NR_FREQ_BANDS) {
+        for (auto& shortWindow : shortWindowScaleFactorBands) {
+            shortWindow.resize(NR_SHORT_WINDOW_BANDS);
+        }
+        for (auto& samplesVector : freqBands) {
+            samplesVector.resize(NR_SAMPLES_PER_BAND);
+        }
+    }
+
+    std::vector<int> longWindowScaleFactorBands;
+    ShortWindowScaleFactors shortWindowScaleFactorBands;
+    FrequencyBands freqBands;
 };
 
 struct MainDataContent {

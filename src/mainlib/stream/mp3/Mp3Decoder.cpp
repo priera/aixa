@@ -28,12 +28,8 @@ std::map<int, Mp3Decoder::BandIndexes> Mp3Decoder::samplingFreqBandIndexes = {
       {0, 4, 8, 12, 16, 22, 30, 42, 58, 78, 104, 138, 180, 192}}}};
 
 Mp3Decoder::Mp3Decoder(std::unique_ptr<MainDataReader> reader, std::unique_ptr<HuffmanSet> huffmanSet) :
-    header(),
-    bytesInHeaders(0),
-    currentFrameSize(0),
-    reader(std::move(reader)),
-    huffmanSet(std::move(huffmanSet)),
-    sideInfo(),
+    header(), bytesInHeaders(0), currentFrameSize(0), reader(std::move(reader)),
+    huffmanSet(std::move(huffmanSet)), frameSynthesizer(std::make_unique<FrameSynthesizer>()), sideInfo(),
     mainDataContent() {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
@@ -41,7 +37,7 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
         return false;
     }
 
-    float byteRate = (static_cast<float>(header.bitrate * 1000) / 8);
+    float byteRate = (static_cast<float>(header.bitrate * 1000) / S_BYTE);
     currentFrameSize = (SAMPLES_PER_FRAME * byteRate) / header.samplingFreq;
     currentFrameSize += (header.isPadded) ? 1 : 0;
 
@@ -50,6 +46,8 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     decodeSideInformation();
 
     decodeMainData();
+
+    frameSynthesizer->synthesize(sideInfo, mainDataContent, header.channels());
 
     retHeader = header;
     i++;
@@ -74,7 +72,8 @@ bool Mp3Decoder::seekToNextFrame() {
         }
     }
 
-    if (reader->ended()) return false;
+    if (reader->ended())
+        return false;
 
     decodeHeader(b);
     return true;
@@ -91,11 +90,13 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
     unsigned char b = reader->nextByte();
 
     unsigned char bitRateIndex = (b & 0xF0) >> 4;
-    if (bitRateIndex == 0 || bitRateIndex >= 15) throw std::runtime_error("Not supported MP3 format");
+    if (bitRateIndex == 0 || bitRateIndex >= 15)
+        throw std::runtime_error("Not supported MP3 format");
     header.bitrate = bitRateList[bitRateIndex - 1];
 
     std::size_t freqIndex = (b & 0x0A) >> 2;
-    if (freqIndex > 2) throw std::runtime_error("Not supported MP3 format");
+    if (freqIndex > 2)
+        throw std::runtime_error("Not supported MP3 format");
     header.samplingFreq = samplingFreqs[freqIndex];
 
     header.isPadded = b & 0x02;
@@ -181,9 +182,6 @@ void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
 }
 
 void Mp3Decoder::decodeMainData() {
-    if (i >= 175) {
-        char a = 3;
-    }
     reader->startFrame(sideInfo.mainDataBegin);
 
     const auto channels = header.channels();
@@ -205,7 +203,8 @@ void Mp3Decoder::decodeMainData() {
 }
 
 void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
-                                         GranuleChannelContent& channelContent, unsigned int channel,
+                                         GranuleChannelContent& channelContent,
+                                         unsigned int channel,
                                          bool readingSecondGranule) {
     const unsigned char slen1 = scaleFactorsCompression[0][channelSideInfo.scaleFactorCompression];
     const unsigned char slen2 = scaleFactorsCompression[1][channelSideInfo.scaleFactorCompression];
@@ -238,7 +237,8 @@ void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSi
     }
 }
 
-void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, unsigned long channelStart,
+void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
+                               unsigned long channelStart,
                                GranuleChannelContent& content) {
     unsigned int region0Samples;
     unsigned int region1Samples;
@@ -266,8 +266,8 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, unsign
         const auto& table = huffmanSet->getTable(channelInfo.tableSelect[tableIndex]);
         int x, y;
         table.decodeBigValues(*reader, x, y);
-        content.freqLines.push_back(x);
-        content.freqLines.push_back(y);
+        storeInContent(x, freqLinesDecoded, content.freqBands);
+        storeInContent(y, freqLinesDecoded + 1, content.freqBands);
         freqLinesDecoded += 2;
     }
 
@@ -275,14 +275,14 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo, unsign
     while (reader->bitsRead() < channelStart + channelInfo.part2_3_length) {
         int x, y, v, w;
         count1Table.decodeCount1(*reader, x, y, v, w);
-        content.freqLines.push_back(v);
-        content.freqLines.push_back(w);
-        content.freqLines.push_back(x);
-        content.freqLines.push_back(y);
+        storeInContent(v, freqLinesDecoded, content.freqBands);
+        storeInContent(w, freqLinesDecoded + 1, content.freqBands);
+        storeInContent(x, freqLinesDecoded + 2, content.freqBands);
+        storeInContent(y, freqLinesDecoded + 3, content.freqBands);
         freqLinesDecoded += 4;
     }
 
     for (; freqLinesDecoded < NR_GRANULE_FREQ_LINES; freqLinesDecoded++) {
-        content.freqLines.push_back(0);
+        storeInContent(0, freqLinesDecoded, content.freqBands);
     }
 }

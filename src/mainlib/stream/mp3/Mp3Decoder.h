@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ByteReservoir.h"
+#include "FrameSynthesizer.h"
 #include "MainDataReader.h"
 #include "types.h"
 
@@ -42,6 +43,10 @@ private:
     static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
     static std::map<int, BandIndexes> samplingFreqBandIndexes;
 
+    static inline void storeInContent(int sample, unsigned int sampleIndex, FrequencyBands& bands) {
+        bands[sampleIndex / NR_SAMPLES_PER_BAND][sampleIndex % NR_SAMPLES_PER_BAND] = sample;
+    }
+
     bool seekToNextFrame();
     void decodeHeader(unsigned char secondByte);
     void skipCRC();
@@ -50,14 +55,17 @@ private:
 
     void decodeMainData();
     void readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
-                                 GranuleChannelContent& channelContent, unsigned int channel,
+                                 GranuleChannelContent& channelContent,
+                                 unsigned int channel,
                                  bool readingSecondGranule);
-    void entropyDecode(const GranuleChannelSideInfo& channelInfo, unsigned long channelStart,
+    void entropyDecode(const GranuleChannelSideInfo& channelInfo,
+                       unsigned long channelStart,
                        GranuleChannelContent& content);
 
     FrameHeader header;
     std::unique_ptr<MainDataReader> reader;
     std::unique_ptr<HuffmanSet> huffmanSet;
+    std::unique_ptr<FrameSynthesizer> frameSynthesizer;
     unsigned int bytesInHeaders;
     unsigned int currentFrameSize;
     SideInformation sideInfo;
