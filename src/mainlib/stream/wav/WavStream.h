@@ -2,17 +2,16 @@
 #define AIXA_SRC_MAINLIB_STREAM_WAV_WAVSTREAM_H
 
 #include <mainlib/stream/Stream.h>
+#include <mainlib/stream/in/FileReader.h>
+#include <mainlib/stream/wav/WavFormat.h>
 
 #include <string>
-
-#include <mainlib/stream/wav/WavFormat.h>
-#include <mainlib/stream/FileReader.h>
 
 class WavStream : public Stream {
 public:
     WavStream(const std::string &filePath, WavFormat format) :
-            f(filePath),
-            format(format) {
+        f(std::make_unique<FileReader>(filePath)),
+        format(format) {
         if (format.bitsPerSample != 16) {
             throw std::runtime_error("Not allowed WAV stream format");
         }
@@ -26,9 +25,8 @@ public:
     void prepareForFirstRead() override;
 
 private:
-    FileReader f;
+    std::unique_ptr<FileReader> f;
     WavFormat format;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_STREAM_WAV_WAVSTREAM_H
+#endif  // AIXA_SRC_MAINLIB_STREAM_WAV_WAVSTREAM_H
