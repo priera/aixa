@@ -3,8 +3,6 @@
 #include <iostream>
 #include <vector>
 
-static int i = 0;
-
 std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
                                                      112, 128, 160, 192, 224, 256, 320};
 
@@ -15,17 +13,6 @@ std::vector<std::vector<unsigned char>> Mp3Decoder::scaleFactorsCompression = {
     {0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3}};
 
 std::vector<std::vector<unsigned int>> Mp3Decoder::scaleFactorBandsGroups = {{0, 6, 12}, {0, 6, 11, 16, 21}};
-
-std::map<int, Mp3Decoder::BandIndexes> Mp3Decoder::samplingFreqBandIndexes = {
-    {44100,
-     {{0, 4, 8, 12, 16, 20, 24, 30, 36, 44, 52, 62, 74, 90, 110, 134, 162, 196, 238, 288, 342, 418, 576},
-      {0, 4, 8, 12, 16, 22, 30, 40, 52, 66, 84, 106, 136, 192}}},
-    {48000,
-     {{0, 4, 8, 12, 16, 20, 24, 30, 36, 42, 50, 60, 72, 88, 106, 128, 156, 190, 230, 276, 330, 384, 576},
-      {0, 4, 8, 12, 16, 22, 28, 38, 50, 64, 80, 100, 126, 192}}},
-    {32000,
-     {{0, 4, 8, 12, 16, 20, 24, 30, 36, 44, 54, 66, 82, 102, 126, 156, 194, 240, 296, 364, 448, 550, 576},
-      {0, 4, 8, 12, 16, 22, 30, 42, 58, 78, 104, 138, 180, 192}}}};
 
 Mp3Decoder::Mp3Decoder(std::unique_ptr<MainDataReader> reader, std::unique_ptr<HuffmanSet> huffmanSet) :
     header(), bytesInHeaders(0), currentFrameSize(0), reader(std::move(reader)),
@@ -47,10 +34,10 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
 
     decodeMainData();
 
-    frameSynthesizer->synthesize(sideInfo, mainDataContent, header.channels());
+    frameSynthesizer->synthesize(header.samplingFreq, sideInfo, mainDataContent, header.channels());
 
     retHeader = header;
-    i++;
+
     return true;
 }
 
@@ -137,7 +124,7 @@ void Mp3Decoder::decodeSideInformation() {
             auto& chSideInfo = granule[ch];
             chSideInfo.part2_3_length = reader->nextNBits(12);
             chSideInfo.bigValues = reader->nextNBits(9);
-            chSideInfo.globalGain = reader->nextNBits(8);
+            chSideInfo.globalGain = static_cast<float>(reader->nextNBits(8));
             chSideInfo.scaleFactorCompression = reader->nextNBits(4);
             chSideInfo.windowSwitching = reader->nextBit();
 
@@ -158,8 +145,8 @@ void Mp3Decoder::decodeSideInformation() {
                 chSideInfo.region1_count = reader->nextNBits(3);
             }
 
-            chSideInfo.preFlag = reader->nextBit();
-            chSideInfo.scaleFactorScale = reader->nextBit();
+            chSideInfo.preFlag = static_cast<float>(reader->nextBit());
+            chSideInfo.scaleFactorScale = static_cast<float>(reader->nextBit());
             chSideInfo.count1TableSelect = reader->nextBit();
         }
     }
@@ -187,7 +174,8 @@ void Mp3Decoder::decodeMainData() {
     const auto channels = header.channels();
     bool readingSecondGranule = false;
     for (unsigned int i = 0; i < NR_GRANULES; i++) {
-        for (unsigned int channel = 0; channel < channels; channel++) {
+        unsigned int channel;
+        for (channel = 0; channel < channels; channel++) {
             const auto& channelInfo = sideInfo.granules[i][channel];
             auto& channelContent = mainDataContent.granules[i][channel];
             auto channelStart = reader->bitsRead();
@@ -225,12 +213,18 @@ void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSi
         }
     } else {
         for (unsigned int group = 0; group < NR_SUB_BAND_GROUPS; group++) {
-            if (!(readingSecondGranule && sideInfo.scaleFactorSharing[channel][group])) {
-                const unsigned int subBandStart = scaleFactorBandsGroups[1][group];
-                const unsigned int subBandEnd = scaleFactorBandsGroups[1][group + 1];
+            bool scaleFactorsAreShared = readingSecondGranule && sideInfo.scaleFactorSharing[channel][group];
+            const unsigned int subBandStart = scaleFactorBandsGroups[1][group];
+            const unsigned int subBandEnd = scaleFactorBandsGroups[1][group + 1];
+            if (!scaleFactorsAreShared) {
                 unsigned char toRead = (group < 2) ? slen1 : slen2;
                 for (unsigned int i = subBandStart; i < subBandEnd; i++) {
                     channelContent.longWindowScaleFactorBands[i] = reader->nextNBits(toRead);
+                }
+            } else {
+                const auto& firstGranuleSf = mainDataContent.granules[0][channel].longWindowScaleFactorBands;
+                for (unsigned int i = subBandStart; i < subBandEnd; i++) {
+                    channelContent.longWindowScaleFactorBands[i] = firstGranuleSf[i];
                 }
             }
         }
@@ -282,7 +276,7 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
         freqLinesDecoded += 4;
     }
 
-    for (; freqLinesDecoded < NR_GRANULE_FREQ_LINES; freqLinesDecoded++) {
+    for (; freqLinesDecoded < SAMPLES_PER_GRANULE; freqLinesDecoded++) {
         storeInContent(0, freqLinesDecoded, content.freqBands);
     }
 }

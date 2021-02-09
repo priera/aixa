@@ -2,7 +2,13 @@
 #define AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H
 
 #include <cstddef>
+#include <map>
 #include <vector>
+
+struct BandIndexes {
+    std::vector<unsigned int> longWindow;
+    std::vector<unsigned int> shortWindow;
+};
 
 struct FrameHeader {
     enum class Version
@@ -49,9 +55,11 @@ constexpr std::size_t NR_SHORT_WINDOWS = 3;
 constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
-constexpr std::size_t NR_GRANULE_FREQ_LINES = 576;
+constexpr std::size_t SAMPLES_PER_GRANULE = 576;
 constexpr std::size_t NR_FREQ_BANDS = 32;
 constexpr std::size_t NR_SAMPLES_PER_BAND = 18;
+
+static constexpr unsigned int SAMPLES_PER_FRAME = SAMPLES_PER_GRANULE * 2;
 
 struct GranuleChannelSideInfo {
     enum class BlockType : unsigned char
@@ -64,7 +72,7 @@ struct GranuleChannelSideInfo {
 
     unsigned short part2_3_length;
     unsigned short bigValues;
-    unsigned char globalGain;
+    float globalGain;
     unsigned char scaleFactorCompression;
     bool windowSwitching;
     BlockType blockType;
@@ -73,8 +81,8 @@ struct GranuleChannelSideInfo {
     unsigned char subBlockGain[NR_SHORT_WINDOWS];
     unsigned char region0_count;
     unsigned char region1_count;
-    bool preFlag;
-    bool scaleFactorScale;
+    float preFlag;
+    float scaleFactorScale;
     unsigned char count1TableSelect;
 };
 
@@ -105,7 +113,15 @@ struct GranuleChannelContent {
 };
 
 struct MainDataContent {
-    GranuleChannelContent granules[NR_GRANULES][NR_CHANNELS];
+    MainDataContent() : granules(NR_GRANULES) {
+        for (auto& granule : granules) {
+            granule.resize(NR_CHANNELS);
+        }
+    }
+
+    std::vector<std::vector<GranuleChannelContent>> granules;
 };
+
+extern std::map<int, BandIndexes> samplingFreqBandIndexes;
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H

@@ -23,14 +23,6 @@ public:
     bool decodeNextFrame(FrameHeader& header);
 
 private:
-    struct BandIndexes {
-        std::vector<unsigned int> longWindow;
-        std::vector<unsigned int> shortWindow;
-    };
-
-    static constexpr unsigned int SAMPLES_PER_GRANULE = 576;
-    static constexpr unsigned int SAMPLES_PER_FRAME = SAMPLES_PER_GRANULE * 2;
-
     static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
     static constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;
 
@@ -41,7 +33,6 @@ private:
     static std::vector<unsigned int> samplingFreqs;
     static std::vector<std::vector<unsigned int>> scaleFactorBandsGroups;
     static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
-    static std::map<int, BandIndexes> samplingFreqBandIndexes;
 
     static inline void storeInContent(int sample, unsigned int sampleIndex, FrequencyBands& bands) {
         bands[sampleIndex / NR_SAMPLES_PER_BAND][sampleIndex % NR_SAMPLES_PER_BAND] = sample;
