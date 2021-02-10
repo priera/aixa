@@ -77,8 +77,8 @@ struct GranuleChannelSideInfo {
     bool windowSwitching;
     BlockType blockType;
     bool mixedBlockFlag;
-    unsigned char tableSelect[NR_REGIONS];
-    unsigned char subBlockGain[NR_SHORT_WINDOWS];
+    std::array<unsigned char, NR_REGIONS> tableSelect;
+    std::array<unsigned char, NR_SHORT_WINDOWS> subBlockGain;
     unsigned char region0_count;
     unsigned char region1_count;
     float preFlag;
@@ -86,40 +86,28 @@ struct GranuleChannelSideInfo {
     unsigned char count1TableSelect;
 };
 
+template <class Content>
+using GranuleChannelsData = std::array<std::array<Content, NR_CHANNELS>, NR_GRANULES>;
+
 struct SideInformation {
     unsigned short mainDataBegin;
-    bool scaleFactorSharing[NR_CHANNELS][NR_SUB_BAND_GROUPS];
-    GranuleChannelSideInfo granules[NR_GRANULES][NR_CHANNELS];
+    std::array<std::array<bool, NR_SUB_BAND_GROUPS>, NR_CHANNELS> scaleFactorSharing;
+    GranuleChannelsData<GranuleChannelSideInfo> granules;
 };
 
-using ShortWindowScaleFactors = std::vector<std::vector<int>>;
-using FrequencyBands = std::vector<std::vector<int>>;
+using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_BANDS>, NR_SHORT_WINDOWS>;
+
+template <class Representation>
+using FrequencyBands = std::array<std::array<Representation, NR_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
 
 struct GranuleChannelContent {
-    GranuleChannelContent() :
-        longWindowScaleFactorBands(NR_LONG_WINDOW_BANDS), shortWindowScaleFactorBands(NR_SHORT_WINDOWS),
-        freqBands(NR_FREQ_BANDS) {
-        for (auto& shortWindow : shortWindowScaleFactorBands) {
-            shortWindow.resize(NR_SHORT_WINDOW_BANDS);
-        }
-        for (auto& samplesVector : freqBands) {
-            samplesVector.resize(NR_SAMPLES_PER_BAND);
-        }
-    }
-
-    std::vector<int> longWindowScaleFactorBands;
+    std::array<int, NR_LONG_WINDOW_BANDS> longWindowScaleFactorBands;
     ShortWindowScaleFactors shortWindowScaleFactorBands;
-    FrequencyBands freqBands;
+    FrequencyBands<int> freqBands;
 };
 
 struct MainDataContent {
-    MainDataContent() : granules(NR_GRANULES) {
-        for (auto& granule : granules) {
-            granule.resize(NR_CHANNELS);
-        }
-    }
-
-    std::vector<std::vector<GranuleChannelContent>> granules;
+    GranuleChannelsData<GranuleChannelContent> granules;
 };
 
 extern std::map<int, BandIndexes> samplingFreqBandIndexes;

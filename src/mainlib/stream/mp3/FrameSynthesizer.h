@@ -5,12 +5,7 @@
 
 class FrameSynthesizer {
 public:
-    FrameSynthesizer() : dequantized(NR_FREQ_BANDS) {
-        for (auto& band : dequantized) {
-            band.resize(NR_SAMPLES_PER_BAND);
-        }
-    };
-
+    FrameSynthesizer() = default;
     virtual ~FrameSynthesizer() = default;
 
     void synthesize(unsigned int samplingFreq,
@@ -26,7 +21,7 @@ private:
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
 
-    FrequencyBands dequantized;
+    FrequencyBands<double> dequantized;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H

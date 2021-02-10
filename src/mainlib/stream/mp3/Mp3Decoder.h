@@ -34,7 +34,7 @@ private:
     static std::vector<std::vector<unsigned int>> scaleFactorBandsGroups;
     static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
 
-    static inline void storeInContent(int sample, unsigned int sampleIndex, FrequencyBands& bands) {
+    static inline void storeInContent(int sample, unsigned int sampleIndex, FrequencyBands<int>& bands) {
         bands[sampleIndex / NR_SAMPLES_PER_BAND][sampleIndex % NR_SAMPLES_PER_BAND] = sample;
     }
 

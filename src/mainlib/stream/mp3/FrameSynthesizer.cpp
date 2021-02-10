@@ -15,6 +15,9 @@ void FrameSynthesizer::synthesize(unsigned int samplingFreq,
             const auto& channelInfo = sideInfo.granules[i][channel];
             const auto& channelContent = content.granules[i][channel];
             dequantizeSamples(samplingFreq, channelInfo, channelContent);
+            // reordering (short windows only)
+            // stereo
+            // antialias();
         }
     }
 }
@@ -26,7 +29,7 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
         throw std::runtime_error("Not supported (yet) short windows");
     }
 
-    float gainTerm = std::pow(2.0f, (channelInfo.globalGain - GAIN_BASE) / 4.0);
+    double gainTerm = std::pow(2.0, (channelInfo.globalGain - GAIN_BASE) / 4.0);
     std::size_t scaleFactorBandInd = 1;
     std::size_t nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
 
@@ -38,9 +41,9 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
             }
 
             auto scaleFactor = channelContent.longWindowScaleFactorBands[scaleFactorBandInd - 1];
-            auto preTabFactor = channelInfo.preFlag * pretab[scaleFactorBandInd - 1];
-            auto exp = -0.5f * (1.0f + channelInfo.scaleFactorScale) * (scaleFactor + preTabFactor);
-            float scaleFactorTerm = std::pow(2.0f, exp);
+            double preTabFactor = channelInfo.preFlag * pretab[scaleFactorBandInd - 1];
+            double exp = -0.5 * (1.0 + channelInfo.scaleFactorScale) * (scaleFactor + preTabFactor);
+            double scaleFactorTerm = std::pow(2.0, exp);
             auto sample = channelContent.freqBands[band][sampleInd];
             auto dequantizedSample = std::pow(std::abs(sample), 4.0 / 3.0) * gainTerm * scaleFactorTerm;
             dequantizedSample *= (sample < 0) ? -1 : 1;
