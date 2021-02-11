@@ -5,7 +5,7 @@
 
 class FrameSynthesizer {
 public:
-    FrameSynthesizer() = default;
+    FrameSynthesizer() : antialiasCoefficients(), dequantized() { initAntialiasCoefficients(); }
     virtual ~FrameSynthesizer() = default;
 
     void synthesize(unsigned int samplingFreq,
@@ -15,12 +15,21 @@ public:
 
 private:
     static constexpr float GAIN_BASE = 210.f;
+    static constexpr std::size_t NR_BUTTERFLIES = 8;
+
     static std::vector<unsigned int> pretab;
+
+    void initAntialiasCoefficients();
 
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
+    void antialias(const GranuleChannelSideInfo& channelInfo);
 
+    struct {
+        std::array<double, NR_BUTTERFLIES> ca;
+        std::array<double, NR_BUTTERFLIES> cs;
+    } antialiasCoefficients;
     FrequencyBands<double> dequantized;
 };
 
