@@ -11,15 +11,22 @@ class ConstVectorProxy;
 template <typename T, class ZeroComparer>
 class Vector : public Matrix<T, ZeroComparer> {
 public:
+    enum class Ordering
+    {
+        ROW_ORDERED,
+        COLUMN_ORDERED
+    };
+
     template <class OtherIt>
-    Vector(OtherIt other, size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {
+    Vector(OtherIt other, std::size_t M, Ordering ordering = Ordering::ROW_ORDERED) :
+        Matrix<T, ZeroComparer>(checkColumns(M, ordering), checkRows(M, ordering), std::true_type(), T()),
+        ordering(ordering) {
         std::copy(other, other + M, this->content.begin());
     }
 
-    explicit Vector(size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {}
-
-    template <template <typename...> typename SequenceContainer>
-    explicit Vector(SequenceContainer<T>& content) : Matrix<T, ZeroComparer>(1, content.size(), content) {}
+    explicit Vector(std::size_t M, Ordering ordering = Ordering::ROW_ORDERED, T def = T()) :
+        Matrix<T, ZeroComparer>(checkColumns(M, ordering), checkRows(M, ordering), std::true_type(), def),
+        ordering(ordering) {}
 
     ~Vector() override = default;
 
@@ -33,7 +40,19 @@ public:
     Vector<T, ZeroComparer> operator*(const Vector<T, ZeroComparer>& other) const;
 
 protected:
-    Vector(size_t M, std::false_type) : Matrix<T, ZeroComparer>(1, M, std::false_type()) {}
+    Vector(std::size_t M, std::false_type) :
+        Matrix<T, ZeroComparer>(checkColumns(M, ordering), checkRows(M, ordering), std::false_type()) {}
+
+private:
+    static constexpr std::size_t checkColumns(std::size_t candidateDim, Ordering ordering) {
+        return (ordering == Ordering::ROW_ORDERED) ? candidateDim : 1;
+    }
+
+    static constexpr std::size_t checkRows(std::size_t candidateDim, Ordering ordering) {
+        return (ordering == Ordering::COLUMN_ORDERED) ? candidateDim : 1;
+    }
+
+    Ordering ordering;
 };
 }  // namespace aixa::math
 

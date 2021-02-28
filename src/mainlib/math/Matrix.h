@@ -34,6 +34,12 @@ public:
         return std::move(ret);
     }
 
+    Matrix<T, TypeAxioms> x(const Matrix<T, TypeAxioms>& rhs) const {
+        Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
+        multiply(rhs, ret);
+        return ret;
+    }
+
     Matrix<T, TypeAxioms> operator+(const Matrix<T, TypeAxioms>& other) const {
         if (this->rows() != other.rows() || this->columns() != other.columns())
             throw std::runtime_error("Invalid matrix operation");
@@ -93,19 +99,27 @@ public:
 
     size_t size() const { return rows_ * columns_; }
 
-    void multiply(const Matrix<T, TypeAxioms>& other, Matrix<T, TypeAxioms>& result);
-
     void print() const;
 
 protected:
     Matrix(size_t N, size_t M, std::true_type allocate, T def);
     Matrix(size_t N, size_t M, std::false_type resize);
 
+    void multiply(const Matrix<T, TypeAxioms>& other, Matrix<T, TypeAxioms>& result) const;
+
     size_t columns_;
     size_t rows_;
 
     std::vector<T> content;
 };
+
+// template <typename T, class TypeAxioms>
+// Matrix<T, TypeAxioms> operator*(const Matrix<T, TypeAxioms>& rhs) const {
+//    Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
+//    multiply(rhs, ret);
+//    return ret;
+//}
+
 }  // namespace aixa::math
 
 #endif  // AIXA_SRC_MAINLIB_DSP_MATRIX_H

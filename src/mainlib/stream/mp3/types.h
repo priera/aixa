@@ -57,7 +57,8 @@ constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
 constexpr std::size_t SAMPLES_PER_GRANULE = 576;
 constexpr std::size_t NR_FREQ_BANDS = 32;
-constexpr std::size_t NR_SAMPLES_PER_BAND = 18;
+constexpr std::size_t NR_CODED_SAMPLES_PER_BAND = 18;
+constexpr std::size_t NR_TOTAL_SAMPLES = 2 * NR_CODED_SAMPLES_PER_BAND;
 
 static constexpr unsigned int SAMPLES_PER_FRAME = SAMPLES_PER_GRANULE * 2;
 
@@ -98,7 +99,7 @@ struct SideInformation {
 using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_BANDS>, NR_SHORT_WINDOWS>;
 
 template <class Representation>
-using FrequencyBands = std::array<std::array<Representation, NR_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
+using FrequencyBands = std::array<std::array<Representation, NR_CODED_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
 
 struct GranuleChannelContent {
     std::array<int, NR_LONG_WINDOW_BANDS> longWindowScaleFactorBands;
