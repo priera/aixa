@@ -51,13 +51,13 @@ void FrameSynthesizer::initBlockWindows() {
         return ret;
     };
 
-    auto v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
+    auto v = DoubleVector(NR_TOTAL_SAMPLES);
     for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = std::sin(M_PI / NR_TOTAL_SAMPLES * (i + 0.5));
     }
     blockWindows.insert({GranuleChannelSideInfo::BlockType::NORMAL, std::move(extendVector(v))});
 
-    v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
+    v = DoubleVector(NR_TOTAL_SAMPLES);
     std::size_t i;
     for (i = 0; i < 18; i++) {
         v[i] = std::sin(M_PI / NR_TOTAL_SAMPLES * (i + 0.5));
@@ -73,7 +73,7 @@ void FrameSynthesizer::initBlockWindows() {
     }
     blockWindows.insert({GranuleChannelSideInfo::BlockType::START, std::move(extendVector(v))});
 
-    v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
+    v = DoubleVector(NR_TOTAL_SAMPLES);
     for (i = 0; i < 12; i++) {
         v[i] = std::sin(M_PI / 12 * (i + 0.5));
     }
@@ -82,7 +82,7 @@ void FrameSynthesizer::initBlockWindows() {
     }
     blockWindows.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(extendVector(v))});
 
-    v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
+    v = DoubleVector(NR_TOTAL_SAMPLES);
     for (i = 0; i < 6; i++) {
         v[i] = 0.0;
     }
@@ -163,19 +163,11 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
 }
 
 void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info) {
-    /*
-    *         N=36;
-          for(p= 0;p<N;p++){
-              sum = 0.0;
-              for(m=0;m<N/2;m++)
-                  sum += in[m] * COS[((2*p+1+N/2)*(2*m+1))%(4*36)];
-              out[p] = sum * win[block_type][p];
-          }
-          */
     const auto& window = blockWindows.at(info.blockType);
-    auto mulWindow = cosineTransformMatrix * window;
+    auto windowedTransform = cosineTransformMatrix * window;
+
     for (auto& band : dequantized) {
         auto samplesMatrix = DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, 1, band);
-        auto timeDomainSamples = (samplesMatrix * mulWindow).row(0);
+        auto timeDomainSamples = (samplesMatrix * windowedTransform).row(0);
     }
 }

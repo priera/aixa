@@ -4,8 +4,6 @@
 #include <mainlib/math/dft/MatrixFourierTransform.h>
 #include <mainlib/math/vectorUtils.h>
 
-#include <QtCore/QtGlobal>
-#include <QtTest/QTest>
 #include <cmath>
 #include <iostream>
 
