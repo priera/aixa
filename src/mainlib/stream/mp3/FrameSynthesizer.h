@@ -37,7 +37,7 @@ private:
     } antialiasCoefficients;
     FrequencyBands<double> dequantized;
     aixa::math::DoubleMatrix cosineTransformMatrix;
-    std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleVector> blockWindows;
+    std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix> blockWindows;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H

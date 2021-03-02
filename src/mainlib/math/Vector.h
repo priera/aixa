@@ -33,11 +33,11 @@ public:
     ConstVectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count) const;
     Vector<T, ZeroComparer> copy(std::size_t beginning, std::size_t count) const;
 
+    Vector<T, ZeroComparer> operator*(const Vector<T, ZeroComparer>& other) const;
+
     virtual const T& operator[](std::size_t n) const { return this->content[n]; }
 
     T& operator[](std::size_t n) { return this->content[n]; }
-
-    Vector<T, ZeroComparer> operator*(const Vector<T, ZeroComparer>& other) const;
 
 protected:
     Vector(std::size_t M, std::false_type) :

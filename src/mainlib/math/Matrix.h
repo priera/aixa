@@ -1,6 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_DSP_MATRIX_H
 #define AIXA_SRC_MAINLIB_DSP_MATRIX_H
 
+#include <array>
 #include <cstddef>
 #include <stdexcept>
 #include <vector>
@@ -11,20 +12,23 @@ template <typename T, class TypeAxioms>
 class Matrix {
 public:
     // N columns, M rows
-    Matrix(size_t N, size_t M, T def = T()) : Matrix(N, M, std::true_type(), def){};
+    Matrix(std::size_t N, std::size_t M, T def = T()) : Matrix(N, M, std::true_type(), def){};
 
-    template <template <typename...> typename SequenceContainer>
-    Matrix(size_t N, size_t M, SequenceContainer<T>& content) : columns_(N), rows_(M) {
-        this->content.swap(content);
+    template <std::size_t ArrayDim>
+    Matrix(std::size_t N, std::size_t M, std::array<T, ArrayDim>& content) :
+        Matrix(N, M, std::true_type(), T()) {
+        std::copy(content.begin(), content.end(), std::back_inserter(this->content));
     }
 
     Matrix(const Matrix<T, TypeAxioms>& other) = default;
 
     virtual ~Matrix() = default;
 
-    const T& operator()(size_t row, size_t column) const { return content[row * columns_ + column]; }
+    const T& operator()(std::size_t row, std::size_t column) const {
+        return content[row * columns_ + column];
+    }
 
-    T& operator()(size_t row, size_t column) { return content[row * columns_ + column]; }
+    T& operator()(std::size_t row, std::size_t column) { return content[row * columns_ + column]; }
 
     Matrix<T, TypeAxioms> operator*(const T t) const {
         Matrix<T, TypeAxioms> ret(*this);
@@ -34,7 +38,7 @@ public:
         return std::move(ret);
     }
 
-    Matrix<T, TypeAxioms> x(const Matrix<T, TypeAxioms>& rhs) const {
+    Matrix<T, TypeAxioms> operator*(const Matrix<T, TypeAxioms>& rhs) const {
         Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
         multiply(rhs, ret);
         return ret;
@@ -85,19 +89,19 @@ public:
 
     bool operator!=(const Matrix<T, TypeAxioms>& other) const { return !(*this == other); }
 
-    size_t columns() const { return columns_; }
+    std::size_t columns() const { return columns_; }
 
-    size_t rows() const { return rows_; }
+    std::size_t rows() const { return rows_; }
 
-    std::vector<T> vector(size_t row) const {
-        auto beginOffset = row * columns();
-        auto end = (row + 1) * columns();
+    std::vector<T> row(std::size_t rowInd) const {
+        auto beginOffset = rowInd * columns();
+        auto end = (rowInd + 1) * columns();
         return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
     }
 
     const std::vector<T>& constContent() const { return content; }
 
-    size_t size() const { return rows_ * columns_; }
+    std::size_t size() const { return rows_ * columns_; }
 
     void print() const;
 
@@ -112,13 +116,6 @@ protected:
 
     std::vector<T> content;
 };
-
-// template <typename T, class TypeAxioms>
-// Matrix<T, TypeAxioms> operator*(const Matrix<T, TypeAxioms>& rhs) const {
-//    Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
-//    multiply(rhs, ret);
-//    return ret;
-//}
 
 }  // namespace aixa::math
 

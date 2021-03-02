@@ -3,7 +3,6 @@
 #include <mainlib/math/types.h>
 
 #include <cmath>
-#include <iostream>
 #include <stdexcept>
 
 using namespace aixa::math;
@@ -40,11 +39,23 @@ void FrameSynthesizer::initTransformMatrix() {
 }
 
 void FrameSynthesizer::initBlockWindows() {
+    auto extendVector = [](const DoubleVector& v) -> DoubleMatrix {
+        auto ret = DoubleMatrix(NR_TOTAL_SAMPLES, NR_TOTAL_SAMPLES);
+
+        for (std::size_t row = 0; row < NR_TOTAL_SAMPLES; row++) {
+            for (std::size_t col = 0; col < NR_TOTAL_SAMPLES; col++) {
+                ret(row, col) = v[row];
+            }
+        }
+
+        return ret;
+    };
+
     auto v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
     for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = std::sin(M_PI / NR_TOTAL_SAMPLES * (i + 0.5));
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::NORMAL, std::move(v)});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::NORMAL, std::move(extendVector(v))});
 
     v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
     std::size_t i;
@@ -60,7 +71,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = 0.0;
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::START, std::move(v)});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::START, std::move(extendVector(v))});
 
     v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
     for (i = 0; i < 12; i++) {
@@ -69,7 +80,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = 0.0;
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(v)});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(extendVector(v))});
 
     v = DoubleVector(NR_TOTAL_SAMPLES, DoubleVector::Ordering::COLUMN_ORDERED);
     for (i = 0; i < 6; i++) {
@@ -84,7 +95,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = std::sin(M_PI / 36 * (i + 0.5));
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::END, std::move(v)});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::END, std::move(extendVector(v))});
 }
 
 void FrameSynthesizer::synthesize(unsigned int samplingFreq,
@@ -162,11 +173,9 @@ void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info) {
           }
           */
     const auto& window = blockWindows.at(info.blockType);
+    auto mulWindow = cosineTransformMatrix * window;
     for (auto& band : dequantized) {
-        auto samplesVector = DoubleVector(band.begin(), band.size());
-        auto timeDomainSamples = (samplesVector.x(cosineTransformMatrix)) * (window);
-
-        // TODO multiply whole matrix by window matrix
-        std::cout << timeDomainSamples.columns() << " " << timeDomainSamples.rows() << std::endl;
+        auto samplesMatrix = DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, 1, band);
+        auto timeDomainSamples = (samplesMatrix * mulWindow).row(0);
     }
 }
