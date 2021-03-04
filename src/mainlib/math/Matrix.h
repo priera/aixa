@@ -15,8 +15,7 @@ public:
     Matrix(std::size_t N, std::size_t M, T def = T()) : Matrix(N, M, std::true_type(), def){};
 
     template <std::size_t ArrayDim>
-    Matrix(std::size_t N, std::size_t M, std::array<T, ArrayDim>& content) :
-        Matrix(N, M, std::true_type(), T()) {
+    Matrix(std::size_t N, std::size_t M, std::array<T, ArrayDim>& content) : Matrix(N, M, std::false_type()) {
         std::copy(content.begin(), content.end(), std::back_inserter(this->content));
     }
 

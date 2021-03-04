@@ -39,13 +39,11 @@ void FrameSynthesizer::initTransformMatrix() {
 }
 
 void FrameSynthesizer::initBlockWindows() {
-    auto extendVector = [](const DoubleVector& v) -> DoubleMatrix {
+    auto diagonalize = [](const DoubleVector& v) -> DoubleMatrix {
         auto ret = DoubleMatrix(NR_TOTAL_SAMPLES, NR_TOTAL_SAMPLES);
 
-        for (std::size_t row = 0; row < NR_TOTAL_SAMPLES; row++) {
-            for (std::size_t col = 0; col < NR_TOTAL_SAMPLES; col++) {
-                ret(row, col) = v[row];
-            }
+        for (std::size_t n = 0; n < NR_TOTAL_SAMPLES; n++) {
+            ret(n, n) = v[n];
         }
 
         return ret;
@@ -55,7 +53,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = std::sin(M_PI / NR_TOTAL_SAMPLES * (i + 0.5));
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::NORMAL, std::move(extendVector(v))});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::NORMAL, std::move(diagonalize(v))});
 
     v = DoubleVector(NR_TOTAL_SAMPLES);
     std::size_t i;
@@ -71,7 +69,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = 0.0;
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::START, std::move(extendVector(v))});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::START, std::move(diagonalize(v))});
 
     v = DoubleVector(NR_TOTAL_SAMPLES);
     for (i = 0; i < 12; i++) {
@@ -80,7 +78,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = 0.0;
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(extendVector(v))});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(diagonalize(v))});
 
     v = DoubleVector(NR_TOTAL_SAMPLES);
     for (i = 0; i < 6; i++) {
@@ -95,7 +93,7 @@ void FrameSynthesizer::initBlockWindows() {
     for (; i < NR_TOTAL_SAMPLES; i++) {
         v[i] = std::sin(M_PI / 36 * (i + 0.5));
     }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::END, std::move(extendVector(v))});
+    blockWindows.insert({GranuleChannelSideInfo::BlockType::END, std::move(diagonalize(v))});
 }
 
 void FrameSynthesizer::synthesize(unsigned int samplingFreq,
