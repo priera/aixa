@@ -152,10 +152,10 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
             auto upIndex = NR_CODED_SAMPLES_PER_BAND - 1 - butterfly;
             auto bandUp = dequantized[band][upIndex];
             auto bandDown = dequantized[band + 1][butterfly];
-            dequantized[band][upIndex] =
-                antialiasCoefficients.cs[butterfly] * bandUp - antialiasCoefficients.ca[butterfly] * bandDown;
-            dequantized[band + 1][butterfly] =
-                antialiasCoefficients.ca[butterfly] * bandUp + antialiasCoefficients.cs[butterfly] * bandDown;
+            auto cs = antialiasCoefficients.cs[butterfly];
+            auto ca = antialiasCoefficients.ca[butterfly];
+            dequantized[band][upIndex] = cs * bandUp - ca * bandDown;
+            dequantized[band + 1][butterfly] = ca * bandUp + cs * bandDown;
         }
     }
 }
