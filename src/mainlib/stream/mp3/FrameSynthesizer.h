@@ -35,7 +35,7 @@ private:
         std::array<double, NR_BUTTERFLIES> ca;
         std::array<double, NR_BUTTERFLIES> cs;
     } antialiasCoefficients;
-    FrequencyBands<double> dequantized;
+    aixa::math::DoubleMatrix dequantized;
     aixa::math::DoubleMatrix cosineTransformMatrix;
     std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix> blockWindows;
     std::array<FrequencyBands<double>, NR_CHANNELS> channelOverlappingTerms;

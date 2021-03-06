@@ -11,7 +11,7 @@ std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                       1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0};
 
 FrameSynthesizer::FrameSynthesizer() :
-    antialiasCoefficients(), dequantized(),
+    antialiasCoefficients(), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     cosineTransformMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND),
     channelOverlappingTerms() {
     initAntialiasCoefficients();
@@ -139,7 +139,7 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
             auto sample = channelContent.freqBands[band][sampleInd];
             auto dequantizedSample = std::pow(std::abs(sample), 4.0 / 3.0) * gainTerm * scaleFactorTerm;
             dequantizedSample *= (sample < 0) ? -1 : 1;
-            dequantized[band][sampleInd] = dequantizedSample;
+            dequantized(band, sampleInd) = dequantizedSample;
         }
     }
 }
@@ -151,12 +151,12 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
     for (std::size_t band = 0; band < NR_FREQ_BANDS - 1; band++) {
         for (std::size_t butterfly = 0; butterfly < NR_BUTTERFLIES; butterfly++) {
             auto upIndex = NR_CODED_SAMPLES_PER_BAND - 1 - butterfly;
-            auto bandUp = dequantized[band][upIndex];
-            auto bandDown = dequantized[band + 1][butterfly];
+            auto bandUp = dequantized(band, upIndex);
+            auto bandDown = dequantized(band + 1, butterfly);
             auto cs = antialiasCoefficients.cs[butterfly];
             auto ca = antialiasCoefficients.ca[butterfly];
-            dequantized[band][upIndex] = cs * bandUp - ca * bandDown;
-            dequantized[band + 1][butterfly] = ca * bandUp + cs * bandDown;
+            dequantized(band, upIndex) = cs * bandUp - ca * bandDown;
+            dequantized(band + 1, butterfly) = ca * bandUp + cs * bandDown;
         }
     }
 }
@@ -164,16 +164,14 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
 void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info,
                                    FrequencyBands<double>& overlappingTerms) {
     const auto& window = blockWindows.at(info.blockType);
-    auto windowedTransform = cosineTransformMatrix * window;
+    auto timeDomainSamples = dequantized * cosineTransformMatrix * window;
 
     for (std::size_t bandInd = 0; bandInd < NR_FREQ_BANDS; bandInd++) {
-        const auto& band = dequantized[bandInd];
+        const auto bandSamples = timeDomainSamples.row(bandInd);
         auto& bandOverlapping = overlappingTerms[bandInd];
-        auto samplesMatrix = DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, 1, band);
-        auto timeDomainSamples = (samplesMatrix * windowedTransform).row(0);
         for (std::size_t sample = 0; sample < NR_CODED_SAMPLES_PER_BAND; sample++) {
-            timeDomainSamples[sample] + bandOverlapping[sample];
-            bandOverlapping[sample] = timeDomainSamples[sample + NR_CODED_SAMPLES_PER_BAND];
+            bandSamples[sample] + bandOverlapping[sample];
+            bandOverlapping[sample] = bandSamples[sample + NR_CODED_SAMPLES_PER_BAND];
         }
     }
 }
