@@ -99,12 +99,12 @@ struct SideInformation {
 using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_BANDS>, NR_SHORT_WINDOWS>;
 
 template <class Representation>
-using FrequencyBands = std::array<std::array<Representation, NR_CODED_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
+using Bands = std::array<std::array<Representation, NR_CODED_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
 
 struct GranuleChannelContent {
     std::array<int, NR_LONG_WINDOW_BANDS> longWindowScaleFactorBands;
     ShortWindowScaleFactors shortWindowScaleFactorBands;
-    FrequencyBands<int> freqBands;
+    Bands<int> freqBands;
 };
 
 struct MainDataContent {

@@ -12,7 +12,7 @@ std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 FrameSynthesizer::FrameSynthesizer() :
     antialiasCoefficients(), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    cosineTransformMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND),
+    cosineTransformMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND), timeSamples(),
     channelOverlappingTerms() {
     initAntialiasCoefficients();
     initTransformMatrix();
@@ -110,6 +110,7 @@ void FrameSynthesizer::synthesize(unsigned int samplingFreq,
             // stereo
             antialias(channelInfo);
             inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
+            frequencyInversion();
         }
     }
 }
@@ -161,17 +162,24 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
     }
 }
 
-void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info,
-                                   FrequencyBands<double>& overlappingTerms) {
+void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms) {
     const auto& window = blockWindows.at(info.blockType);
-    auto timeDomainSamples = dequantized * cosineTransformMatrix * window;
+    auto overlappedTimeSamples = dequantized * cosineTransformMatrix * window;
 
     for (std::size_t bandInd = 0; bandInd < NR_FREQ_BANDS; bandInd++) {
-        const auto bandSamples = timeDomainSamples.row(bandInd);
+        const auto bandSamples = overlappedTimeSamples.row(bandInd);
         auto& bandOverlapping = overlappingTerms[bandInd];
         for (std::size_t sample = 0; sample < NR_CODED_SAMPLES_PER_BAND; sample++) {
-            bandSamples[sample] + bandOverlapping[sample];
+            timeSamples[bandInd][sample] = bandSamples[sample] + bandOverlapping[sample];
             bandOverlapping[sample] = bandSamples[sample + NR_CODED_SAMPLES_PER_BAND];
+        }
+    }
+}
+
+void FrameSynthesizer::frequencyInversion() {
+    for (std::size_t bandInd = 1; bandInd < NR_FREQ_BANDS; bandInd += 2) {
+        for (std::size_t sample = 1; sample < NR_CODED_SAMPLES_PER_BAND; sample += 2) {
+            timeSamples[bandInd][sample] *= -1;
         }
     }
 }
