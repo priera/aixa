@@ -29,7 +29,7 @@ private:
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
     void antialias(const GranuleChannelSideInfo& channelInfo);
-    void inverseMDCT(const GranuleChannelSideInfo& info);
+    void inverseMDCT(const GranuleChannelSideInfo& info, FrequencyBands<double>& overlappingTerms);
 
     struct {
         std::array<double, NR_BUTTERFLIES> ca;
@@ -38,6 +38,7 @@ private:
     FrequencyBands<double> dequantized;
     aixa::math::DoubleMatrix cosineTransformMatrix;
     std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix> blockWindows;
+    std::array<FrequencyBands<double>, NR_CHANNELS> channelOverlappingTerms;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H

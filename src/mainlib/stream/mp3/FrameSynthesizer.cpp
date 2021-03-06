@@ -12,7 +12,8 @@ std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 FrameSynthesizer::FrameSynthesizer() :
     antialiasCoefficients(), dequantized(),
-    cosineTransformMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND) {
+    cosineTransformMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND),
+    channelOverlappingTerms() {
     initAntialiasCoefficients();
     initTransformMatrix();
     initBlockWindows();
@@ -108,7 +109,7 @@ void FrameSynthesizer::synthesize(unsigned int samplingFreq,
             // reordering (short windows only)
             // stereo
             antialias(channelInfo);
-            inverseMDCT(channelInfo);
+            inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
         }
     }
 }
@@ -160,12 +161,19 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
     }
 }
 
-void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info) {
+void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info,
+                                   FrequencyBands<double>& overlappingTerms) {
     const auto& window = blockWindows.at(info.blockType);
     auto windowedTransform = cosineTransformMatrix * window;
 
-    for (auto& band : dequantized) {
+    for (std::size_t bandInd = 0; bandInd < NR_FREQ_BANDS; bandInd++) {
+        const auto& band = dequantized[bandInd];
+        auto& bandOverlapping = overlappingTerms[bandInd];
         auto samplesMatrix = DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, 1, band);
         auto timeDomainSamples = (samplesMatrix * windowedTransform).row(0);
+        for (std::size_t sample = 0; sample < NR_CODED_SAMPLES_PER_BAND; sample++) {
+            timeDomainSamples[sample] + bandOverlapping[sample];
+            bandOverlapping[sample] = timeDomainSamples[sample + NR_CODED_SAMPLES_PER_BAND];
+        }
     }
 }
