@@ -30,8 +30,6 @@ public:
 
     T& operator[](std::size_t n) { return this->content[n]; }
 
-    Vector<T, ZeroComparer> operator*(const Vector<T, ZeroComparer>& other) const;
-
 protected:
     Vector(size_t M, std::false_type) : Matrix<T, ZeroComparer>(1, M, std::false_type()) {}
 };

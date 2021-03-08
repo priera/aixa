@@ -44,6 +44,13 @@ public:
         return ret;
     }
 
+    Matrix<T, TypeAxioms>& operator*=(const Matrix<T, TypeAxioms>& rhs) {
+        Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
+        multiply(rhs, ret);
+        *this = std::move(ret);
+        return *this;
+    }
+
     Matrix<T, TypeAxioms> operator+(const Matrix<T, TypeAxioms>& other) const {
         if (this->rows() != other.rows() || this->columns() != other.columns())
             throw std::runtime_error("Invalid matrix operation");
@@ -54,6 +61,22 @@ public:
         }
 
         return std::move(ret);
+    }
+
+    void elemWiseProduct(const Matrix<T, TypeAxioms>& other) {
+        if (!(this->rows() == other.rows() && this->columns() == other.columns()))
+            throw std::runtime_error("Invalid matrix operation");
+
+        const auto size = this->size();
+        for (std::size_t i = 0; i < size; i++) {
+            this->content[i] *= other.content[i];
+        }
+    }
+
+    Matrix<T, TypeAxioms> elemWiseProduct(const Matrix<T, TypeAxioms>& other) const {
+        auto ret = *this;
+        ret.elemWiseProduct(other);
+        return ret;
     }
 
     Matrix<T, TypeAxioms>& operator+=(const Matrix<T, TypeAxioms>& other) {
