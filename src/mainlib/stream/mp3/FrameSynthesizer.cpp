@@ -12,11 +12,14 @@ std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 FrameSynthesizer::FrameSynthesizer() :
     antialiasCoefficients(), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    cosineTransformMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND), timeSamples(),
-    channelOverlappingTerms() {
+    cosineTransform(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND),
+    synthesisFilter(NR_FREQ_BANDS * 2, NR_FREQ_BANDS), timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+    frequencyInversion(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
     initAntialiasCoefficients();
     initTransformMatrix();
     initBlockWindows();
+    initFrequencyInversionMatrix();
+    initTimeDomainSynFilter();
 }
 
 void FrameSynthesizer::initAntialiasCoefficients() {
@@ -34,7 +37,7 @@ void FrameSynthesizer::initTransformMatrix() {
     for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
         for (std::size_t j = 0; j < NR_CODED_SAMPLES_PER_BAND; j++) {
             auto freq = (2 * i + 1 + NR_CODED_SAMPLES_PER_BAND) * (2 * j + 1) % (4 * NR_TOTAL_SAMPLES);
-            cosineTransformMatrix(j, i) = std::cos((M_PI * freq) / MAX_FREQ);
+            cosineTransform(j, i) = std::cos((M_PI * freq) / MAX_FREQ);
         }
     }
 }
@@ -97,6 +100,27 @@ void FrameSynthesizer::initBlockWindows() {
     blockWindows.insert({GranuleChannelSideInfo::BlockType::END, std::move(diagonalize(v))});
 }
 
+void FrameSynthesizer::initFrequencyInversionMatrix() {
+    for (std::size_t row = 0; row < frequencyInversion.rows(); row++) {
+        for (std::size_t col = 0; col < frequencyInversion.columns(); col++) {
+            auto val = (row % 2 == 1 && col % 2 == 1) ? -1.0 : 1.0;
+            frequencyInversion(row, col) = val;
+        }
+    }
+}
+
+void FrameSynthesizer::initTimeDomainSynFilter() {
+    for (std::size_t col = 0; col < synthesisFilter.columns(); col++) {
+        for (std::size_t row = 0; row < synthesisFilter.rows(); row++) {
+            auto val = 1e9 * std::cos(((M_PI / 64) * col + (M_PI / 4)) * (2.0 * row + 1));
+            val += (val >= 0.0) ? 0.5 : -0.5;
+            std::modf(val, &val);
+            val *= 1e-9;
+            synthesisFilter(row, col) = val;
+        }
+    }
+}
+
 void FrameSynthesizer::synthesize(unsigned int samplingFreq,
                                   const SideInformation& sideInfo,
                                   const MainDataContent& content,
@@ -110,7 +134,7 @@ void FrameSynthesizer::synthesize(unsigned int samplingFreq,
             // stereo
             antialias(channelInfo);
             inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
-            frequencyInversion();
+            polyphaseSynthesis();
         }
     }
 }
@@ -164,22 +188,18 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
 
 void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms) {
     const auto& window = blockWindows.at(info.blockType);
-    auto overlappedTimeSamples = dequantized * cosineTransformMatrix * window;
+    auto overlappedTimeSamples = dequantized * cosineTransform * window;
 
     for (std::size_t bandInd = 0; bandInd < NR_FREQ_BANDS; bandInd++) {
         const auto bandSamples = overlappedTimeSamples.row(bandInd);
         auto& bandOverlapping = overlappingTerms[bandInd];
         for (std::size_t sample = 0; sample < NR_CODED_SAMPLES_PER_BAND; sample++) {
-            timeSamples[bandInd][sample] = bandSamples[sample] + bandOverlapping[sample];
+            timeSamples(bandInd, sample) = bandSamples[sample] + bandOverlapping[sample];
             bandOverlapping[sample] = bandSamples[sample + NR_CODED_SAMPLES_PER_BAND];
         }
     }
+
+    timeSamples.elemWiseProduct(frequencyInversion);
 }
 
-void FrameSynthesizer::frequencyInversion() {
-    for (std::size_t bandInd = 1; bandInd < NR_FREQ_BANDS; bandInd += 2) {
-        for (std::size_t sample = 1; sample < NR_CODED_SAMPLES_PER_BAND; sample += 2) {
-            timeSamples[bandInd][sample] *= -1;
-        }
-    }
-}
+void FrameSynthesizer::polyphaseSynthesis() { auto matrixed = timeSamples.transpose() * synthesisFilter; }

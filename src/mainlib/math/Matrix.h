@@ -112,6 +112,17 @@ public:
 
     bool operator!=(const Matrix<T, TypeAxioms>& other) const { return !(*this == other); }
 
+    Matrix<T, TypeAxioms> transpose() const {
+        auto ret = Matrix<T, TypeAxioms>(rows(), columns());
+        for (std::size_t row = 0; row < rows(); row++) {
+            for (std::size_t col = 0; col < columns(); col++) {
+                ret(col, row) = (*this)(row, col);
+            }
+        }
+
+        return ret;
+    }
+
     std::size_t columns() const { return columns_; }
 
     std::size_t rows() const { return rows_; }

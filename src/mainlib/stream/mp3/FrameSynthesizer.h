@@ -24,23 +24,27 @@ private:
     void initAntialiasCoefficients();
     void initTransformMatrix();
     void initBlockWindows();
+    void initTimeDomainSynFilter();
 
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
-    void frequencyInversion();
+    void polyphaseSynthesis();
 
     struct {
         std::array<double, NR_BUTTERFLIES> ca;
         std::array<double, NR_BUTTERFLIES> cs;
     } antialiasCoefficients;
     aixa::math::DoubleMatrix dequantized;
-    aixa::math::DoubleMatrix cosineTransformMatrix;
-    Bands<double> timeSamples;
+    aixa::math::DoubleMatrix cosineTransform;
+    aixa::math::DoubleMatrix timeSamples;
+    aixa::math::DoubleMatrix frequencyInversion;
+    aixa::math::DoubleMatrix synthesisFilter;
     std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix> blockWindows;
     std::array<Bands<double>, NR_CHANNELS> channelOverlappingTerms;
+    void initFrequencyInversionMatrix();
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H
