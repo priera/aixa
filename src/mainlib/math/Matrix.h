@@ -21,8 +21,11 @@ public:
     }
 
     Matrix(const Matrix<T, TypeAxioms>& other) = default;
+    Matrix(Matrix<T, TypeAxioms>&& other) noexcept = default;
 
     virtual ~Matrix() = default;
+
+    Matrix<T, TypeAxioms>& operator=(Matrix<T, TypeAxioms>&& other) noexcept = default;
 
     const T& operator()(std::size_t row, std::size_t column) const {
         return content[row * columns_ + column];

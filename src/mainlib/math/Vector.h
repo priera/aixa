@@ -21,7 +21,11 @@ public:
     template <template <typename...> typename SequenceContainer>
     explicit Vector(SequenceContainer<T>& content) : Matrix<T, ZeroComparer>(1, content.size(), content) {}
 
+    Vector(const Vector<T, ZeroComparer>& other) = default;
+
     ~Vector() override = default;
+
+    Vector<T, ZeroComparer>& operator=(Vector<T, ZeroComparer>&& other) noexcept = default;
 
     ConstVectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count) const;
     Vector<T, ZeroComparer> copy(std::size_t beginning, std::size_t count) const;

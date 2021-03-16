@@ -14,10 +14,12 @@ std::vector<std::vector<unsigned char>> Mp3Decoder::scaleFactorsCompression = {
 
 std::vector<std::vector<unsigned int>> Mp3Decoder::scaleFactorBandsGroups = {{0, 6, 12}, {0, 6, 11, 16, 21}};
 
-Mp3Decoder::Mp3Decoder(std::unique_ptr<MainDataReader> reader, std::unique_ptr<HuffmanSet> huffmanSet) :
-    header(), bytesInHeaders(0), currentFrameSize(0), reader(std::move(reader)),
-    huffmanSet(std::move(huffmanSet)), frameSynthesizer(std::make_unique<FrameSynthesizer>()), sideInfo(),
-    mainDataContent() {}
+Mp3Decoder::Mp3Decoder(std::unique_ptr<MainDataReader> reader,
+                       std::unique_ptr<HuffmanSet> huffmanSet,
+                       std::unique_ptr<FrameSynthesizer> frameSynthesizer) :
+    header(),
+    bytesInHeaders(0), currentFrameSize(0), reader(std::move(reader)), huffmanSet(std::move(huffmanSet)),
+    frameSynthesizer(std::move(frameSynthesizer)), sideInfo(), mainDataContent() {}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     if (!seekToNextFrame()) {

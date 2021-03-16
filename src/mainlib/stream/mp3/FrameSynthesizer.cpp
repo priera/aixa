@@ -10,36 +10,15 @@ using namespace aixa::math;
 std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                       1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0};
 
-FrameSynthesizer::FrameSynthesizer() :
-    antialiasCoefficients(), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    cosineTransform(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND),
+FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
+                                   aixa::math::DoubleMatrix cosineTransform) :
+    antialiasCoefficients(antialiasCoefficients),
+    dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), cosineTransform(std::move(cosineTransform)),
     synthesisFilter(NR_FREQ_BANDS * 2, NR_FREQ_BANDS), timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     frequencyInversion(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
-    initAntialiasCoefficients();
-    initTransformMatrix();
     initBlockWindows();
     initFrequencyInversionMatrix();
     initTimeDomainSynFilter();
-}
-
-void FrameSynthesizer::initAntialiasCoefficients() {
-    const std::vector<double> ci = {-0.6, -0.535, -0.33, -0.185, -0.095, -0.041, -0.0142, -0.0037};
-
-    for (int i = 0; i < NR_BUTTERFLIES; i++) {
-        auto sq = std::sqrt(1.0 + ci[i] * ci[i]);
-        antialiasCoefficients.cs[i] = 1.0 / sq;
-        antialiasCoefficients.ca[i] = ci[i] / sq;
-    }
-}
-
-void FrameSynthesizer::initTransformMatrix() {
-    const auto MAX_FREQ = 2 * NR_TOTAL_SAMPLES;
-    for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
-        for (std::size_t j = 0; j < NR_CODED_SAMPLES_PER_BAND; j++) {
-            auto freq = (2 * i + 1 + NR_CODED_SAMPLES_PER_BAND) * (2 * j + 1) % (4 * NR_TOTAL_SAMPLES);
-            cosineTransform(j, i) = std::cos((M_PI * freq) / MAX_FREQ);
-        }
-    }
 }
 
 void FrameSynthesizer::initBlockWindows() {

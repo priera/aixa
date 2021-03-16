@@ -16,7 +16,9 @@
 
 class Mp3Decoder {
 public:
-    Mp3Decoder(std::unique_ptr<MainDataReader> reader, std::unique_ptr<HuffmanSet> huffmanSet);
+    Mp3Decoder(std::unique_ptr<MainDataReader> reader,
+               std::unique_ptr<HuffmanSet> huffmanSet,
+               std::unique_ptr<FrameSynthesizer> frameSynthesizer);
 
     virtual ~Mp3Decoder() = default;
 

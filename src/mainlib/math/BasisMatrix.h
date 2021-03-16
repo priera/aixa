@@ -12,6 +12,9 @@ public:
     // N columns, M rows
     BasisMatrix(size_t N, size_t M, T def = T()) :
         Matrix<T, ZeroComparer>(N, M, def), result(std::move(Vector<T, ZeroComparer>(M))){};
+    BasisMatrix(const BasisMatrix<T, ZeroComparer>& other) = default;
+
+    BasisMatrix<T, ZeroComparer>& operator=(BasisMatrix<T, ZeroComparer>&& other) noexcept = default;
 
     Vector<T, ZeroComparer>& operator*(const Vector<T, ZeroComparer>& other) {
         this->multiply(other, result);
