@@ -14,7 +14,13 @@ public:
         std::array<double, NR_BUTTERFLIES> cs;
     };
 
-    FrameSynthesizer(AntialiasCoefficients antialiasCoefficients, aixa::math::DoubleMatrix cosineTransform);
+    using BlockWindows = std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix>;
+
+    FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
+                     aixa::math::DoubleMatrix cosineTransform,
+                     BlockWindows blockWindows,
+                     aixa::math::DoubleMatrix frequencyInversion,
+                     aixa::math::DoubleMatrix synFilter);
     virtual ~FrameSynthesizer() = default;
 
     void synthesize(unsigned int samplingFreq,
@@ -27,10 +33,6 @@ private:
 
     static std::vector<unsigned int> pretab;
 
-    void initBlockWindows();
-    void initFrequencyInversionMatrix();
-    void initTimeDomainSynFilter();
-
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
@@ -40,12 +42,13 @@ private:
 
     AntialiasCoefficients antialiasCoefficients;
     aixa::math::DoubleMatrix cosineTransform;
-    aixa::math::DoubleMatrix timeSamples;
+    BlockWindows blockWindows;
     aixa::math::DoubleMatrix frequencyInversion;
     aixa::math::DoubleMatrix synthesisFilter;
 
     aixa::math::DoubleMatrix dequantized;
-    std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix> blockWindows;
+    aixa::math::DoubleMatrix timeSamples;
+
     std::array<Bands<double>, NR_CHANNELS> channelOverlappingTerms;
 };
 

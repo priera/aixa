@@ -11,94 +11,15 @@ std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                       1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0};
 
 FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
-                                   aixa::math::DoubleMatrix cosineTransform) :
+                                   aixa::math::DoubleMatrix cosineTransform,
+                                   BlockWindows blockWindows,
+                                   aixa::math::DoubleMatrix frequencyInversion,
+                                   aixa::math::DoubleMatrix synFilter) :
     antialiasCoefficients(antialiasCoefficients),
-    dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), cosineTransform(std::move(cosineTransform)),
-    synthesisFilter(NR_FREQ_BANDS * 2, NR_FREQ_BANDS), timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    frequencyInversion(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
-    initBlockWindows();
-    initFrequencyInversionMatrix();
-    initTimeDomainSynFilter();
-}
-
-void FrameSynthesizer::initBlockWindows() {
-    auto diagonalize = [](const DoubleVector& v) -> DoubleMatrix {
-        auto ret = DoubleMatrix(NR_TOTAL_SAMPLES, NR_TOTAL_SAMPLES);
-
-        for (std::size_t n = 0; n < NR_TOTAL_SAMPLES; n++) {
-            ret(n, n) = v[n];
-        }
-
-        return ret;
-    };
-
-    auto v = DoubleVector(NR_TOTAL_SAMPLES);
-    for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
-        v[i] = std::sin(M_PI / NR_TOTAL_SAMPLES * (i + 0.5));
-    }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::NORMAL, std::move(diagonalize(v))});
-
-    v = DoubleVector(NR_TOTAL_SAMPLES);
-    std::size_t i;
-    for (i = 0; i < 18; i++) {
-        v[i] = std::sin(M_PI / NR_TOTAL_SAMPLES * (i + 0.5));
-    }
-    for (; i < 24; i++) {
-        v[i] = 1.0;
-    }
-    for (; i < 30; i++) {
-        v[i] = std::sin(M_PI / 12 * (i + 0.5 - 18));
-    }
-    for (; i < NR_TOTAL_SAMPLES; i++) {
-        v[i] = 0.0;
-    }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::START, std::move(diagonalize(v))});
-
-    v = DoubleVector(NR_TOTAL_SAMPLES);
-    for (i = 0; i < 12; i++) {
-        v[i] = std::sin(M_PI / 12 * (i + 0.5));
-    }
-    for (; i < NR_TOTAL_SAMPLES; i++) {
-        v[i] = 0.0;
-    }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(diagonalize(v))});
-
-    v = DoubleVector(NR_TOTAL_SAMPLES);
-    for (i = 0; i < 6; i++) {
-        v[i] = 0.0;
-    }
-    for (; i < 12; i++) {
-        v[i] = std::sin(M_PI / 12 * (i + 0.5 - 6));
-    }
-    for (; i < 18; i++) {
-        v[i] = 1.0;
-    }
-    for (; i < NR_TOTAL_SAMPLES; i++) {
-        v[i] = std::sin(M_PI / 36 * (i + 0.5));
-    }
-    blockWindows.insert({GranuleChannelSideInfo::BlockType::END, std::move(diagonalize(v))});
-}
-
-void FrameSynthesizer::initFrequencyInversionMatrix() {
-    for (std::size_t row = 0; row < frequencyInversion.rows(); row++) {
-        for (std::size_t col = 0; col < frequencyInversion.columns(); col++) {
-            auto val = (row % 2 == 1 && col % 2 == 1) ? -1.0 : 1.0;
-            frequencyInversion(row, col) = val;
-        }
-    }
-}
-
-void FrameSynthesizer::initTimeDomainSynFilter() {
-    for (std::size_t col = 0; col < synthesisFilter.columns(); col++) {
-        for (std::size_t row = 0; row < synthesisFilter.rows(); row++) {
-            auto val = 1e9 * std::cos(((M_PI / 64) * col + (M_PI / 4)) * (2.0 * row + 1));
-            val += (val >= 0.0) ? 0.5 : -0.5;
-            std::modf(val, &val);
-            val *= 1e-9;
-            synthesisFilter(row, col) = val;
-        }
-    }
-}
+    cosineTransform(std::move(cosineTransform)), blockWindows(std::move(blockWindows)),
+    frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
+    dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+    timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {}
 
 void FrameSynthesizer::synthesize(unsigned int samplingFreq,
                                   const SideInformation& sideInfo,
