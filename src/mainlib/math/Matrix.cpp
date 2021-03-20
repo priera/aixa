@@ -7,12 +7,14 @@
 
 namespace aixa::math {
 template <typename T, class TypeAxioms>
-Matrix<T, TypeAxioms>::Matrix(size_t N, size_t M, std::true_type allocate, T def) : columns_(N), rows_(M) {
+Matrix<T, TypeAxioms>::Matrix(std::size_t N, std::size_t M, std::true_type allocate, T def) :
+    columns_(N), rows_(M) {
     content.resize(columns_ * rows_, def);
 }
 
 template <typename T, class TypeAxioms>
-Matrix<T, TypeAxioms>::Matrix(size_t N, size_t M, std::false_type allocate) : columns_(N), rows_(M) {}
+Matrix<T, TypeAxioms>::Matrix(std::size_t N, std::size_t M, std::false_type allocate) :
+    columns_(N), rows_(M) {}
 
 template <typename T, class TypeAxioms>
 void Matrix<T, TypeAxioms>::multiply(const Matrix<T, TypeAxioms> &other,
@@ -23,10 +25,10 @@ void Matrix<T, TypeAxioms>::multiply(const Matrix<T, TypeAxioms> &other,
     }
 
     // The most naive implementation: O(n³) complexity and awful cache performance
-    for (size_t r = 0; r < rows(); r++) {
-        for (size_t c_r = 0; c_r < other.columns(); c_r++) {
+    for (std::size_t r = 0; r < rows(); r++) {
+        for (std::size_t c_r = 0; c_r < other.columns(); c_r++) {
             T acc = T();
-            for (size_t c = 0; c < columns(); c++) {
+            for (std::size_t c = 0; c < columns(); c++) {
                 acc += (*this)(r, c) * other(c, c_r);
             }
 
@@ -37,8 +39,8 @@ void Matrix<T, TypeAxioms>::multiply(const Matrix<T, TypeAxioms> &other,
 
 template <typename T, class TypeAxioms>
 void Matrix<T, TypeAxioms>::print() const {
-    for (size_t r = 0; r < rows(); r++) {
-        for (size_t c = 0; c < columns(); c++) {
+    for (std::size_t r = 0; r < rows(); r++) {
+        for (std::size_t c = 0; c < columns(); c++) {
             std::cout << (*this)(r, c) << " ";
         }
         std::cout << "\n";

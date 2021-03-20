@@ -12,14 +12,15 @@ template <typename T, class ZeroComparer>
 class Vector : public Matrix<T, ZeroComparer> {
 public:
     template <class OtherIt>
-    Vector(OtherIt other, size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {
+    Vector(OtherIt other, std::size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {
         std::copy(other, other + M, this->content.begin());
     }
 
-    explicit Vector(size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {}
+    explicit Vector(std::size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {}
 
-    template <template <typename...> typename SequenceContainer>
-    explicit Vector(SequenceContainer<T>& content) : Matrix<T, ZeroComparer>(1, content.size(), content) {}
+    //    template <template <typename...> typename SequenceContainer>
+    //    explicit Vector(SequenceContainer<T>& content) : Matrix<T, ZeroComparer>(1, content.size(), content)
+    //    {}
 
     Vector(const Vector<T, ZeroComparer>& other) = default;
 

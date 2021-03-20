@@ -59,7 +59,7 @@ public:
             throw std::runtime_error("Invalid matrix operation");
 
         Matrix<T, TypeAxioms> ret(*this);
-        for (size_t i = 0; i < size(); i++) {
+        for (std::size_t i = 0; i < size(); i++) {
             ret.content[i] += other.content[i];
         }
 
@@ -103,7 +103,7 @@ public:
             throw std::runtime_error("Invalid matrix operation");
 
         bool eq = true;
-        for (size_t i = 0; i < size(); i++) {
+        for (std::size_t i = 0; i < size(); i++) {
             if (this->content[i] != other.content[i]) {
                 eq = false;
                 break;
@@ -143,13 +143,13 @@ public:
     void print() const;
 
 protected:
-    Matrix(size_t N, size_t M, std::true_type allocate, T def);
-    Matrix(size_t N, size_t M, std::false_type resize);
+    Matrix(std::size_t N, std::size_t M, std::true_type allocate, T def);
+    Matrix(std::size_t N, std::size_t M, std::false_type resize);
 
     void multiply(const Matrix<T, TypeAxioms>& other, Matrix<T, TypeAxioms>& result) const;
 
-    size_t columns_;
-    size_t rows_;
+    std::size_t columns_;
+    std::size_t rows_;
 
     std::vector<T> content;
 };
