@@ -3,6 +3,7 @@
 #include <mainlib/math/types.h>
 
 #include <cmath>
+#include <iostream>
 #include <stdexcept>
 
 using namespace aixa::math;
@@ -14,11 +15,12 @@ FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
                                    aixa::math::DoubleMatrix cosineTransform,
                                    BlockWindows blockWindows,
                                    aixa::math::DoubleMatrix frequencyInversion,
-                                   aixa::math::DoubleMatrix synFilter) :
+                                   aixa::math::DoubleMatrix synFilter,
+                                   aixa::math::DoubleMatrix dWindow) :
     antialiasCoefficients(antialiasCoefficients),
     cosineTransform(std::move(cosineTransform)), blockWindows(std::move(blockWindows)),
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
-    dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+    dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {}
 
 void FrameSynthesizer::synthesize(unsigned int samplingFreq,
@@ -102,4 +104,9 @@ void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<dou
     timeSamples.elemWiseProduct(frequencyInversion);
 }
 
-void FrameSynthesizer::polyphaseSynthesis() { auto matrixed = timeSamples.transpose() * synthesisFilter; }
+void FrameSynthesizer::polyphaseSynthesis() {
+    auto matrixed = timeSamples.transpose() * synthesisFilter;
+    std::cout << matrixed.columns() << " " << matrixed.rows() << std::endl;
+    std::cout << dWindow.columns() << " " << dWindow.rows() << std::endl;
+    char a = 3;
+}

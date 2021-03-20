@@ -15,7 +15,7 @@ std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     auto huffmanSet = std::unique_ptr<HuffmanSet>(huffmanSet_p);
     auto mainDataReader = std::make_unique<MainDataReader>(std::move(reader));
 
-    auto frameSynthesizerFactory = FrameSynthesizerFactory();
+    auto frameSynthesizerFactory = FrameSynthesizerFactory("./data/mp3/dewindow");
     auto frameSynthesizer = std::unique_ptr<FrameSynthesizer>(frameSynthesizerFactory.build());
     auto decoder = Mp3Decoder(std::move(mainDataReader), std::move(huffmanSet), std::move(frameSynthesizer));
 

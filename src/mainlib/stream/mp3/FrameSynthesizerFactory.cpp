@@ -1,5 +1,7 @@
 #include "FrameSynthesizerFactory.h"
 
+#include <fstream>
+
 using namespace aixa::math;
 
 FrameSynthesizer* FrameSynthesizerFactory::build() const {
@@ -8,9 +10,10 @@ FrameSynthesizer* FrameSynthesizerFactory::build() const {
     auto blockWindows = generateBlockWindows();
     auto frequencyInversion = computeFrequencyInversionMatrix();
     auto synFilter = computeTimeDomainSynFilter();
+    auto dWindowMatrix = parseDWindowMatrix();
 
     return new FrameSynthesizer(antialiasCoefficients, cosineTransform, blockWindows, frequencyInversion,
-                                synFilter);
+                                synFilter, dWindowMatrix);
 }
 
 FrameSynthesizer::AntialiasCoefficients FrameSynthesizerFactory::computeAntialiasCoefficients() const {
@@ -123,6 +126,24 @@ aixa::math::DoubleMatrix FrameSynthesizerFactory::computeTimeDomainSynFilter() c
             std::modf(val, &val);
             val *= 1e-9;
             ret(row, col) = val;
+        }
+    }
+
+    return ret;
+}
+
+aixa::math::DoubleMatrix FrameSynthesizerFactory::parseDWindowMatrix() const {
+    auto f = std::ifstream(dWindowPath);
+    if (!f) {
+        throw std::runtime_error("Could not find dWindowFile at " + dWindowPath.string());
+    }
+
+    auto ret = DoubleMatrix(FrameSynthesizer::NR_FIFO_SIZE, FrameSynthesizer::NR_D_WINDOW_VECTORS);
+    for (std::size_t col = 0; col < FrameSynthesizer::NR_FIFO_SIZE; col++) {
+        for (std::size_t row = 0; row < FrameSynthesizer::NR_D_WINDOW_VECTORS; row++) {
+            double d;
+            f >> d;
+            ret(row, col) = d;
         }
     }
 

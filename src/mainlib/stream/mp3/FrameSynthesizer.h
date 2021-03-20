@@ -8,6 +8,8 @@
 class FrameSynthesizer {
 public:
     static constexpr std::size_t NR_BUTTERFLIES = 8;
+    static constexpr std::size_t NR_FIFO_SIZE = 16;
+    static constexpr std::size_t NR_D_WINDOW_VECTORS = 32;
 
     struct AntialiasCoefficients {
         std::array<double, NR_BUTTERFLIES> ca;
@@ -20,7 +22,8 @@ public:
                      aixa::math::DoubleMatrix cosineTransform,
                      BlockWindows blockWindows,
                      aixa::math::DoubleMatrix frequencyInversion,
-                     aixa::math::DoubleMatrix synFilter);
+                     aixa::math::DoubleMatrix synFilter,
+                     aixa::math::Matrix<double, aixa::math::DoubleTypeAxioms> matrix);
     virtual ~FrameSynthesizer() = default;
 
     void synthesize(unsigned int samplingFreq,
@@ -45,6 +48,7 @@ private:
     BlockWindows blockWindows;
     aixa::math::DoubleMatrix frequencyInversion;
     aixa::math::DoubleMatrix synthesisFilter;
+    aixa::math::DoubleMatrix dWindow;
 
     aixa::math::DoubleMatrix dequantized;
     aixa::math::DoubleMatrix timeSamples;
