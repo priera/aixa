@@ -3,6 +3,8 @@
 
 #include <mainlib/math/types.h>
 
+#include <deque>
+
 #include "types.h"
 
 class FrameSynthesizer {
@@ -33,6 +35,8 @@ public:
 
 private:
     static constexpr float GAIN_BASE = 210.f;
+    static constexpr double SCALE = 1 << 15;
+    static constexpr std::size_t D_WINDOW_VECTOR_SIZE = 16;
 
     static std::vector<unsigned int> pretab;
 
@@ -48,12 +52,14 @@ private:
     BlockWindows blockWindows;
     aixa::math::DoubleMatrix frequencyInversion;
     aixa::math::DoubleMatrix synthesisFilter;
-    aixa::math::DoubleMatrix dWindow;
+    const aixa::math::DoubleMatrix dWindow;
 
     aixa::math::DoubleMatrix dequantized;
     aixa::math::DoubleMatrix timeSamples;
 
     std::array<Bands<double>, NR_CHANNELS> channelOverlappingTerms;
+
+    std::deque<aixa::math::DoubleVector> fifo;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H

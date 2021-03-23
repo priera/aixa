@@ -3,7 +3,6 @@
 #include <mainlib/math/types.h>
 
 #include <cmath>
-#include <iostream>
 #include <stdexcept>
 
 using namespace aixa::math;
@@ -21,7 +20,11 @@ FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
     cosineTransform(std::move(cosineTransform)), blockWindows(std::move(blockWindows)),
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
     dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {}
+    timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
+    for (std::size_t i = 0; i < 16; i++) {
+        fifo.emplace_front(64);
+    }
+}
 
 void FrameSynthesizer::synthesize(unsigned int samplingFreq,
                                   const SideInformation& sideInfo,
@@ -105,8 +108,25 @@ void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<dou
 }
 
 void FrameSynthesizer::polyphaseSynthesis() {
+    auto buildMatrix = [&]() {
+        auto ret = DoubleMatrix(D_WINDOW_VECTOR_SIZE, NR_D_WINDOW_VECTORS);
+        for (std::size_t row = 0; row < NR_D_WINDOW_VECTORS; row++) {
+            for (std::size_t col = 0; col < D_WINDOW_VECTOR_SIZE; col++) {
+                auto startOffset = (col % 2) ? NR_D_WINDOW_VECTORS : 0;
+                ret(row, col) = fifo[col][startOffset + row];
+            }
+        }
+
+        return ret;
+    };
+
     auto matrixed = timeSamples.transpose() * synthesisFilter;
-    std::cout << matrixed.columns() << " " << matrixed.rows() << std::endl;
-    std::cout << dWindow.columns() << " " << dWindow.rows() << std::endl;
-    char a = 3;
+
+    for (std::size_t i = 0; i < 18; i++) {
+        auto row = matrixed.row(i);
+        fifo.pop_back();
+        fifo.emplace_front(row.begin(), row.size());
+        auto matrix = buildMatrix();
+        auto result = SCALE * (dWindow.elemWiseProduct(matrix).collapseRows());
+    }
 }

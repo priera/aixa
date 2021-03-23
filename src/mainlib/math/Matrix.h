@@ -33,7 +33,7 @@ public:
 
     T& operator()(std::size_t row, std::size_t column) { return content[row * columns_ + column]; }
 
-    Matrix<T, TypeAxioms> operator*(const T t) const {
+    Matrix<T, TypeAxioms> operator*(T t) const {
         Matrix<T, TypeAxioms> ret(*this);
 
         for (auto& elem : ret.content) elem *= t;
@@ -142,6 +142,19 @@ public:
 
     void print() const;
 
+    Matrix<T, TypeAxioms> collapseRows() const {
+        auto ret = Matrix<T, TypeAxioms>(1, rows());
+        for (std::size_t row = 0; row < rows(); row++) {
+            T sum = T();
+            for (std::size_t col = 0; col < columns(); col++) {
+                sum += (*this)(row, col);
+            }
+            ret(row, 0) = sum;
+        }
+
+        return ret;
+    }
+
 protected:
     Matrix(std::size_t N, std::size_t M, std::true_type allocate, T def);
     Matrix(std::size_t N, std::size_t M, std::false_type resize);
@@ -153,6 +166,11 @@ protected:
 
     std::vector<T> content;
 };
+
+template <typename T, typename TypeAxioms>
+Matrix<T, TypeAxioms> operator*(T t, const Matrix<T, TypeAxioms>& rhs) {
+    return rhs * t;
+}
 
 }  // namespace aixa::math
 
