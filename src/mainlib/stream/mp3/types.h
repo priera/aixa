@@ -55,12 +55,13 @@ constexpr std::size_t NR_SHORT_WINDOWS = 3;
 constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
-constexpr std::size_t SAMPLES_PER_GRANULE = 576;
-constexpr std::size_t NR_FREQ_BANDS = 32;
-constexpr std::size_t NR_CODED_SAMPLES_PER_BAND = 18;
+constexpr std::size_t NR_FREQ_BANDS = 32;              // Used in frequency-domain operations
+constexpr std::size_t NR_CODED_SAMPLES_PER_BAND = 18;  // Used in frequency-domain operations
 constexpr std::size_t NR_TOTAL_SAMPLES = 2 * NR_CODED_SAMPLES_PER_BAND;
-
-static constexpr unsigned int SAMPLES_PER_FRAME = SAMPLES_PER_GRANULE * 2;
+constexpr std::size_t NR_PCM_BLOCKS = 18;     // Used in time-domain operations
+constexpr std::size_t NR_BLOCK_SAMPLES = 32;  // Used in time-domain operations
+constexpr std::size_t NR_GRANULE_SAMPLES = NR_PCM_BLOCKS * NR_BLOCK_SAMPLES;
+constexpr std::size_t NR_FRAME_SAMPLES = NR_GRANULE_SAMPLES * NR_GRANULES;
 
 struct GranuleChannelSideInfo {
     enum class BlockType : unsigned char

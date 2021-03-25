@@ -19,6 +19,12 @@ public:
     };
 
     using BlockWindows = std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix>;
+    using ChannelSamples = std::array<short, NR_FRAME_SAMPLES>;
+
+    struct FrameSamples {
+        ChannelSamples channel1;
+        ChannelSamples channel2;
+    };
 
     FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
                      aixa::math::DoubleMatrix cosineTransform,
@@ -28,10 +34,10 @@ public:
                      aixa::math::Matrix<double, aixa::math::DoubleTypeAxioms> matrix);
     virtual ~FrameSynthesizer() = default;
 
-    void synthesize(unsigned int samplingFreq,
-                    const SideInformation& sideInfo,
-                    const MainDataContent& content,
-                    std::size_t nChannels);
+    FrameSamples synthesize(unsigned int samplingFreq,
+                            const SideInformation& sideInfo,
+                            const MainDataContent& content,
+                            std::size_t nChannels);
 
 private:
     static constexpr float GAIN_BASE = 210.f;
@@ -45,7 +51,7 @@ private:
                            const GranuleChannelContent& channelContent);
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
-    void polyphaseSynthesis();
+    void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
 
     AntialiasCoefficients antialiasCoefficients;
     aixa::math::DoubleMatrix cosineTransform;

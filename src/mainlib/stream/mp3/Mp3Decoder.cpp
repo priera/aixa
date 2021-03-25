@@ -27,7 +27,7 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
     }
 
     float byteRate = (static_cast<float>(header.bitrate * 1000) / S_BYTE);
-    currentFrameSize = (SAMPLES_PER_FRAME * byteRate) / header.samplingFreq;
+    currentFrameSize = (NR_FRAME_SAMPLES * byteRate) / header.samplingFreq;
     currentFrameSize += (header.isPadded) ? 1 : 0;
 
     skipCRC();
@@ -242,7 +242,7 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
     if (channelInfo.windowSwitching &&
         channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
         region0Samples = 36; /* sfb[9/3]*3=36 */
-        region1Samples = SAMPLES_PER_GRANULE;
+        region1Samples = NR_GRANULE_SAMPLES;
     } else {
         const auto& indexesTable = samplingFreqBandIndexes[header.samplingFreq].longWindow;
         region0Samples = indexesTable[channelInfo.region0_count + 1];
@@ -278,7 +278,7 @@ void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
         freqLinesDecoded += 4;
     }
 
-    for (; freqLinesDecoded < SAMPLES_PER_GRANULE; freqLinesDecoded++) {
+    for (; freqLinesDecoded < NR_GRANULE_SAMPLES; freqLinesDecoded++) {
         storeInContent(0, freqLinesDecoded, content.freqBands);
     }
 }

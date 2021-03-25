@@ -21,17 +21,20 @@ FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
     dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
-    for (std::size_t i = 0; i < 16; i++) {
+    for (std::size_t i = 0; i < D_WINDOW_VECTOR_SIZE; i++) {
         fifo.emplace_front(64);
     }
 }
 
-void FrameSynthesizer::synthesize(unsigned int samplingFreq,
-                                  const SideInformation& sideInfo,
-                                  const MainDataContent& content,
-                                  std::size_t nChannels) {
-    for (unsigned int i = 0; i < NR_GRANULES; i++) {
-        for (unsigned int channel = 0; channel < nChannels; channel++) {
+FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(unsigned int samplingFreq,
+                                                            const SideInformation& sideInfo,
+                                                            const MainDataContent& content,
+                                                            std::size_t nChannels) {
+    auto ret = FrameSamples();
+    auto& samples = ret.channel1;
+    for (unsigned int channel = 0; channel < nChannels; channel++) {
+        std::size_t startIndex = 0;
+        for (unsigned int i = 0; i < NR_GRANULES; i++) {
             const auto& channelInfo = sideInfo.granules[i][channel];
             const auto& channelContent = content.granules[i][channel];
             dequantizeSamples(samplingFreq, channelInfo, channelContent);
@@ -39,9 +42,13 @@ void FrameSynthesizer::synthesize(unsigned int samplingFreq,
             // stereo
             antialias(channelInfo);
             inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
-            polyphaseSynthesis();
+            polyphaseSynthesis(samples, startIndex);
+            startIndex = NR_GRANULE_SAMPLES;
         }
+        samples = ret.channel2;
     }
+
+    return ret;
 }
 
 void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
@@ -107,7 +114,7 @@ void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<dou
     timeSamples.elemWiseProduct(frequencyInversion);
 }
 
-void FrameSynthesizer::polyphaseSynthesis() {
+void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex) {
     auto buildMatrix = [&]() {
         auto ret = DoubleMatrix(D_WINDOW_VECTOR_SIZE, NR_D_WINDOW_VECTORS);
         for (std::size_t row = 0; row < NR_D_WINDOW_VECTORS; row++) {
@@ -122,11 +129,14 @@ void FrameSynthesizer::polyphaseSynthesis() {
 
     auto matrixed = timeSamples.transpose() * synthesisFilter;
 
-    for (std::size_t i = 0; i < 18; i++) {
+    for (std::size_t i = 0; i < NR_PCM_BLOCKS; i++) {
         auto row = matrixed.row(i);
         fifo.pop_back();
         fifo.emplace_front(row.begin(), row.size());
         auto matrix = buildMatrix();
         auto result = SCALE * (dWindow.elemWiseProduct(matrix).collapseRows());
+        std::size_t samplesOffset = startIndex + (i * NR_BLOCK_SAMPLES);
+        std::copy(result.constContent().begin(), result.constContent().end(),
+                  samples.begin() + samplesOffset);
     }
 }
