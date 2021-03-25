@@ -1,10 +1,7 @@
 #include "ByteReservoir.h"
 
 ByteReservoir::ByteReservoir() :
-    reservoir(RESERVOIR_SIZE, 0),
-    readBuffer(RESERVOIR_SIZE),
-    currentPos(0),
-    capacity(0) {}
+    reservoir(RESERVOIR_SIZE, 0), readBuffer(RESERVOIR_SIZE), currentPos(0), capacity(0) {}
 
 void ByteReservoir::append(unsigned int remainingBytes, BitInputReader& reader) {
     unsigned int toRead;

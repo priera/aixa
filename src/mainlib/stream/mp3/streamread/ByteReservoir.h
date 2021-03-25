@@ -10,12 +10,11 @@ class ByteReservoir {
 public:
     class ByteReservoirOperations {
     public:
-        explicit ByteReservoirOperations(ByteReservoir &reservoir, unsigned int startPos,
+        explicit ByteReservoirOperations(ByteReservoir &reservoir,
+                                         unsigned int startPos,
                                          unsigned int toRead) :
             reservoir(reservoir),
-            currentPos(startPos),
-            toRead(toRead),
-            processed(0) {}
+            currentPos(startPos), toRead(toRead), processed(0) {}
 
         std::streamsize readNBytes(char *ptr, long n) {
             for (long i = 0; i < n; i++) {

@@ -9,10 +9,7 @@
 class MainDataReader : public BitInputReader {
 public:
     explicit MainDataReader(std::unique_ptr<BitInputReader> inStream) :
-        reservoir(),
-        reservoirReader(nullptr),
-        inStream(std::move(inStream)),
-        inStreamRead(0),
+        reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamRead(0),
         currentReader(nullptr) {}
     ~MainDataReader() override = default;
 

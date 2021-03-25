@@ -12,6 +12,7 @@ public:
     static constexpr std::size_t NR_BUTTERFLIES = 8;
     static constexpr std::size_t NR_FIFO_SIZE = 16;
     static constexpr std::size_t NR_D_WINDOW_VECTORS = 32;
+    static constexpr std::size_t D_WINDOW_VECTOR_SIZE = NR_BLOCK_SAMPLES * 2;
 
     struct AntialiasCoefficients {
         std::array<double, NR_BUTTERFLIES> ca;
@@ -42,7 +43,7 @@ public:
 private:
     static constexpr float GAIN_BASE = 210.f;
     static constexpr double SCALE = 1 << 15;
-    static constexpr std::size_t D_WINDOW_VECTOR_SIZE = 16;
+    static constexpr std::size_t D_WINDOW_VECTORS = 16;
 
     static std::vector<unsigned int> pretab;
 

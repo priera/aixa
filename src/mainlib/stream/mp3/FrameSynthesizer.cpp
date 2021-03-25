@@ -21,8 +21,8 @@ FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
     dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
-    for (std::size_t i = 0; i < D_WINDOW_VECTOR_SIZE; i++) {
-        fifo.emplace_front(64);
+    for (std::size_t i = 0; i < D_WINDOW_VECTORS; i++) {
+        fifo.emplace_front(D_WINDOW_VECTOR_SIZE);
     }
 }
 
@@ -116,9 +116,9 @@ void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<dou
 
 void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex) {
     auto buildMatrix = [&]() {
-        auto ret = DoubleMatrix(D_WINDOW_VECTOR_SIZE, NR_D_WINDOW_VECTORS);
+        auto ret = DoubleMatrix(D_WINDOW_VECTORS, NR_D_WINDOW_VECTORS);
         for (std::size_t row = 0; row < NR_D_WINDOW_VECTORS; row++) {
-            for (std::size_t col = 0; col < D_WINDOW_VECTOR_SIZE; col++) {
+            for (std::size_t col = 0; col < D_WINDOW_VECTORS; col++) {
                 auto startOffset = (col % 2) ? NR_D_WINDOW_VECTORS : 0;
                 ret(row, col) = fifo[col][startOffset + row];
             }

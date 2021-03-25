@@ -9,9 +9,9 @@
 #include <memory>
 #include <vector>
 
-#include "ByteReservoir.h"
 #include "FrameSynthesizer.h"
-#include "MainDataReader.h"
+#include "streamread/ByteReservoir.h"
+#include "streamread/MainDataReader.h"
 #include "types.h"
 
 class Mp3Decoder {

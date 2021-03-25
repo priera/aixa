@@ -24,7 +24,7 @@ std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     for (int i = 0; i < 180; i++) {
         std::cout << "Decoding frame " << i << std::endl;
 
-        if (i >= 177) {
+        if (i >= 178) {
             char a = 3;
         }
         if (!decoder.decodeNextFrame(header)) {
