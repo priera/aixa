@@ -118,7 +118,7 @@ aixa::math::DoubleMatrix FrameSynthesizerFactory::computeFrequencyInversionMatri
 }
 
 aixa::math::DoubleMatrix FrameSynthesizerFactory::computeTimeDomainSynFilter() const {
-    auto ret = DoubleMatrix(FrameSynthesizer::D_WINDOW_VECTOR_SIZE, NR_FREQ_BANDS);
+    auto ret = DoubleMatrix(FrameSynthesizer::NR_D_WINDOW_MATRIXED_VECTOR_SIZE, NR_FREQ_BANDS);
     for (std::size_t col = 0; col < ret.columns(); col++) {
         for (std::size_t row = 0; row < ret.rows(); row++) {
             auto val = 1e9 * std::cos(((M_PI / 64) * col + (M_PI / 4)) * (2.0 * row + 1));
@@ -138,9 +138,9 @@ aixa::math::DoubleMatrix FrameSynthesizerFactory::parseDWindowMatrix() const {
         throw std::runtime_error("Could not find dWindowFile at " + dWindowPath.string());
     }
 
-    auto ret = DoubleMatrix(FrameSynthesizer::NR_FIFO_SIZE, FrameSynthesizer::NR_D_WINDOW_VECTORS);
+    auto ret = DoubleMatrix(FrameSynthesizer::NR_FIFO_SIZE, FrameSynthesizer::NR_D_WINDOW_VECTOR_SIZE);
     for (std::size_t col = 0; col < FrameSynthesizer::NR_FIFO_SIZE; col++) {
-        for (std::size_t row = 0; row < FrameSynthesizer::NR_D_WINDOW_VECTORS; row++) {
+        for (std::size_t row = 0; row < FrameSynthesizer::NR_D_WINDOW_VECTOR_SIZE; row++) {
             double d;
             f >> d;
             ret(row, col) = d;
