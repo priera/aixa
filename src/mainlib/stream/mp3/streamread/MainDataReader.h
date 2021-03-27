@@ -4,6 +4,8 @@
 #include <mainlib/stream/in/BitInputReader.h>
 #include <mainlib/stream/in/sizes.h>
 
+#include <iostream>
+
 #include "ByteReservoir.h"
 
 class MainDataReader : public BitInputReader {
@@ -43,6 +45,8 @@ public:
         return currentReader->nextBit();
     }
 
+    void byteAlign() override { inStream->byteAlign(); }
+
     void skipNBits(unsigned char n) override {
         myBitsRead += n;
         checkReader();
@@ -65,10 +69,14 @@ public:
         return currentReader->extractBytes(buff, count);
     }
 
-    unsigned long streamConsumedBytes() const { return (inStream->bitsRead() / S_BYTE) - inStreamRead; }
+    unsigned long streamConsumedBytes() const {
+        std::cout << "stream: " << inStream->bitsRead() << " " << inStreamRead << std::endl;
+        return (inStream->bitsRead() / S_BYTE) - inStreamRead;
+    }
+    unsigned long streamConsumedBytes2() const { return (inStream->bitsRead() / S_BYTE); }
 
     void startFrame(unsigned int mainDataBegin);
-    void frameEnded(unsigned int remainingBits);
+    void frameEnded(unsigned int remainingBytes);
 
 private:
     void checkReader() {

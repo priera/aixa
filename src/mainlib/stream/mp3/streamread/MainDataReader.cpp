@@ -11,11 +11,8 @@ void MainDataReader::startFrame(unsigned int mainDataBegin) {
     myBitsRead = 0;
 }
 
-void MainDataReader::frameEnded(unsigned int remainingBits) {
-    if (remainingBits % S_BYTE != 0) {
-        throw std::runtime_error("Remaining bytes is not an integer number of bytes");
-    }
-
-    reservoir.append(remainingBits / S_BYTE, *inStream);
+void MainDataReader::frameEnded(unsigned int remainingBytes) {
+    byteAlign();
+    reservoir.append(remainingBytes, *inStream);
     currentReader = inStream.get();
 }

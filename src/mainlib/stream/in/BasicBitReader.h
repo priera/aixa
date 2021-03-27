@@ -69,6 +69,8 @@ public:
 
     void skipNBits(unsigned char n) override { nextNBits(n); }
 
+    void byteAlign() override { lastByteRemBits = 0; }
+
     void skipBytes(long count) override {
         ops.skipNBytes(count);
         totalBits += count * S_BYTE;

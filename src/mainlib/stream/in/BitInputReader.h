@@ -14,6 +14,7 @@ public:
     virtual unsigned short nextNBits(unsigned char n) = 0;
     virtual bool nextBit() = 0;
     virtual void skipNBits(unsigned char n) = 0;
+    virtual void byteAlign() = 0;
     virtual bool ended() const = 0;
     virtual unsigned long bitsRead() const = 0;
     virtual void skipBytes(long count) = 0;
