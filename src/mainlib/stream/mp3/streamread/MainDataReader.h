@@ -11,36 +11,36 @@
 class MainDataReader : public BitInputReader {
 public:
     explicit MainDataReader(std::unique_ptr<BitInputReader> inStream) :
-        reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamRead(0),
+        reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamAtStartFrame(0),
         currentReader(nullptr) {}
     ~MainDataReader() override = default;
 
     unsigned int nextWord() override {
-        myBitsRead += S_WORD;
+        frameBitsRead += S_WORD;
         checkReader();
         return currentReader->nextWord();
     }
 
     unsigned short nextShort() override {
-        myBitsRead += S_SHORT;
+        frameBitsRead += S_SHORT;
         checkReader();
         return currentReader->nextShort();
     }
 
     unsigned char nextByte() override {
-        myBitsRead += S_BYTE;
+        frameBitsRead += S_BYTE;
         checkReader();
         return currentReader->nextByte();
     }
 
     unsigned short nextNBits(unsigned char n) override {
-        myBitsRead += n;
+        frameBitsRead += n;
         checkReader();
         return currentReader->nextNBits(n);
     }
 
     bool nextBit() override {
-        myBitsRead++;
+        frameBitsRead++;
         checkReader();
         return currentReader->nextBit();
     }
@@ -48,37 +48,34 @@ public:
     void byteAlign() override { inStream->byteAlign(); }
 
     void skipNBits(unsigned char n) override {
-        myBitsRead += n;
+        frameBitsRead += n;
         checkReader();
         return currentReader->skipNBits(n);
     }
 
     bool ended() const override { return inStream->ended(); }
 
-    unsigned long bitsRead() const override { return myBitsRead; }
+    unsigned long bitsRead() const override { return frameBitsRead; }
 
     void skipBytes(long count) override {
-        myBitsRead += count * S_BYTE;
+        frameBitsRead += count * S_BYTE;
         checkReader();
         return currentReader->skipBytes(count);
     }
 
     std::streamsize extractBytes(char *buff, std::size_t count) override {
-        myBitsRead += count * S_BYTE;
+        frameBitsRead += count * S_BYTE;
         checkReader();
         return currentReader->extractBytes(buff, count);
     }
 
-    unsigned long streamConsumedBytes() const {
-        std::cout << "stream: " << inStream->bitsRead() << " " << inStreamRead << std::endl;
-        return (inStream->bitsRead() / S_BYTE) - inStreamRead;
-    }
-    unsigned long streamConsumedBytes2() const { return (inStream->bitsRead() / S_BYTE); }
-
+    unsigned int inStreamPos() const { return inStream->bitsRead(); }
     void startFrame(unsigned int mainDataBegin);
-    void frameEnded(unsigned int remainingBytes);
+    void frameEnded(unsigned int frameSize);
 
 private:
+    static constexpr unsigned int NR_HEADERS_BYTES = 21;
+
     void checkReader() {
         if (currentReader == reservoirReader.get() && reservoir.consumed()) {
             currentReader = inStream.get();
@@ -90,9 +87,9 @@ private:
     std::unique_ptr<BitInputReader> reservoirReader;
     std::unique_ptr<BitInputReader> inStream;
 
-    unsigned long inStreamRead;
+    unsigned long inStreamAtStartFrame;
     BitInputReader *currentReader;
-    unsigned long myBitsRead;
+    unsigned long frameBitsRead;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MAINDATAREADER_H

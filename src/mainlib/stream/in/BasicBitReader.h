@@ -69,7 +69,10 @@ public:
 
     void skipNBits(unsigned char n) override { nextNBits(n); }
 
-    void byteAlign() override { lastByteRemBits = 0; }
+    void byteAlign() override {
+        totalBits += lastByteRemBits;
+        lastByteRemBits = 0;
+    }
 
     void skipBytes(long count) override {
         ops.skipNBytes(count);

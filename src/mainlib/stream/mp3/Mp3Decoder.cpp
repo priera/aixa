@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 
+static int frameNum = 0;
+
 std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
                                                      112, 128, 160, 192, 224, 256, 320};
 
@@ -44,6 +46,9 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
 }
 
 bool Mp3Decoder::seekToNextFrame() {
+    if (frameNum >= 219) {
+        char a = 3;
+    }
     unsigned char b;
     bool headerFound = false;
     bool headerStartRead = false;
@@ -64,7 +69,9 @@ bool Mp3Decoder::seekToNextFrame() {
     if (reader->ended())
         return false;
 
+    std::cout << reader->inStreamPos() / 8 << std::endl;
     decodeHeader(b);
+    frameNum++;
     return true;
 }
 
@@ -73,8 +80,9 @@ void Mp3Decoder::decodeHeader(unsigned char secondByte) {
     header.layer = static_cast<FrameHeader::Layer>((secondByte & 0x06) >> 1);
     header.usesCRC = !(secondByte & 0x01);
 
-    if (!(header.version == FrameHeader::Version::MPEG_1 && header.layer == FrameHeader::Layer::LAYER_3))
+    if (!(header.version == FrameHeader::Version::MPEG_1 && header.layer == FrameHeader::Layer::LAYER_3)) {
         throw std::runtime_error("Not supported MP3 format");
+    }
 
     unsigned char b = reader->nextByte();
 
@@ -188,8 +196,7 @@ void Mp3Decoder::decodeMainData() {
         readingSecondGranule = true;
     }
 
-    unsigned int pending = currentFrameSize - bytesInHeaders - reader->streamConsumedBytes();
-    reader->frameEnded(pending * 8);
+    reader->frameEnded(currentFrameSize);
 }
 
 void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,

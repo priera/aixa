@@ -7,12 +7,14 @@ void MainDataReader::startFrame(unsigned int mainDataBegin) {
     } else {
         currentReader = inStream.get();
     }
-    inStreamRead = inStream->bitsRead() / S_BYTE;
-    myBitsRead = 0;
+    inStreamAtStartFrame = inStream->bitsRead() / S_BYTE;
+    frameBitsRead = 0;
 }
 
-void MainDataReader::frameEnded(unsigned int remainingBytes) {
+void MainDataReader::frameEnded(unsigned int frameSize) {
     byteAlign();
-    reservoir.append(remainingBytes, *inStream);
+    auto inStreamConsumedBytes = (inStream->bitsRead() / S_BYTE) - inStreamAtStartFrame;
+    unsigned int pending = frameSize - NR_HEADERS_BYTES - inStreamConsumedBytes;
+    reservoir.append(pending, *inStream);
     currentReader = inStream.get();
 }
