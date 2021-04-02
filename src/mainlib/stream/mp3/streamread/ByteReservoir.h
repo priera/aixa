@@ -23,13 +23,11 @@ public:
             }
 
             processed += n;
-            reservoir.capacity -= n;
             return n;
         }
 
         void skipNBytes(long n) {
             currentPos = (currentPos + n) % RESERVOIR_SIZE;
-            reservoir.capacity -= n;
             processed += n;
         }
 
@@ -47,9 +45,7 @@ public:
     virtual ~ByteReservoir() noexcept = default;
 
     void append(unsigned int remainingBytes, BitInputReader &reader);
-    std::vector<char> extract(unsigned int nBytes);
     std::unique_ptr<BitInputReader> readerForPast(unsigned int nBytes);
-    bool consumed() const { return capacity == 0; }
 
 private:
     static constexpr unsigned int RESERVOIR_SIZE = 512;
@@ -57,7 +53,6 @@ private:
     std::vector<char> reservoir;
     std::vector<char> readBuffer;
     unsigned int currentPos;
-    unsigned int capacity;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_BYTERESERVOIR_H

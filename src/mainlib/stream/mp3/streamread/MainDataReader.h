@@ -11,8 +11,9 @@
 class MainDataReader : public BitInputReader {
 public:
     explicit MainDataReader(std::unique_ptr<BitInputReader> inStream) :
-        reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamAtStartFrame(0),
-        currentReader(nullptr) {}
+        reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamAtStartFrame(0) {
+        currentReader = this->inStream.get();
+    }
     ~MainDataReader() override = default;
 
     unsigned int nextWord() override {
@@ -71,13 +72,11 @@ public:
 
     unsigned int inStreamPos() const { return inStream->bitsRead(); }
     void startFrame(unsigned int mainDataBegin);
-    void frameEnded(unsigned int frameSize);
+    void frameEnded(unsigned int frameSize, unsigned int bytesInHeaders);
 
 private:
-    static constexpr unsigned int NR_HEADERS_BYTES = 21;
-
     void checkReader() {
-        if (currentReader == reservoirReader.get() && reservoir.consumed()) {
+        if (currentReader == reservoirReader.get() && currentReader->ended()) {
             currentReader = inStream.get();
             reservoirReader = nullptr;
         }

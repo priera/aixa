@@ -87,7 +87,7 @@ public:
 
     unsigned long bitsRead() const override { return totalBits; }
 
-    bool ended() const override { return ops.ended(); }
+    bool ended() const override { return ops.ended() && lastByteRemBits == 0; }
 
 private:
     ReadOperations ops;
