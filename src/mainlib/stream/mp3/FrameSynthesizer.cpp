@@ -82,10 +82,18 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
 }
 
 void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
-    if (channelInfo.windowSwitching)
-        throw std::runtime_error("Nope yet");
+    std::size_t subbands = NR_FREQ_BANDS - 1;
 
-    for (std::size_t band = 0; band < NR_FREQ_BANDS - 1; band++) {
+    if (channelInfo.windowSwitching &&
+        channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
+        if (channelInfo.mixedBlockFlag) {
+            subbands = 1;
+        } else {
+            return;
+        }
+    }
+
+    for (std::size_t band = 0; band < subbands; band++) {
         for (std::size_t butterfly = 0; butterfly < NR_BUTTERFLIES; butterfly++) {
             auto upIndex = NR_CODED_SAMPLES_PER_BAND - 1 - butterfly;
             auto bandUp = dequantized(band, upIndex);
