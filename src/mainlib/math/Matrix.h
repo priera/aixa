@@ -1,132 +1,177 @@
 #ifndef AIXA_SRC_MAINLIB_DSP_MATRIX_H
 #define AIXA_SRC_MAINLIB_DSP_MATRIX_H
 
-
+#include <array>
 #include <cstddef>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 namespace aixa::math {
 
-    template<typename T,
-            class TypeAxioms>
-    class Matrix {
-    public:
+template <typename T, class TypeAxioms>
+class Matrix {
+public:
+    // N columns, M rows
+    Matrix(std::size_t N, std::size_t M, T def = T()) : Matrix(N, M, std::true_type(), def){};
 
-        //N columns, M rows
-        Matrix(size_t N, size_t M, T def = T()) : Matrix(N, M, std::true_type(), def) {};
-        Matrix(size_t N, size_t M, std::vector<T> &content) :
-            columns_(N), rows_(M)
-            { this->content.swap(content); }
+    template <std::size_t ArrayDim>
+    Matrix(std::size_t N, std::size_t M, const std::array<T, ArrayDim>& content) :
+        Matrix(N, M, std::false_type()) {
+        std::copy(content.begin(), content.end(), std::back_inserter(this->content));
+    }
 
-        Matrix(const Matrix<T, TypeAxioms> &other) = default;
+    Matrix(const Matrix<T, TypeAxioms>& other) = default;
+    Matrix(Matrix<T, TypeAxioms>&& other) noexcept = default;
 
-        virtual ~Matrix() = default;
+    virtual ~Matrix() = default;
 
-        const T &operator()(size_t row, size_t column) const {
-            return content[row * columns_ + column];
+    Matrix<T, TypeAxioms>& operator=(Matrix<T, TypeAxioms>&& other) noexcept = default;
+
+    const T& operator()(std::size_t row, std::size_t column) const {
+        return content[row * columns_ + column];
+    }
+
+    T& operator()(std::size_t row, std::size_t column) { return content[row * columns_ + column]; }
+
+    Matrix<T, TypeAxioms> operator*(T t) const {
+        Matrix<T, TypeAxioms> ret(*this);
+
+        for (auto& elem : ret.content) elem *= t;
+
+        return std::move(ret);
+    }
+
+    Matrix<T, TypeAxioms> operator*(const Matrix<T, TypeAxioms>& rhs) const {
+        Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
+        multiply(rhs, ret);
+        return ret;
+    }
+
+    Matrix<T, TypeAxioms>& operator*=(const Matrix<T, TypeAxioms>& rhs) {
+        Matrix<T, TypeAxioms> ret(rhs.columns(), this->rows());
+        multiply(rhs, ret);
+        *this = std::move(ret);
+        return *this;
+    }
+
+    Matrix<T, TypeAxioms> operator+(const Matrix<T, TypeAxioms>& other) const {
+        if (this->rows() != other.rows() || this->columns() != other.columns())
+            throw std::runtime_error("Invalid matrix operation");
+
+        Matrix<T, TypeAxioms> ret(*this);
+        for (std::size_t i = 0; i < size(); i++) {
+            ret.content[i] += other.content[i];
         }
 
-        T &operator()(size_t row, size_t column) {
-            return content[row * columns_ + column];
+        return std::move(ret);
+    }
+
+    void elemWiseProduct(const Matrix<T, TypeAxioms>& other) {
+        if (!(this->rows() == other.rows() && this->columns() == other.columns()))
+            throw std::runtime_error("Invalid matrix operation");
+
+        const auto size = this->size();
+        for (std::size_t i = 0; i < size; i++) {
+            this->content[i] *= other.content[i];
         }
+    }
 
-        Matrix<T, TypeAxioms> operator*(const T t) const {
-            Matrix<T, TypeAxioms> ret(*this);
+    Matrix<T, TypeAxioms> elemWiseProduct(const Matrix<T, TypeAxioms>& other) const {
+        auto ret = *this;
+        ret.elemWiseProduct(other);
+        return ret;
+    }
 
-            for (auto& elem: ret.content)
-                elem *= t;
+    Matrix<T, TypeAxioms>& operator+=(const Matrix<T, TypeAxioms>& other) {
+        auto sum = *this + other;
+        this->content.swap(sum.content);
+        return *this;
+    }
 
-            return std::move(ret);
-        }
+    Matrix<T, TypeAxioms> operator-(const Matrix<T, TypeAxioms>& other) const {
+        if (this->rows() != other.rows() || this->columns() != other.columns())
+            throw std::runtime_error("Invalid matrix operation");
 
-        Matrix<T, TypeAxioms> operator+(const Matrix<T, TypeAxioms>& other) const {
-            if (this->rows() != other.rows() ||
-                this->columns() != other.columns())
-                throw std::runtime_error("Invalid matrix operation");
+        TypeAxioms axioms;
+        auto diff = (*this) + (other * axioms.inverter());
 
-            Matrix<T, TypeAxioms> ret(*this);
-            for (size_t i = 0; i < size(); i++) {
-                ret.content[i] += other.content[i];
+        return std::move(diff);
+    }
+
+    bool operator==(const Matrix<T, TypeAxioms>& other) const {
+        if (this->rows() != other.rows() || this->columns() != other.columns())
+            throw std::runtime_error("Invalid matrix operation");
+
+        bool eq = true;
+        for (std::size_t i = 0; i < size(); i++) {
+            if (this->content[i] != other.content[i]) {
+                eq = false;
+                break;
             }
-
-            return std::move(ret);
         }
 
-        Matrix<T, TypeAxioms> &operator+=(const Matrix<T, TypeAxioms>& other) {
-            auto sum = *this + other;
-            this->content.swap(sum.content);
-            return *this;
-        }
+        return eq;
+    }
 
-        Matrix<T, TypeAxioms> operator-(const Matrix<T, TypeAxioms>& other) const {
-            if (this->rows() != other.rows() ||
-                this->columns() != other.columns())
-                throw std::runtime_error("Invalid matrix operation");
+    bool operator!=(const Matrix<T, TypeAxioms>& other) const { return !(*this == other); }
 
-            TypeAxioms axioms;
-            auto diff = (*this) + (other * axioms.inverter());
-
-            return std::move(diff);
-        }
-
-        bool operator==(const Matrix<T, TypeAxioms>& other) const {
-            if (this->rows() != other.rows() ||
-                this->columns() != other.columns())
-                throw std::runtime_error("Invalid matrix operation");
-
-            bool eq = true;
-            for (size_t i = 0; i < size(); i++) {
-                if (this->content[i] != other.content[i]) {
-                    eq = false;
-                    break;
-                }
+    Matrix<T, TypeAxioms> transpose() const {
+        auto ret = Matrix<T, TypeAxioms>(rows(), columns());
+        for (std::size_t row = 0; row < rows(); row++) {
+            for (std::size_t col = 0; col < columns(); col++) {
+                ret(col, row) = (*this)(row, col);
             }
-
-            return eq;
         }
 
-        bool operator!=(const Matrix<T, TypeAxioms>& other) const {
-            return !(*this == other);
+        return ret;
+    }
+
+    std::size_t columns() const { return columns_; }
+
+    std::size_t rows() const { return rows_; }
+
+    std::vector<T> row(std::size_t rowInd) const {
+        auto beginOffset = rowInd * columns();
+        auto end = (rowInd + 1) * columns();
+        return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
+    }
+
+    const std::vector<T>& constContent() const { return content; }
+
+    std::size_t size() const { return rows_ * columns_; }
+
+    void print() const;
+
+    Matrix<T, TypeAxioms> collapseRows() const {
+        auto ret = Matrix<T, TypeAxioms>(1, rows());
+        for (std::size_t row = 0; row < rows(); row++) {
+            T sum = T();
+            for (std::size_t col = 0; col < columns(); col++) {
+                sum += (*this)(row, col);
+            }
+            ret(row, 0) = sum;
         }
 
-        size_t columns() const {
-            return columns_;
-        }
+        return ret;
+    }
 
-        size_t rows() const {
-            return rows_;
-        }
+protected:
+    Matrix(std::size_t N, std::size_t M, std::true_type allocate, T def);
+    Matrix(std::size_t N, std::size_t M, std::false_type resize);
 
-        std::vector<T> vector(size_t row) const {
-            auto beginOffset = row * columns();
-            auto end = (row + 1) * columns();
-            return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
-        }
+    void multiply(const Matrix<T, TypeAxioms>& other, Matrix<T, TypeAxioms>& result) const;
 
-        const std::vector<T>& constContent() const {
-            return content;
-        }
+    std::size_t columns_;
+    std::size_t rows_;
 
-        size_t size() const {
-            return rows_ * columns_;
-        }
+    std::vector<T> content;
+};
 
-        void multiply(const Matrix<T, TypeAxioms> &other,
-                      Matrix<T, TypeAxioms> &result);
-
-        void print() const;
-
-    protected:
-        Matrix(size_t N, size_t M, std::true_type allocate, T def);
-        Matrix(size_t N, size_t M, std::false_type resize);
-
-        size_t columns_;
-        size_t rows_;
-
-        std::vector<T> content;
-    };
+template <typename T, typename TypeAxioms>
+Matrix<T, TypeAxioms> operator*(T t, const Matrix<T, TypeAxioms>& rhs) {
+    return rhs * t;
 }
 
+}  // namespace aixa::math
 
-#endif //AIXA_SRC_MAINLIB_DSP_MATRIX_H
+#endif  // AIXA_SRC_MAINLIB_DSP_MATRIX_H

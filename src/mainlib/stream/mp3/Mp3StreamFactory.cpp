@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "FrameSynthesizerFactory.h"
 #include "Mp3Decoder.h"
 
 std::shared_ptr<Stream> Mp3StreamFactory::probe() {
@@ -13,13 +14,17 @@ std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     auto huffmanSet_p = HuffmanParser("./data/mp3/huffdec").build();
     auto huffmanSet = std::unique_ptr<HuffmanSet>(huffmanSet_p);
     auto mainDataReader = std::make_unique<MainDataReader>(std::move(reader));
-    auto decoder = Mp3Decoder(std::move(mainDataReader), std::move(huffmanSet));
+
+    auto frameSynthesizerFactory = FrameSynthesizerFactory("./data/mp3/dewindow");
+    auto frameSynthesizer = std::unique_ptr<FrameSynthesizer>(frameSynthesizerFactory.build());
+    auto decoder = Mp3Decoder(std::move(mainDataReader), std::move(huffmanSet), std::move(frameSynthesizer));
 
     auto header = FrameHeader();
-    for (int i = 0; i < 177; i++) {
+    std::cout << std::scientific;
+    for (int i = 0; i < 180; i++) {
         std::cout << "Decoding frame " << i << std::endl;
 
-        if (i >= 175) {
+        if (i >= 178) {
             char a = 3;
         }
         if (!decoder.decodeNextFrame(header)) {

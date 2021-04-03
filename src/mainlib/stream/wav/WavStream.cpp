@@ -8,8 +8,8 @@ AudioStreamParameters WavStream::getParameters() const {
     auto sampleFormat = SND_PCM_FORMAT_S16;
 
     return AudioStreamParameters{sampleFormat,          snd_pcm_format_little_endian(sampleFormat) == 1,
-                                 format.samplingRate,   format.channels,
-                                 format.bytesPerSecond, format.bitsPerSample};
+                                 format.samplingRate,   static_cast<unsigned int>(format.channels),
+                                 format.bytesPerSecond, static_cast<unsigned int>(format.bitsPerSample)};
 }
 
 void WavStream::prepareForFirstRead() {

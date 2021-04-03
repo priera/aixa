@@ -2,7 +2,13 @@
 #define AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H
 
 #include <cstddef>
+#include <map>
 #include <vector>
+
+struct BandIndexes {
+    std::vector<unsigned int> longWindow;
+    std::vector<unsigned int> shortWindow;
+};
 
 struct FrameHeader {
     enum class Version
@@ -49,9 +55,13 @@ constexpr std::size_t NR_SHORT_WINDOWS = 3;
 constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
-constexpr std::size_t NR_GRANULE_FREQ_LINES = 576;
-constexpr std::size_t NR_FREQ_BANDS = 32;
-constexpr std::size_t NR_SAMPLES_PER_BAND = 18;
+constexpr std::size_t NR_FREQ_BANDS = 32;              // Used in frequency-domain operations
+constexpr std::size_t NR_CODED_SAMPLES_PER_BAND = 18;  // Used in frequency-domain operations
+constexpr std::size_t NR_TOTAL_SAMPLES = 2 * NR_CODED_SAMPLES_PER_BAND;
+constexpr std::size_t NR_PCM_BLOCKS = 18;     // Used in time-domain operations
+constexpr std::size_t NR_BLOCK_SAMPLES = 32;  // Used in time-domain operations
+constexpr std::size_t NR_GRANULE_SAMPLES = NR_PCM_BLOCKS * NR_BLOCK_SAMPLES;
+constexpr std::size_t NR_FRAME_SAMPLES = NR_GRANULE_SAMPLES * NR_GRANULES;
 
 struct GranuleChannelSideInfo {
     enum class BlockType : unsigned char
@@ -64,48 +74,44 @@ struct GranuleChannelSideInfo {
 
     unsigned short part2_3_length;
     unsigned short bigValues;
-    unsigned char globalGain;
-    unsigned char scaleFactorCompression;
+    float globalGain;
+    unsigned short scaleFactorCompression;
     bool windowSwitching;
     BlockType blockType;
     bool mixedBlockFlag;
-    unsigned char tableSelect[NR_REGIONS];
-    unsigned char subBlockGain[NR_SHORT_WINDOWS];
+    std::array<unsigned char, NR_REGIONS> tableSelect;
+    std::array<unsigned char, NR_SHORT_WINDOWS> subBlockGain;
     unsigned char region0_count;
     unsigned char region1_count;
-    bool preFlag;
-    bool scaleFactorScale;
+    float preFlag;
+    float scaleFactorScale;
     unsigned char count1TableSelect;
 };
 
+template <class Content>
+using GranuleChannelsData = std::array<std::array<Content, NR_CHANNELS>, NR_GRANULES>;
+
 struct SideInformation {
     unsigned short mainDataBegin;
-    bool scaleFactorSharing[NR_CHANNELS][NR_SUB_BAND_GROUPS];
-    GranuleChannelSideInfo granules[NR_GRANULES][NR_CHANNELS];
+    std::array<std::array<bool, NR_SUB_BAND_GROUPS>, NR_CHANNELS> scaleFactorSharing;
+    GranuleChannelsData<GranuleChannelSideInfo> granules;
 };
 
-using ShortWindowScaleFactors = std::vector<std::vector<int>>;
-using FrequencyBands = std::vector<std::vector<int>>;
+using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_BANDS>, NR_SHORT_WINDOWS>;
+
+template <class Representation>
+using Bands = std::array<std::array<Representation, NR_CODED_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
 
 struct GranuleChannelContent {
-    GranuleChannelContent() :
-        longWindowScaleFactorBands(NR_LONG_WINDOW_BANDS), shortWindowScaleFactorBands(NR_SHORT_WINDOWS),
-        freqBands(NR_FREQ_BANDS) {
-        for (auto& shortWindow : shortWindowScaleFactorBands) {
-            shortWindow.resize(NR_SHORT_WINDOW_BANDS);
-        }
-        for (auto& samplesVector : freqBands) {
-            samplesVector.resize(NR_SAMPLES_PER_BAND);
-        }
-    }
-
-    std::vector<int> longWindowScaleFactorBands;
+    std::array<int, NR_LONG_WINDOW_BANDS> longWindowScaleFactorBands;
     ShortWindowScaleFactors shortWindowScaleFactorBands;
-    FrequencyBands freqBands;
+    Bands<int> freqBands;
 };
 
 struct MainDataContent {
-    GranuleChannelContent granules[NR_GRANULES][NR_CHANNELS];
+    GranuleChannelsData<GranuleChannelContent> granules;
 };
+
+extern std::map<int, BandIndexes> samplingFreqBandIndexes;
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H

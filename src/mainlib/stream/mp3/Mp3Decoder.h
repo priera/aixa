@@ -9,28 +9,22 @@
 #include <memory>
 #include <vector>
 
-#include "ByteReservoir.h"
 #include "FrameSynthesizer.h"
-#include "MainDataReader.h"
+#include "streamread/ByteReservoir.h"
+#include "streamread/MainDataReader.h"
 #include "types.h"
 
 class Mp3Decoder {
 public:
-    Mp3Decoder(std::unique_ptr<MainDataReader> reader, std::unique_ptr<HuffmanSet> huffmanSet);
+    Mp3Decoder(std::unique_ptr<MainDataReader> reader,
+               std::unique_ptr<HuffmanSet> huffmanSet,
+               std::unique_ptr<FrameSynthesizer> frameSynthesizer);
 
     virtual ~Mp3Decoder() = default;
 
     bool decodeNextFrame(FrameHeader& header);
 
 private:
-    struct BandIndexes {
-        std::vector<unsigned int> longWindow;
-        std::vector<unsigned int> shortWindow;
-    };
-
-    static constexpr unsigned int SAMPLES_PER_GRANULE = 576;
-    static constexpr unsigned int SAMPLES_PER_FRAME = SAMPLES_PER_GRANULE * 2;
-
     static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
     static constexpr std::size_t REGIONS_WINDOW_SWITCHING = 2;
 
@@ -41,10 +35,9 @@ private:
     static std::vector<unsigned int> samplingFreqs;
     static std::vector<std::vector<unsigned int>> scaleFactorBandsGroups;
     static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
-    static std::map<int, BandIndexes> samplingFreqBandIndexes;
 
-    static inline void storeInContent(int sample, unsigned int sampleIndex, FrequencyBands& bands) {
-        bands[sampleIndex / NR_SAMPLES_PER_BAND][sampleIndex % NR_SAMPLES_PER_BAND] = sample;
+    static inline void storeInContent(int sample, unsigned int sampleIndex, Bands<int>& bands) {
+        bands[sampleIndex / NR_CODED_SAMPLES_PER_BAND][sampleIndex % NR_CODED_SAMPLES_PER_BAND] = sample;
     }
 
     bool seekToNextFrame();

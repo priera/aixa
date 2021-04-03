@@ -13,68 +13,100 @@ public:
     explicit BasicBitReader(ReadOperations ops) : ops(std::move(ops)), lastByteRemBits(0), totalBits(0) {}
     ~BasicBitReader() override = default;
 
-    unsigned int nextWord() override {
+    unsigned int nextWord(unsigned int& result) override {
         ops.readNBytes(&wt.bytes[0], S_WORD / S_BYTE);
         totalBits += S_WORD;
-        return wt.word;
+        result = wt.word;
+        return S_WORD;
     }
 
-    unsigned short nextShort() override {
+    unsigned int nextShort(short& result) override {
         wt.word = 0;
         ops.readNBytes(&wt.bytes[0], S_SHORT / S_BYTE);
         totalBits += S_SHORT;
-        return wt.word;
+        result = wt.word;
+        return S_SHORT;
     }
 
-    unsigned char nextByte() override {
+    unsigned int nextByte(unsigned char& result) override {
         totalBits += S_BYTE;
         if (lastByteRemBits == 0) {
-            return privNextByte();
+            return privNextByte(result);
         } else {
-            return nextNBits(8);
+            unsigned short resultShort;
+            auto read = nextNBits(8, resultShort);
+            result = resultShort;
+            return read;
         }
     }
 
-    unsigned short nextNBits(unsigned char n) override {
-        assert(n <= 16);
+    unsigned int nextNBits(unsigned char n, unsigned short& result) override {
+        assert(n <= S_SHORT);
 
         unsigned char mask = (1 << lastByteRemBits) - 1;
         unsigned short ret = lastByte & mask;
+        unsigned int actuallyRead;
 
         if (n <= lastByteRemBits) {
             // Requested bits are in the last byte read. No more data reads are needed
             unsigned char diff = lastByteRemBits - n;
             ret >>= diff;
             lastByteRemBits = diff;
+            totalBits += n;
+            actuallyRead = n;
         } else {
             // Last byte does only have a part of the requested bits.
             unsigned char toRead = n - lastByteRemBits;
             unsigned char b;
             unsigned char i;
-            for (i = 0; i < toRead; i += 8) {
-                b = privNextByte();
-                unsigned char toExtract = (toRead - i > 8) ? 8 : toRead - i;
-                ret = (ret << toExtract) + (b >> (8 - toExtract));
+            for (i = 0; i < toRead; i += S_BYTE) {
+                unsigned char toExtract = (toRead - i > S_BYTE) ? S_BYTE : toRead - i;
+                ret <<= toExtract;
+
+                if (privNextByte(b) == 0) {
+                    break;
+                }
+
+                ret += (b >> (S_BYTE - toExtract));
             }
 
-            lastByte = b;
-            lastByteRemBits = i - toRead;
+            if (i >= toRead) {
+                actuallyRead = n;
+                lastByte = b;
+                lastByteRemBits = i - toRead;
+            } else {
+                actuallyRead = lastByteRemBits + i;
+                lastByteRemBits = 0;
+            }
+            totalBits += actuallyRead;
         }
 
-        totalBits += n;
-        return ret;
+        result = ret;
+        return actuallyRead;
     }
 
-    bool nextBit() override { return nextNBits(1); }
+    bool nextBit() override {
+        unsigned short result;
+        nextNBits(1, result);
+        return result;
+    }
 
-    void skipNBits(unsigned char n) override { nextNBits(n); }
+    void skipNBits(unsigned char n) override {
+        unsigned short dummy;
+        nextNBits(n, dummy);
+    }
+
+    void byteAlign() override {
+        totalBits += lastByteRemBits;
+        lastByteRemBits = 0;
+    }
 
     void skipBytes(long count) override {
         ops.skipNBytes(count);
         totalBits += count * S_BYTE;
     }
 
-    std::streamsize extractBytes(char *buff, std::size_t count) override {
+    std::streamsize extractBytes(char* buff, std::size_t count) override {
         auto ret = ops.readNBytes(buff, count);
         totalBits += count * S_BYTE;
         return ret;
@@ -82,7 +114,7 @@ public:
 
     unsigned long bitsRead() const override { return totalBits; }
 
-    bool ended() const override { return ops.ended(); }
+    bool ended() const override { return ops.ended() && lastByteRemBits == 0; }
 
 private:
     ReadOperations ops;
@@ -92,11 +124,7 @@ private:
         char bytes[4];
     };
 
-    unsigned char privNextByte() {
-        char b;
-        ops.readNBytes(&b, 1);
-        return b;
-    }
+    std::streamsize privNextByte(unsigned char& ret) { return ops.readNBytes(&ret, 1); }
 
     WordType wt;
 
