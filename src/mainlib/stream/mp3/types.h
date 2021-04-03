@@ -75,7 +75,7 @@ struct GranuleChannelSideInfo {
     unsigned short part2_3_length;
     unsigned short bigValues;
     float globalGain;
-    unsigned char scaleFactorCompression;
+    unsigned short scaleFactorCompression;
     bool windowSwitching;
     BlockType blockType;
     bool mixedBlockFlag;

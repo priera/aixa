@@ -17,6 +17,9 @@ public:
             currentPos(startPos), toRead(toRead), processed(0) {}
 
         std::streamsize readNBytes(char *ptr, long n) {
+            if (ended())
+                return 0;
+
             for (long i = 0; i < n; i++) {
                 ptr[i] = reservoir.reservoir[currentPos];
                 currentPos = (currentPos + 1) % RESERVOIR_SIZE;
@@ -26,9 +29,13 @@ public:
             return n;
         }
 
-        void skipNBytes(long n) {
+        std::streamsize skipNBytes(long n) {
+            if (ended())
+                return 0;
+
             currentPos = (currentPos + n) % RESERVOIR_SIZE;
             processed += n;
+            return n;
         }
 
         bool ended() const { return processed >= toRead; }

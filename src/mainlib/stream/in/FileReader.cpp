@@ -8,5 +8,5 @@ void FileReader::readString(std::string &str, unsigned int size) { extractBytes(
 
 void FileReader::nextChunkInfo(std::string &idTag, unsigned int &chunkSize) {
     nextIdTag(idTag);
-    chunkSize = nextWord();
+    nextWord(chunkSize);
 }

@@ -14,31 +14,32 @@ public:
         reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamAtStartFrame(0) {
         currentReader = this->inStream.get();
     }
+
     ~MainDataReader() override = default;
 
-    unsigned int nextWord() override {
-        frameBitsRead += S_WORD;
-        checkReader();
-        return currentReader->nextWord();
+    unsigned int nextWord(unsigned int& result) override {
+        unsigned short tmp, tmp2;
+        dualRead(tmp, S_SHORT);
+        dualRead(tmp2, S_SHORT);
+        result = (tmp << S_SHORT) + tmp2;
+        return S_WORD;
     }
 
-    unsigned short nextShort() override {
-        frameBitsRead += S_SHORT;
-        checkReader();
-        return currentReader->nextShort();
+    unsigned int nextShort(short& result) override {
+        unsigned short tmp;
+        auto ret = dualRead(tmp, S_SHORT);
+        result = static_cast<short>(tmp);
+        return ret;
     }
 
-    unsigned char nextByte() override {
-        frameBitsRead += S_BYTE;
-        checkReader();
-        return currentReader->nextByte();
+    unsigned int nextByte(unsigned char& result) override {
+        unsigned short tmp;
+        auto ret = dualRead(tmp, S_BYTE);
+        result = static_cast<unsigned char>(tmp);
+        return ret;
     }
 
-    unsigned short nextNBits(unsigned char n) override {
-        frameBitsRead += n;
-        checkReader();
-        return currentReader->nextNBits(n);
-    }
+    unsigned int nextNBits(unsigned char n, unsigned short& result) override { return dualRead(result, n); }
 
     bool nextBit() override {
         frameBitsRead++;
@@ -50,8 +51,7 @@ public:
 
     void skipNBits(unsigned char n) override {
         frameBitsRead += n;
-        checkReader();
-        return currentReader->skipNBits(n);
+        inStream->skipNBits(n);
     }
 
     bool ended() const override { return inStream->ended(); }
@@ -60,14 +60,12 @@ public:
 
     void skipBytes(long count) override {
         frameBitsRead += count * S_BYTE;
-        checkReader();
-        return currentReader->skipBytes(count);
+        return inStream->skipBytes(count);
     }
 
-    std::streamsize extractBytes(char *buff, std::size_t count) override {
+    std::streamsize extractBytes(char* buff, std::size_t count) override {
         frameBitsRead += count * S_BYTE;
-        checkReader();
-        return currentReader->extractBytes(buff, count);
+        return inStream->extractBytes(buff, count);
     }
 
     unsigned int inStreamPos() const { return inStream->bitsRead(); }
@@ -75,6 +73,22 @@ public:
     void frameEnded(unsigned int frameSize, unsigned int bytesInHeaders);
 
 private:
+    unsigned int dualRead(unsigned short& result, unsigned int toRead) {
+        frameBitsRead += toRead;
+        checkReader();
+        unsigned short tmp;
+        auto read = currentReader->nextNBits(toRead, tmp);
+        if (read < toRead) {
+            checkReader();
+            unsigned short remainder;
+            currentReader->nextNBits(toRead - read, remainder);
+            tmp <<= read;
+            tmp += remainder;
+        }
+        result = tmp;
+        return S_WORD;
+    }
+
     void checkReader() {
         if (currentReader == reservoirReader.get() && currentReader->ended()) {
             currentReader = inStream.get();
@@ -87,7 +101,7 @@ private:
     std::unique_ptr<BitInputReader> inStream;
 
     unsigned long inStreamAtStartFrame;
-    BitInputReader *currentReader;
+    BitInputReader* currentReader;
     unsigned long frameBitsRead;
 };
 

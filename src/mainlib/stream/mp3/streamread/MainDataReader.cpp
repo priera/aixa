@@ -11,10 +11,10 @@ void MainDataReader::startFrame(unsigned int mainDataBegin) {
     frameBitsRead = 0;
 }
 
-void MainDataReader::frameEnded(unsigned int frameSize) {
+void MainDataReader::frameEnded(unsigned int frameSize, unsigned int bytesInHeaders) {
     byteAlign();
     auto inStreamConsumedBytes = (inStream->bitsRead() / S_BYTE) - inStreamAtStartFrame;
-    unsigned int pending = frameSize - NR_HEADERS_BYTES - inStreamConsumedBytes;
+    unsigned int pending = frameSize - bytesInHeaders - inStreamConsumedBytes;
     reservoir.append(pending, *inStream);
     currentReader = inStream.get();
 }
