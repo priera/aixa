@@ -1,82 +1,38 @@
-#include "Mp3Decoder.h"
+#include "FrameDecoder.h"
 
-#include <vector>
+#include <mainlib/stream/in/sizes.h>
 
-static int frameNum = 0;
+#include <stdexcept>
 
-std::vector<unsigned int> Mp3Decoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
-                                                     112, 128, 160, 192, 224, 256, 320};
+std::vector<unsigned int> FrameDecoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
+                                                       112, 128, 160, 192, 224, 256, 320};
 
-std::vector<unsigned int> Mp3Decoder::samplingFreqs = {44100, 48000, 32000};
+std::vector<unsigned int> FrameDecoder::samplingFreqs = {44100, 48000, 32000};
 
-std::vector<std::vector<unsigned char>> Mp3Decoder::scaleFactorsCompression = {
+std::vector<std::vector<unsigned char>> FrameDecoder::scaleFactorsCompression = {
     {0, 0, 0, 0, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4},
     {0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3}};
 
-std::vector<std::vector<unsigned int>> Mp3Decoder::scaleFactorBandsGroups = {{0, 6, 12}, {0, 6, 11, 16, 21}};
+std::vector<std::vector<unsigned int>> FrameDecoder::scaleFactorBandsGroups = {{0, 6, 12},
+                                                                               {0, 6, 11, 16, 21}};
 
-Mp3Decoder::Mp3Decoder(std::unique_ptr<MainDataReader> reader,
-                       std::unique_ptr<HuffmanSet> huffmanSet,
-                       std::unique_ptr<FrameSynthesizer> frameSynthesizer) :
-    header(),
-    bytesInHeaders(0), currentFrameSize(0), reader(std::move(reader)), huffmanSet(std::move(huffmanSet)),
-    frameSynthesizer(std::move(frameSynthesizer)), sideInfo(), mainDataContent() {}
+void FrameDecoder::decode(FrameStartToken token) {
+    bytesInHeaders = 0;
 
-bool Mp3Decoder::decodeNextFrame(FrameHeader& retHeader) {
-    FrameStartToken t;
-    if (!seekToNextFrame(t)) {
-        return false;
-    }
-
-    decodeHeader(t);
+    decodeHeader(token);
 
     float byteRate = (static_cast<float>(header.bitrate * 1000) / S_BYTE);
-    currentFrameSize = (NR_FRAME_SAMPLES * byteRate) / header.samplingFreq;
-    currentFrameSize += (header.isPadded) ? 1 : 0;
+    frameSize = (NR_FRAME_SAMPLES * byteRate) / header.samplingFreq;
+    frameSize += (header.isPadded) ? 1 : 0;
 
     skipCRC();
 
     decodeSideInformation();
 
     decodeMainData();
-
-    frameSynthesizer->synthesize(header.samplingFreq, sideInfo, mainDataContent, header.channels());
-
-    retHeader = header;
-
-    return true;
 }
 
-bool Mp3Decoder::seekToNextFrame(FrameStartToken& tok) {
-    if (frameNum >= 195) {
-        char a = 3;
-    }
-    unsigned char b;
-    bool headerFound = false;
-    bool headerStartRead = false;
-    while (!headerFound && !reader->ended()) {
-        b = reader->nextByte();
-
-        if (headerStartRead) {
-            if ((b & 0xF0) == 0xF0) {
-                headerFound = true;
-            } else {
-                headerStartRead = false;
-            }
-        } else if (b == 0xFF) {
-            headerStartRead = true;
-        }
-    }
-
-    if (reader->ended())
-        return false;
-
-    tok = b;
-    frameNum++;
-    return true;
-}
-
-void Mp3Decoder::decodeHeader(FrameStartToken tok) {
+void FrameDecoder::decodeHeader(FrameStartToken tok) {
     header.version = (tok & 0x08) ? FrameHeader::Version::MPEG_1 : FrameHeader::Version::MPEG_2;
     header.layer = static_cast<FrameHeader::Layer>((tok & 0x06) >> 1);
     header.usesCRC = !(tok & 0x01);
@@ -109,7 +65,7 @@ void Mp3Decoder::decodeHeader(FrameStartToken tok) {
     bytesInHeaders = 4;
 }
 
-void Mp3Decoder::skipCRC() {
+void FrameDecoder::skipCRC() {
     if (header.usesCRC) {
         reader->nextByte();
         reader->nextByte();
@@ -117,7 +73,7 @@ void Mp3Decoder::skipCRC() {
     }
 }
 
-void Mp3Decoder::decodeSideInformation() {
+void FrameDecoder::decodeSideInformation() {
     const auto channels = header.channels();
 
     sideInfo = SideInformation();
@@ -171,7 +127,7 @@ void Mp3Decoder::decodeSideInformation() {
     bytesInHeaders += sideInfoSize;
 }
 
-void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
+void FrameDecoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
     if (chGranule.blockType == GranuleChannelSideInfo::BlockType::NORMAL)
         throw std::runtime_error("Not valid block type");
 
@@ -184,7 +140,7 @@ void Mp3Decoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
     chGranule.region1_count = 20 - chGranule.region0_count;
 }
 
-void Mp3Decoder::decodeMainData() {
+void FrameDecoder::decodeMainData() {
     reader->startFrame(sideInfo.mainDataBegin);
 
     const auto channels = header.channels();
@@ -202,13 +158,13 @@ void Mp3Decoder::decodeMainData() {
         readingSecondGranule = true;
     }
 
-    reader->frameEnded(currentFrameSize, bytesInHeaders);
+    reader->frameEnded(frameSize, bytesInHeaders);
 }
 
-void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
-                                         GranuleChannelContent& channelContent,
-                                         unsigned int channel,
-                                         bool readingSecondGranule) {
+void FrameDecoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
+                                           GranuleChannelContent& channelContent,
+                                           unsigned int channel,
+                                           bool readingSecondGranule) {
     const unsigned char slen1 = scaleFactorsCompression[0][channelSideInfo.scaleFactorCompression];
     const unsigned char slen2 = scaleFactorsCompression[1][channelSideInfo.scaleFactorCompression];
 
@@ -246,9 +202,9 @@ void Mp3Decoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSi
     }
 }
 
-void Mp3Decoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
-                               unsigned long channelStart,
-                               GranuleChannelContent& content) {
+void FrameDecoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
+                                 unsigned long channelStart,
+                                 GranuleChannelContent& content) {
     unsigned int region0Samples;
     unsigned int region1Samples;
 

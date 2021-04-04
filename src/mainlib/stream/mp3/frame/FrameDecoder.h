@@ -1,28 +1,19 @@
-#ifndef AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
-#define AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
+#ifndef AIXA_SRC_MAINLIB_STREAM_MP3_FRAME_FRAMEDECODER_H
+#define AIXA_SRC_MAINLIB_STREAM_MP3_FRAME_FRAMEDECODER_H
 
-#include <mainlib/stream/in/BasicBitReader.h>
-#include <mainlib/stream/mp3/huffman/Huffman.h>
 #include <mainlib/stream/mp3/huffman/HuffmanSet.h>
+#include <mainlib/stream/mp3/streamread/MainDataReader.h>
+#include <mainlib/stream/mp3/types.h>
 
-#include <map>
-#include <memory>
-#include <vector>
-
-#include "FrameSynthesizer.h"
-#include "streamread/ByteReservoir.h"
-#include "streamread/MainDataReader.h"
-#include "types.h"
-
-class Mp3Decoder {
+class FrameDecoder {
 public:
-    Mp3Decoder(std::unique_ptr<MainDataReader> reader,
-               std::unique_ptr<HuffmanSet> huffmanSet,
-               std::unique_ptr<FrameSynthesizer> frameSynthesizer);
+    FrameDecoder(MainDataReader& reader, HuffmanSet& huffmanSet) :
+        reader(&reader), huffmanSet(&huffmanSet), header(), bytesInHeaders(0), frameSize(0),
+        mainDataContent() {}
 
-    virtual ~Mp3Decoder() = default;
+    virtual ~FrameDecoder() noexcept = default;
 
-    bool decodeNextFrame(FrameHeader& header);
+    void decode(FrameStartToken token);
 
 private:
     static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
@@ -40,12 +31,10 @@ private:
         bands[sampleIndex / NR_CODED_SAMPLES_PER_BAND][sampleIndex % NR_CODED_SAMPLES_PER_BAND] = sample;
     }
 
-    bool seekToNextFrame(FrameStartToken& tok);
-    void decodeHeader(unsigned char tok);
+    void decodeHeader(FrameStartToken tok);
     void skipCRC();
     void decodeSideInformation();
     void setRegionCountForGranule(GranuleChannelSideInfo& chGranule);
-
     void decodeMainData();
     void readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
                                  GranuleChannelContent& channelContent,
@@ -55,14 +44,14 @@ private:
                        unsigned long channelStart,
                        GranuleChannelContent& content);
 
+    MainDataReader* reader;
+    HuffmanSet* huffmanSet;
+
     FrameHeader header;
-    std::unique_ptr<MainDataReader> reader;
-    std::unique_ptr<HuffmanSet> huffmanSet;
-    std::unique_ptr<FrameSynthesizer> frameSynthesizer;
     unsigned int bytesInHeaders;
-    unsigned int currentFrameSize;
-    SideInformation sideInfo;
+    unsigned int frameSize;
+    SideInformation sideInfo{};
     MainDataContent mainDataContent;
 };
 
-#endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H
+#endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAME_FRAMEDECODER_H

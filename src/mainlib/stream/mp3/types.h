@@ -112,6 +112,8 @@ struct MainDataContent {
     GranuleChannelsData<GranuleChannelContent> granules;
 };
 
+using FrameStartToken = unsigned char;
+
 extern std::map<int, BandIndexes> samplingFreqBandIndexes;
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H
