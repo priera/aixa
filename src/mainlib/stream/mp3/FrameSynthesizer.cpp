@@ -58,7 +58,24 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
         throw std::runtime_error("Not supported (yet) short windows");
     }
 
+    auto windowScaleFactors = computeWindowScaleFactors(samplingFreq, channelInfo, channelContent);
     double gainTerm = std::pow(2.0, (channelInfo.globalGain - GAIN_BASE) / 4.0);
+
+    for (std::size_t band = 0; band < NR_FREQ_BANDS; band++) {
+        for (std::size_t sampleInd = 0; sampleInd < NR_CODED_SAMPLES_PER_BAND; sampleInd++) {
+            double scaleFactorTerm = windowScaleFactors[band][sampleInd];
+            auto sample = channelContent.freqBands[band][sampleInd];
+            auto dequantizedSample = std::pow(std::abs(sample), 4.0 / 3.0) * gainTerm * scaleFactorTerm;
+            dequantizedSample *= (sample < 0) ? -1 : 1;
+            dequantized(band, sampleInd) = dequantizedSample;
+        }
+    }
+}
+
+Bands<double> FrameSynthesizer::computeWindowScaleFactors(unsigned int samplingFreq,
+                                                          const GranuleChannelSideInfo& channelInfo,
+                                                          const GranuleChannelContent& channelContent) {
+    auto ret = Bands<double>();
     std::size_t scaleFactorBandInd = 1;
     std::size_t nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
 
@@ -72,13 +89,11 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
             auto scaleFactor = channelContent.longWindowScaleFactorBands[scaleFactorBandInd - 1];
             double preTabFactor = channelInfo.preFlag * pretab[scaleFactorBandInd - 1];
             double exp = -0.5 * (1.0 + channelInfo.scaleFactorScale) * (scaleFactor + preTabFactor);
-            double scaleFactorTerm = std::pow(2.0, exp);
-            auto sample = channelContent.freqBands[band][sampleInd];
-            auto dequantizedSample = std::pow(std::abs(sample), 4.0 / 3.0) * gainTerm * scaleFactorTerm;
-            dequantizedSample *= (sample < 0) ? -1 : 1;
-            dequantized(band, sampleInd) = dequantizedSample;
+            ret[band][sampleInd] = std::pow(2.0, exp);
         }
     }
+
+    return ret;
 }
 
 void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
