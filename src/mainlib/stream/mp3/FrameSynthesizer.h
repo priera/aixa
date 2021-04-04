@@ -35,10 +35,7 @@ public:
                      aixa::math::Matrix<double, aixa::math::DoubleTypeAxioms> matrix);
     virtual ~FrameSynthesizer() = default;
 
-    FrameSamples synthesize(unsigned int samplingFreq,
-                            const SideInformation& sideInfo,
-                            const MainDataContent& content,
-                            std::size_t nChannels);
+    FrameSamples synthesize(const Frame& frame);
 
 private:
     static constexpr float GAIN_BASE = 210.f;

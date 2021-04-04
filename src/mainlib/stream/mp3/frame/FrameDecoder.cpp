@@ -16,23 +16,34 @@ std::vector<std::vector<unsigned char>> FrameDecoder::scaleFactorsCompression = 
 std::vector<std::vector<unsigned int>> FrameDecoder::scaleFactorBandsGroups = {{0, 6, 12},
                                                                                {0, 6, 11, 16, 21}};
 
-void FrameDecoder::decode(FrameStartToken token) {
+const Frame& FrameDecoder::decode(FrameStartToken token) {
     bytesInHeaders = 0;
 
     decodeHeader(token);
 
-    float byteRate = (static_cast<float>(header.bitrate * 1000) / S_BYTE);
-    frameSize = (NR_FRAME_SAMPLES * byteRate) / header.samplingFreq;
-    frameSize += (header.isPadded) ? 1 : 0;
+    computeFrameSize();
 
     skipCRC();
 
     decodeSideInformation();
 
     decodeMainData();
+
+    return frame;
+}
+
+void FrameDecoder::computeFrameSize() {
+    const auto& header = frame.header;
+    float byteRate = (static_cast<float>(header.bitrate * 1000) / S_BYTE);
+    unsigned int frameSize = (NR_FRAME_SAMPLES * byteRate) / header.samplingFreq;
+    frameSize += (header.isPadded) ? 1 : 0;
+
+    frame.frameSize = frameSize;
 }
 
 void FrameDecoder::decodeHeader(FrameStartToken tok) {
+    auto& header = frame.header;
+
     header.version = (tok & 0x08) ? FrameHeader::Version::MPEG_1 : FrameHeader::Version::MPEG_2;
     header.layer = static_cast<FrameHeader::Layer>((tok & 0x06) >> 1);
     header.usesCRC = !(tok & 0x01);
@@ -66,7 +77,7 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
 }
 
 void FrameDecoder::skipCRC() {
-    if (header.usesCRC) {
+    if (frame.header.usesCRC) {
         reader->nextByte();
         reader->nextByte();
         bytesInHeaders += 2;
@@ -74,8 +85,9 @@ void FrameDecoder::skipCRC() {
 }
 
 void FrameDecoder::decodeSideInformation() {
-    const auto channels = header.channels();
+    const auto channels = frame.header.channels();
 
+    auto& sideInfo = frame.sideInfo;
     sideInfo = SideInformation();
 
     sideInfo.mainDataBegin = reader->nextNBits(9);
@@ -141,15 +153,15 @@ void FrameDecoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
 }
 
 void FrameDecoder::decodeMainData() {
-    reader->startFrame(sideInfo.mainDataBegin);
+    reader->startFrame(frame.sideInfo.mainDataBegin);
 
-    const auto channels = header.channels();
+    const auto channels = frame.header.channels();
     bool readingSecondGranule = false;
     for (unsigned int i = 0; i < NR_GRANULES; i++) {
         unsigned int channel;
         for (channel = 0; channel < channels; channel++) {
-            const auto& channelInfo = sideInfo.granules[i][channel];
-            auto& channelContent = mainDataContent.granules[i][channel];
+            const auto& channelInfo = frame.sideInfo.granules[i][channel];
+            auto& channelContent = frame.content.granules[i][channel];
             auto channelStart = reader->bitsRead();
             readChannelScaleFactors(channelInfo, channelContent, channel, readingSecondGranule);
             entropyDecode(channelInfo, channelStart, channelContent);
@@ -158,7 +170,7 @@ void FrameDecoder::decodeMainData() {
         readingSecondGranule = true;
     }
 
-    reader->frameEnded(frameSize, bytesInHeaders);
+    reader->frameEnded(frame.frameSize, bytesInHeaders);
 }
 
 void FrameDecoder::readChannelScaleFactors(const GranuleChannelSideInfo& channelSideInfo,
@@ -184,7 +196,8 @@ void FrameDecoder::readChannelScaleFactors(const GranuleChannelSideInfo& channel
         }
     } else {
         for (unsigned int group = 0; group < NR_SUB_BAND_GROUPS; group++) {
-            bool scaleFactorsAreShared = readingSecondGranule && sideInfo.scaleFactorSharing[channel][group];
+            bool scaleFactorsAreShared =
+                readingSecondGranule && frame.sideInfo.scaleFactorSharing[channel][group];
             const unsigned int subBandStart = scaleFactorBandsGroups[1][group];
             const unsigned int subBandEnd = scaleFactorBandsGroups[1][group + 1];
             if (!scaleFactorsAreShared) {
@@ -193,7 +206,7 @@ void FrameDecoder::readChannelScaleFactors(const GranuleChannelSideInfo& channel
                     channelContent.longWindowScaleFactorBands[i] = reader->nextNBits(toRead);
                 }
             } else {
-                const auto& firstGranuleSf = mainDataContent.granules[0][channel].longWindowScaleFactorBands;
+                const auto& firstGranuleSf = frame.content.granules[0][channel].longWindowScaleFactorBands;
                 for (unsigned int i = subBandStart; i < subBandEnd; i++) {
                     channelContent.longWindowScaleFactorBands[i] = firstGranuleSf[i];
                 }
@@ -213,7 +226,7 @@ void FrameDecoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
         region0Samples = 36; /* sfb[9/3]*3=36 */
         region1Samples = NR_GRANULE_SAMPLES;
     } else {
-        const auto& indexesTable = samplingFreqBandIndexes[header.samplingFreq].longWindow;
+        const auto& indexesTable = samplingFreqBandIndexes[frame.header.samplingFreq].longWindow;
         region0Samples = indexesTable[channelInfo.region0_count + 1];
         region1Samples = indexesTable[channelInfo.region0_count + channelInfo.region1_count + 2];
     }

@@ -112,6 +112,13 @@ struct MainDataContent {
     GranuleChannelsData<GranuleChannelContent> granules;
 };
 
+struct Frame {
+    unsigned int frameSize;
+    FrameHeader header;
+    SideInformation sideInfo;
+    MainDataContent content;
+};
+
 using FrameStartToken = unsigned char;
 
 extern std::map<int, BandIndexes> samplingFreqBandIndexes;

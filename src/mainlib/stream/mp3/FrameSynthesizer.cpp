@@ -26,18 +26,15 @@ FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
     }
 }
 
-FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(unsigned int samplingFreq,
-                                                            const SideInformation& sideInfo,
-                                                            const MainDataContent& content,
-                                                            std::size_t nChannels) {
+FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
     auto ret = FrameSamples();
     auto& samples = ret.channel1;
-    for (unsigned int channel = 0; channel < nChannels; channel++) {
+    for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
         std::size_t startIndex = 0;
         for (unsigned int i = 0; i < NR_GRANULES; i++) {
-            const auto& channelInfo = sideInfo.granules[i][channel];
-            const auto& channelContent = content.granules[i][channel];
-            dequantizeSamples(samplingFreq, channelInfo, channelContent);
+            const auto& channelInfo = frame.sideInfo.granules[i][channel];
+            const auto& channelContent = frame.content.granules[i][channel];
+            dequantizeSamples(frame.header.samplingFreq, channelInfo, channelContent);
             // reordering (short windows only)
             // stereo
             antialias(channelInfo);

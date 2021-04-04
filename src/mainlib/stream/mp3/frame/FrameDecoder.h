@@ -7,13 +7,12 @@
 
 class FrameDecoder {
 public:
-    FrameDecoder(MainDataReader& reader, HuffmanSet& huffmanSet) :
-        reader(&reader), huffmanSet(&huffmanSet), header(), bytesInHeaders(0), frameSize(0),
-        mainDataContent() {}
+    FrameDecoder(MainDataReader& reader, std::unique_ptr<HuffmanSet> huffmanSet) :
+        reader(&reader), huffmanSet(std::move(huffmanSet)), bytesInHeaders(0), frame() {}
 
     virtual ~FrameDecoder() noexcept = default;
 
-    void decode(FrameStartToken token);
+    const Frame& decode(FrameStartToken token);
 
 private:
     static constexpr std::size_t REGIONS_NORMAL_BLOCK = 3;
@@ -32,6 +31,7 @@ private:
     }
 
     void decodeHeader(FrameStartToken tok);
+    void computeFrameSize();
     void skipCRC();
     void decodeSideInformation();
     void setRegionCountForGranule(GranuleChannelSideInfo& chGranule);
@@ -45,13 +45,10 @@ private:
                        GranuleChannelContent& content);
 
     MainDataReader* reader;
-    HuffmanSet* huffmanSet;
+    std::unique_ptr<HuffmanSet> huffmanSet;
 
-    FrameHeader header;
     unsigned int bytesInHeaders;
-    unsigned int frameSize;
-    SideInformation sideInfo{};
-    MainDataContent mainDataContent;
+    Frame frame;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAME_FRAMEDECODER_H
