@@ -1,12 +1,12 @@
 #include "Mp3StreamFactory.h"
 
 #include <mainlib/stream/in/FileReader.h>
+#include <mainlib/stream/mp3/frame/FrameSynthesizerFactory.h>
 #include <mainlib/stream/mp3/huffman/Huffman.h>
 #include <mainlib/stream/mp3/huffman/HuffmanParser.h>
 
 #include <iostream>
 
-#include "FrameSynthesizerFactory.h"
 #include "Mp3Decoder.h"
 
 std::shared_ptr<Stream> Mp3StreamFactory::probe() {

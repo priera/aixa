@@ -5,7 +5,7 @@
 
 #include <deque>
 
-#include "types.h"
+#include "mainlib/stream/mp3/types.h"
 
 class FrameSynthesizer {
 public:

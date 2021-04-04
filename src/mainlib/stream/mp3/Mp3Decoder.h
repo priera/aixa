@@ -3,12 +3,12 @@
 
 #include <mainlib/stream/in/BasicBitReader.h>
 #include <mainlib/stream/mp3/frame/FrameDecoder.h>
+#include <mainlib/stream/mp3/frame/FrameSynthesizer.h>
 
 #include <map>
 #include <memory>
 #include <vector>
 
-#include "FrameSynthesizer.h"
 #include "types.h"
 
 class Mp3Decoder {
