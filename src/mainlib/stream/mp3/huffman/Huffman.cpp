@@ -54,9 +54,7 @@ void Huffman::addLinbitsToSymbol(BitInputReader& reader,
                                  int length,
                                  unsigned int linbits) const {
     if (linbits && symbol == length - 1) {
-        unsigned short tmp;
-        reader.nextNBits(linbits, tmp);
-        symbol += tmp;
+        symbol += reader.nextNBits(linbits);
     }
 
     if (symbol != 0) {

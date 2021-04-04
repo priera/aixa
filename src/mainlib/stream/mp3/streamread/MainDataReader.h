@@ -1,14 +1,13 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_MP3_MAINDATAREADER_H
 #define AIXA_SRC_MAINLIB_STREAM_MP3_MAINDATAREADER_H
 
-#include <mainlib/stream/in/BitInputReader.h>
 #include <mainlib/stream/in/sizes.h>
 
 #include <iostream>
 
 #include "ByteReservoir.h"
 
-class MainDataReader : public BitInputReader {
+class MainDataReader : public AbstractBitInputReader {
 public:
     explicit MainDataReader(std::unique_ptr<BitInputReader> inStream) :
         reservoir(), reservoirReader(nullptr), inStream(std::move(inStream)), inStreamAtStartFrame(0) {
@@ -17,7 +16,7 @@ public:
 
     ~MainDataReader() override = default;
 
-    unsigned int nextWord(unsigned int& result) override {
+    unsigned int tryExtractWord(unsigned int& result) override {
         unsigned short tmp, tmp2;
         dualRead(tmp, S_SHORT);
         dualRead(tmp2, S_SHORT);
@@ -25,21 +24,23 @@ public:
         return S_WORD;
     }
 
-    unsigned int nextShort(short& result) override {
+    unsigned int tryExtractShort(short& result) override {
         unsigned short tmp;
         auto ret = dualRead(tmp, S_SHORT);
         result = static_cast<short>(tmp);
         return ret;
     }
 
-    unsigned int nextByte(unsigned char& result) override {
+    unsigned int tryExtractByte(unsigned char& result) override {
         unsigned short tmp;
         auto ret = dualRead(tmp, S_BYTE);
         result = static_cast<unsigned char>(tmp);
         return ret;
     }
 
-    unsigned int nextNBits(unsigned char n, unsigned short& result) override { return dualRead(result, n); }
+    unsigned int tryExtractNBits(unsigned char n, unsigned short& result) override {
+        return dualRead(result, n);
+    }
 
     bool nextBit() override {
         frameBitsRead++;
@@ -77,11 +78,11 @@ private:
         frameBitsRead += toRead;
         checkReader();
         unsigned short tmp;
-        auto read = currentReader->nextNBits(toRead, tmp);
+        auto read = currentReader->tryExtractNBits(toRead, tmp);
         if (read < toRead) {
             checkReader();
             unsigned short remainder;
-            currentReader->nextNBits(toRead - read, remainder);
+            currentReader->tryExtractNBits(toRead - read, remainder);
             tmp <<= read;
             tmp += remainder;
         }
