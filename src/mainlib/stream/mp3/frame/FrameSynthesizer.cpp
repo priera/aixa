@@ -3,20 +3,19 @@
 #include <mainlib/math/types.h>
 
 #include <cmath>
-#include <stdexcept>
 
 using namespace aixa::math;
 
-std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                      1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0};
-
-FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
+FrameSynthesizer::FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
+                                   std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+                                   AntialiasCoefficients antialiasCoefficients,
                                    aixa::math::DoubleMatrix cosineTransform,
                                    BlockWindows blockWindows,
                                    aixa::math::DoubleMatrix frequencyInversion,
                                    aixa::math::DoubleMatrix synFilter,
                                    aixa::math::DoubleMatrix dWindow) :
-    antialiasCoefficients(antialiasCoefficients),
+    longWindowSFComputer(std::move(longWindowSFComputer)),
+    shortWindowSFComputer(std::move(shortWindowSFComputer)), antialiasCoefficients(antialiasCoefficients),
     cosineTransform(std::move(cosineTransform)), blockWindows(std::move(blockWindows)),
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
     dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
@@ -51,11 +50,11 @@ FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(const Frame& frame) 
 void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
                                          const GranuleChannelSideInfo& channelInfo,
                                          const GranuleChannelContent& channelContent) {
-    if (channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
-        throw std::runtime_error("Not supported (yet) short windows");
-    }
+    auto& scaleFactorsComputer = (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT)
+                                     ? *longWindowSFComputer
+                                     : *shortWindowSFComputer;
 
-    auto windowScaleFactors = computeWindowScaleFactors(samplingFreq, channelInfo, channelContent);
+    auto windowScaleFactors = scaleFactorsComputer.compute(samplingFreq, channelInfo, channelContent);
     double gainTerm = std::pow(2.0, (channelInfo.globalGain - GAIN_BASE) / 4.0);
 
     for (std::size_t band = 0; band < NR_FREQ_BANDS; band++) {
@@ -67,30 +66,6 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
             dequantized(band, sampleInd) = dequantizedSample;
         }
     }
-}
-
-Bands<double> FrameSynthesizer::computeWindowScaleFactors(unsigned int samplingFreq,
-                                                          const GranuleChannelSideInfo& channelInfo,
-                                                          const GranuleChannelContent& channelContent) {
-    auto ret = Bands<double>();
-    std::size_t scaleFactorBandInd = 1;
-    std::size_t nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
-
-    for (std::size_t band = 0; band < NR_FREQ_BANDS; band++) {
-        for (std::size_t sampleInd = 0; sampleInd < NR_CODED_SAMPLES_PER_BAND; sampleInd++) {
-            if ((band * NR_CODED_SAMPLES_PER_BAND) + sampleInd == nextSubbandBoundary) {
-                scaleFactorBandInd++;
-                nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
-            }
-
-            auto scaleFactor = channelContent.longWindowScaleFactorBands[scaleFactorBandInd - 1];
-            double preTabFactor = channelInfo.preFlag * pretab[scaleFactorBandInd - 1];
-            double exp = -0.5 * (1.0 + channelInfo.scaleFactorScale) * (scaleFactor + preTabFactor);
-            ret[band][sampleInd] = std::pow(2.0, exp);
-        }
-    }
-
-    return ret;
 }
 
 void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {

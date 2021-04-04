@@ -5,6 +5,7 @@
 
 #include <deque>
 
+#include "WindowScaleFactorsComputer.h"
 #include "mainlib/stream/mp3/types.h"
 
 class FrameSynthesizer {
@@ -27,7 +28,9 @@ public:
         ChannelSamples channel2;
     };
 
-    FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
+    FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
+                     std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+                     AntialiasCoefficients antialiasCoefficients,
                      aixa::math::DoubleMatrix cosineTransform,
                      BlockWindows blockWindows,
                      aixa::math::DoubleMatrix frequencyInversion,
@@ -42,17 +45,16 @@ private:
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
 
-    static std::vector<unsigned int> pretab;
-
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
-    Bands<double> computeWindowScaleFactors(unsigned int samplingFreq,
-                                            const GranuleChannelSideInfo& channelInfo,
-                                            const GranuleChannelContent& channelContent);
+
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
+
+    std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer;
+    std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer;
 
     AntialiasCoefficients antialiasCoefficients;
     aixa::math::DoubleMatrix cosineTransform;
