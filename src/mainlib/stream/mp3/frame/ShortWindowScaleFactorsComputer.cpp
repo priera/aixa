@@ -13,6 +13,7 @@ Bands<double> ShortWindowScaleFactorsComputer::compute(unsigned int samplingFreq
     std::size_t channelBandBegin;
 
     const auto& bandIndexes = samplingFreqBandIndexes[samplingFreq];
+    const auto transitionSample = bandIndexes.longWindow[8];
 
     if (channelInfo.mixedBlockFlag) {
         nextSubbandBoundary = bandIndexes.longWindow[1];
@@ -23,26 +24,23 @@ Bands<double> ShortWindowScaleFactorsComputer::compute(unsigned int samplingFreq
         channelBandBegin = 0;
     }
 
+    bool usingLongWindowSf = false;
     for (std::size_t band = 0; band < NR_FREQ_BANDS; band++) {
         for (std::size_t sampleInd = 0; sampleInd < NR_CODED_SAMPLES_PER_BAND; sampleInd++) {
             auto sample = (band * NR_CODED_SAMPLES_PER_BAND) + sampleInd;
             if (sample == nextSubbandBoundary) {
-                if (channelInfo.mixedBlockFlag) {
-                    if (sample < bandIndexes.longWindow[8]) {
+                if (channelInfo.mixedBlockFlag && sample <= transitionSample) {
+                    usingLongWindowSf = true;
+                    if (sample < transitionSample) {
                         sfBandInd++;
                         nextSubbandBoundary = bandIndexes.longWindow[sfBandInd + 1];
                     } else {
-                        if (sample == bandIndexes.longWindow[8]) {
-                            sfBandInd = 3;
-                        } else {
-                            sfBandInd++;
-                        }
-                        nextSubbandBoundary = bandIndexes.shortWindow[sfBandInd + 1] * NR_SHORT_WINDOWS;
-                        channelBandWidth =
-                            bandIndexes.shortWindow[sfBandInd + 1] - bandIndexes.shortWindow[sfBandInd];
-                        channelBandBegin = bandIndexes.shortWindow[sfBandInd] * NR_SHORT_WINDOWS;
+                        usingLongWindowSf = false;
+                        sfBandInd = 2;
                     }
-                } else {
+                }
+
+                if (!usingLongWindowSf) {
                     sfBandInd++;
                     nextSubbandBoundary = bandIndexes.shortWindow[sfBandInd + 1] * NR_SHORT_WINDOWS;
                     channelBandWidth =
