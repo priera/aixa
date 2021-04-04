@@ -2,9 +2,6 @@
 
 #include <cmath>
 
-std::vector<unsigned int> LongWindowScaleFactorsComputer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                    1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0};
-
 Bands<double> LongWindowScaleFactorsComputer::compute(unsigned int samplingFreq,
                                                       const GranuleChannelSideInfo& channelInfo,
                                                       const GranuleChannelContent& channelContent) {
