@@ -21,8 +21,9 @@ private:
     static constexpr unsigned int SIDE_INFO_SIZE_MONO = 17;
     static constexpr unsigned int SIDE_INFO_SIZE_DUAL = 32;
 
-    static std::vector<unsigned int> bitRateList;
-    static std::vector<unsigned int> samplingFreqs;
+    static constexpr std::array<unsigned int, 14> bitRateList = {32,  40,  48,  56,  64,  80,  96,
+                                                                 112, 128, 160, 192, 224, 256, 320};
+    static constexpr std::array<unsigned int, 3> samplingFreqs = {44100, 48000, 32000};
     static std::vector<std::vector<unsigned int>> scaleFactorBandsGroups;
     static std::vector<std::vector<unsigned char>> scaleFactorsCompression;
 
@@ -40,6 +41,15 @@ private:
                                  GranuleChannelContent& channelContent,
                                  unsigned int channel,
                                  bool readingSecondGranule);
+    void readShortWindowScaleFactors(GranuleChannelContent& channelContent,
+                                     const GranuleChannelSideInfo& channelSideInfo,
+                                     unsigned char slen1,
+                                     unsigned char slen2);
+    void readLongWindowScaleFactors(GranuleChannelContent& channelContent,
+                                    unsigned int channel,
+                                    bool readingSecondGranule,
+                                    unsigned char slen1,
+                                    unsigned char slen2);
     void entropyDecode(const GranuleChannelSideInfo& channelInfo,
                        unsigned long channelStart,
                        GranuleChannelContent& content);

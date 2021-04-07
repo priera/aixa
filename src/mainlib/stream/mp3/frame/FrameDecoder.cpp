@@ -4,11 +4,6 @@
 
 #include <stdexcept>
 
-std::vector<unsigned int> FrameDecoder::bitRateList = {32,  40,  48,  56,  64,  80,  96,
-                                                       112, 128, 160, 192, 224, 256, 320};
-
-std::vector<unsigned int> FrameDecoder::samplingFreqs = {44100, 48000, 32000};
-
 std::vector<std::vector<unsigned char>> FrameDecoder::scaleFactorsCompression = {
     {0, 0, 0, 0, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4},
     {0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3, 1, 2, 3, 2, 3}};
@@ -181,9 +176,28 @@ void FrameDecoder::readChannelScaleFactors(const GranuleChannelSideInfo& channel
     const unsigned char slen2 = scaleFactorsCompression[1][channelSideInfo.scaleFactorCompression];
 
     if (channelSideInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
-        if (channelSideInfo.mixedBlockFlag)
-            throw std::runtime_error("Not supported (yet) reading these scale factors");
+        readShortWindowScaleFactors(channelContent, channelSideInfo, slen1, slen2);
+    } else {
+        readLongWindowScaleFactors(channelContent, channel, readingSecondGranule, slen1, slen2);
+    }
+}
 
+void FrameDecoder::readShortWindowScaleFactors(GranuleChannelContent& channelContent,
+                                               const GranuleChannelSideInfo& channelSideInfo,
+                                               unsigned char slen1,
+                                               unsigned char slen2) {
+    if (channelSideInfo.mixedBlockFlag) {
+        std::size_t band;
+        for (band = 0; band < 8; band++) {
+            channelContent.longWindowScaleFactorBands[band] = reader->nextNBits(slen1);
+        }
+        for (band = 3; band < NR_SHORT_WINDOW_BANDS; band++) {
+            unsigned char toRead = (band < 6) ? slen1 : slen2;
+            for (std::size_t window = 0; window < NR_SHORT_WINDOWS; window++) {
+                channelContent.shortWindowScaleFactorBands[window][band] = reader->nextNBits(toRead);
+            }
+        }
+    } else {
         for (unsigned int group = 0; group < 2; group++) {
             const unsigned int subBandStart = scaleFactorBandsGroups[0][group];
             const unsigned int subBandEnd = scaleFactorBandsGroups[0][group + 1];
@@ -194,22 +208,28 @@ void FrameDecoder::readChannelScaleFactors(const GranuleChannelSideInfo& channel
                 }
             }
         }
-    } else {
-        for (unsigned int group = 0; group < NR_SUB_BAND_GROUPS; group++) {
-            bool scaleFactorsAreShared =
-                readingSecondGranule && frame.sideInfo.scaleFactorSharing[channel][group];
-            const unsigned int subBandStart = scaleFactorBandsGroups[1][group];
-            const unsigned int subBandEnd = scaleFactorBandsGroups[1][group + 1];
-            if (!scaleFactorsAreShared) {
-                unsigned char toRead = (group < 2) ? slen1 : slen2;
-                for (unsigned int i = subBandStart; i < subBandEnd; i++) {
-                    channelContent.longWindowScaleFactorBands[i] = reader->nextNBits(toRead);
-                }
-            } else {
-                const auto& firstGranuleSf = frame.content.granules[0][channel].longWindowScaleFactorBands;
-                for (unsigned int i = subBandStart; i < subBandEnd; i++) {
-                    channelContent.longWindowScaleFactorBands[i] = firstGranuleSf[i];
-                }
+    }
+}
+
+void FrameDecoder::readLongWindowScaleFactors(GranuleChannelContent& channelContent,
+                                              unsigned int channel,
+                                              bool readingSecondGranule,
+                                              unsigned char slen1,
+                                              unsigned char slen2) {
+    for (unsigned int group = 0; group < NR_SUB_BAND_GROUPS; group++) {
+        bool scaleFactorsAreShared =
+            readingSecondGranule && frame.sideInfo.scaleFactorSharing[channel][group];
+        const unsigned int subBandStart = scaleFactorBandsGroups[1][group];
+        const unsigned int subBandEnd = scaleFactorBandsGroups[1][group + 1];
+        if (!scaleFactorsAreShared) {
+            unsigned char toRead = (group < 2) ? slen1 : slen2;
+            for (unsigned int i = subBandStart; i < subBandEnd; i++) {
+                channelContent.longWindowScaleFactorBands[i] = reader->nextNBits(toRead);
+            }
+        } else {
+            const auto& firstGranuleSf = frame.content.granules[0][channel].longWindowScaleFactorBands;
+            for (unsigned int i = subBandStart; i < subBandEnd; i++) {
+                channelContent.longWindowScaleFactorBands[i] = firstGranuleSf[i];
             }
         }
     }
