@@ -33,18 +33,35 @@ FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(const Frame& frame) 
         for (unsigned int i = 0; i < NR_GRANULES; i++) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
             const auto& channelContent = frame.content.granules[i][channel];
-            dequantizeSamples(frame.header.samplingFreq, channelInfo, channelContent);
-            // reordering (short windows only)
-            // stereo
-            antialias(channelInfo);
-            inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
-            polyphaseSynthesis(samples, startIndex);
+
+            synthesizeGranuleChannel(samples, channel, frame.header.samplingFreq, channelInfo, channelContent,
+                                     startIndex);
+
             startIndex = NR_GRANULE_SAMPLES;
         }
         samples = ret.channel2;
     }
 
     return ret;
+}
+
+void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
+                                                unsigned int channel,
+                                                unsigned int samplingFreq,
+                                                const GranuleChannelSideInfo& channelInfo,
+                                                const GranuleChannelContent& channelContent,
+                                                std::size_t startIndex) {
+    dequantizeSamples(samplingFreq, channelInfo, channelContent);
+
+    // reordering;
+
+    // stereo
+
+    antialias(channelInfo);
+
+    inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
+
+    polyphaseSynthesis(samples, startIndex);
 }
 
 void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,

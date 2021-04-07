@@ -45,6 +45,12 @@ private:
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
 
+    void synthesizeGranuleChannel(ChannelSamples& samples,
+                                  unsigned int channel,
+                                  unsigned int samplingFreq,
+                                  const GranuleChannelSideInfo& channelInfo,
+                                  const GranuleChannelContent& channelContent,
+                                  std::size_t startIndex);
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
