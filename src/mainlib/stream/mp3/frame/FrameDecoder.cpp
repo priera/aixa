@@ -47,26 +47,23 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
         throw std::runtime_error("Not supported MP3 format");
     }
 
-    unsigned char b;
-    b = reader->nextByte();
-
-    unsigned char bitRateIndex = (b & 0xF0) >> 4;
+    unsigned char bitRateIndex = reader->nextNBits(4);
     if (bitRateIndex == 0 || bitRateIndex >= 15)
         throw std::runtime_error("Not supported MP3 format");
     header.bitrate = bitRateList[bitRateIndex - 1];
 
-    std::size_t freqIndex = (b & 0x0A) >> 2;
+    std::size_t freqIndex = reader->nextNBits(2);
     if (freqIndex > 2)
         throw std::runtime_error("Not supported MP3 format");
     header.samplingFreq = samplingFreqs[freqIndex];
 
-    header.isPadded = b & 0x02;
+    header.isPadded = reader->nextBit();
+    reader->nextBit();  // Skip private bit
 
-    b = reader->nextByte();
-    header.mode = static_cast<FrameHeader::Mode>(b >> 6);
-
-    header.msStereo = b & 0x20;
-    header.intensityStereo = b & 0x10;
+    header.mode = static_cast<FrameHeader::Mode>(reader->nextNBits(2));
+    header.msStereo = reader->nextBit();
+    header.intensityStereo = reader->nextBit();
+    reader->nextNBits(4);  // Emphasis is omitted too
 
     bytesInHeaders = 4;
 }
