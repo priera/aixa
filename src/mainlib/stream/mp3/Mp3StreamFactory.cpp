@@ -24,10 +24,10 @@ std::shared_ptr<Stream> Mp3StreamFactory::probe() {
 
     auto header = FrameHeader();
     std::cout << std::scientific;
-    for (int i = 0; i < 18000; i++) {
+    for (int i = 0; i < 14824; i++) {
         std::cout << "Decoding frame " << i << std::endl;
 
-        if (i >= 178) {
+        if (i >= 464) {
             char a = 3;
         }
         if (!decoder.decodeNextFrame()) {

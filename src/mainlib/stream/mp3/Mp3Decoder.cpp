@@ -23,9 +23,6 @@ bool Mp3Decoder::decodeNextFrame() {
 }
 
 bool Mp3Decoder::seekToNextFrame(FrameStartToken& tok) {
-    if (frameNum >= 195) {
-        char a = 3;
-    }
     unsigned char b;
     bool headerFound = false;
     bool headerStartRead = false;
