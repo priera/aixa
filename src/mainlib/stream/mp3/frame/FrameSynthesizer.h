@@ -5,7 +5,8 @@
 
 #include <deque>
 
-#include "types.h"
+#include "WindowScaleFactorsComputer.h"
+#include "mainlib/stream/mp3/types.h"
 
 class FrameSynthesizer {
 public:
@@ -27,7 +28,9 @@ public:
         ChannelSamples channel2;
     };
 
-    FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
+    FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
+                     std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+                     AntialiasCoefficients antialiasCoefficients,
                      aixa::math::DoubleMatrix cosineTransform,
                      BlockWindows blockWindows,
                      aixa::math::DoubleMatrix frequencyInversion,
@@ -35,24 +38,31 @@ public:
                      aixa::math::Matrix<double, aixa::math::DoubleTypeAxioms> matrix);
     virtual ~FrameSynthesizer() = default;
 
-    FrameSamples synthesize(unsigned int samplingFreq,
-                            const SideInformation& sideInfo,
-                            const MainDataContent& content,
-                            std::size_t nChannels);
+    FrameSamples synthesize(const Frame& frame);
 
 private:
     static constexpr float GAIN_BASE = 210.f;
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
 
-    static std::vector<unsigned int> pretab;
-
+    void synthesizeGranuleChannel(ChannelSamples& samples,
+                                  unsigned int channel,
+                                  unsigned int samplingFreq,
+                                  const GranuleChannelSideInfo& channelInfo,
+                                  const GranuleChannelContent& channelContent,
+                                  std::size_t startIndex);
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
+    void reorder(unsigned int samplingFreq,
+                 const GranuleChannelSideInfo& channelInfo,
+                 const GranuleChannelContent& channelContent);
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
+
+    std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer;
+    std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer;
 
     AntialiasCoefficients antialiasCoefficients;
     aixa::math::DoubleMatrix cosineTransform;

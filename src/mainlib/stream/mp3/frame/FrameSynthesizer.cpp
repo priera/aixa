@@ -3,20 +3,19 @@
 #include <mainlib/math/types.h>
 
 #include <cmath>
-#include <stdexcept>
 
 using namespace aixa::math;
 
-std::vector<unsigned int> FrameSynthesizer::pretab = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                      1, 1, 1, 1, 2, 2, 3, 3, 3, 2, 0};
-
-FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
+FrameSynthesizer::FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
+                                   std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+                                   AntialiasCoefficients antialiasCoefficients,
                                    aixa::math::DoubleMatrix cosineTransform,
                                    BlockWindows blockWindows,
                                    aixa::math::DoubleMatrix frequencyInversion,
                                    aixa::math::DoubleMatrix synFilter,
                                    aixa::math::DoubleMatrix dWindow) :
-    antialiasCoefficients(antialiasCoefficients),
+    longWindowSFComputer(std::move(longWindowSFComputer)),
+    shortWindowSFComputer(std::move(shortWindowSFComputer)), antialiasCoefficients(antialiasCoefficients),
     cosineTransform(std::move(cosineTransform)), blockWindows(std::move(blockWindows)),
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
     dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
@@ -26,23 +25,18 @@ FrameSynthesizer::FrameSynthesizer(AntialiasCoefficients antialiasCoefficients,
     }
 }
 
-FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(unsigned int samplingFreq,
-                                                            const SideInformation& sideInfo,
-                                                            const MainDataContent& content,
-                                                            std::size_t nChannels) {
+FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
     auto ret = FrameSamples();
     auto& samples = ret.channel1;
-    for (unsigned int channel = 0; channel < nChannels; channel++) {
+    for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
         std::size_t startIndex = 0;
         for (unsigned int i = 0; i < NR_GRANULES; i++) {
-            const auto& channelInfo = sideInfo.granules[i][channel];
-            const auto& channelContent = content.granules[i][channel];
-            dequantizeSamples(samplingFreq, channelInfo, channelContent);
-            // reordering (short windows only)
-            // stereo
-            antialias(channelInfo);
-            inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
-            polyphaseSynthesis(samples, startIndex);
+            const auto& channelInfo = frame.sideInfo.granules[i][channel];
+            const auto& channelContent = frame.content.granules[i][channel];
+
+            synthesizeGranuleChannel(samples, channel, frame.header.samplingFreq, channelInfo, channelContent,
+                                     startIndex);
+
             startIndex = NR_GRANULE_SAMPLES;
         }
         samples = ret.channel2;
@@ -51,33 +45,71 @@ FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(unsigned int samplin
     return ret;
 }
 
+void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
+                                                unsigned int channel,
+                                                unsigned int samplingFreq,
+                                                const GranuleChannelSideInfo& channelInfo,
+                                                const GranuleChannelContent& channelContent,
+                                                std::size_t startIndex) {
+    dequantizeSamples(samplingFreq, channelInfo, channelContent);
+
+    reorder(samplingFreq, channelInfo, channelContent);
+
+    // stereo
+
+    antialias(channelInfo);
+
+    inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
+
+    polyphaseSynthesis(samples, startIndex);
+}
+
 void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
                                          const GranuleChannelSideInfo& channelInfo,
                                          const GranuleChannelContent& channelContent) {
-    if (channelInfo.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT) {
-        throw std::runtime_error("Not supported (yet) short windows");
-    }
+    auto& scaleFactorsComputer = (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT)
+                                     ? *longWindowSFComputer
+                                     : *shortWindowSFComputer;
 
+    auto windowScaleFactors = scaleFactorsComputer.compute(samplingFreq, channelInfo, channelContent);
     double gainTerm = std::pow(2.0, (channelInfo.globalGain - GAIN_BASE) / 4.0);
-    std::size_t scaleFactorBandInd = 1;
-    std::size_t nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
 
     for (std::size_t band = 0; band < NR_FREQ_BANDS; band++) {
         for (std::size_t sampleInd = 0; sampleInd < NR_CODED_SAMPLES_PER_BAND; sampleInd++) {
-            if ((band * NR_CODED_SAMPLES_PER_BAND) + sampleInd == nextSubbandBoundary) {
-                scaleFactorBandInd++;
-                nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
-            }
-
-            auto scaleFactor = channelContent.longWindowScaleFactorBands[scaleFactorBandInd - 1];
-            double preTabFactor = channelInfo.preFlag * pretab[scaleFactorBandInd - 1];
-            double exp = -0.5 * (1.0 + channelInfo.scaleFactorScale) * (scaleFactor + preTabFactor);
-            double scaleFactorTerm = std::pow(2.0, exp);
+            double scaleFactorTerm = windowScaleFactors[band][sampleInd];
             auto sample = channelContent.freqBands[band][sampleInd];
             auto dequantizedSample = std::pow(std::abs(sample), 4.0 / 3.0) * gainTerm * scaleFactorTerm;
             dequantizedSample *= (sample < 0) ? -1 : 1;
             dequantized(band, sampleInd) = dequantizedSample;
         }
+    }
+}
+
+void FrameSynthesizer::reorder(unsigned int samplingFreq,
+                               const GranuleChannelSideInfo& channelInfo,
+                               const GranuleChannelContent& channelContent) {
+    if (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT) {
+        return;
+    }
+
+    if (channelInfo.mixedBlockFlag) {
+    } else {
+        auto temp = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS);
+
+        for (std::size_t band = 0; band < NR_SHORT_WINDOW_BANDS; band++) {
+            for (std::size_t window = 0; window < NR_SHORT_WINDOWS; window++) {
+                auto startLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band];
+                auto finalLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band + 1];
+                auto linesCount = finalLine - startLine;
+                for (std::size_t freqLine = 0; freqLine < linesCount; freqLine++) {
+                    auto srcLine = (startLine * NR_SHORT_WINDOWS) + (window * linesCount) + freqLine;
+                    auto dstLine = (startLine * NR_SHORT_WINDOWS) + window + (freqLine * NR_SHORT_WINDOWS);
+                    temp(dstLine / NR_CODED_SAMPLES_PER_BAND, dstLine % NR_CODED_SAMPLES_PER_BAND) =
+                        dequantized(srcLine / NR_CODED_SAMPLES_PER_BAND, srcLine % NR_CODED_SAMPLES_PER_BAND);
+                }
+            }
+        }
+        dequantized = std::move(temp);
     }
 }
 

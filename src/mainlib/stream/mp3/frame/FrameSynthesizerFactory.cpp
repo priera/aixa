@@ -2,9 +2,15 @@
 
 #include <fstream>
 
+#include "LongWindowScaleFactorsComputer.h"
+#include "ShortWindowScaleFactorsComputer.h"
+
 using namespace aixa::math;
 
 FrameSynthesizer* FrameSynthesizerFactory::build() const {
+    auto longWindowSFComputer = std::make_unique<LongWindowScaleFactorsComputer>();
+    auto shortWindowSFComputer = std::make_unique<ShortWindowScaleFactorsComputer>();
+
     auto antialiasCoefficients = computeAntialiasCoefficients();
     auto cosineTransform = computeTransformMatrix();
     auto blockWindows = generateBlockWindows();
@@ -12,7 +18,8 @@ FrameSynthesizer* FrameSynthesizerFactory::build() const {
     auto synFilter = computeTimeDomainSynFilter();
     auto dWindowMatrix = parseDWindowMatrix();
 
-    return new FrameSynthesizer(antialiasCoefficients, cosineTransform, blockWindows, frequencyInversion,
+    return new FrameSynthesizer(std::move(longWindowSFComputer), std::move(shortWindowSFComputer),
+                                antialiasCoefficients, cosineTransform, blockWindows, frequencyInversion,
                                 synFilter, dWindowMatrix);
 }
 

@@ -4,23 +4,23 @@
 #include <cassert>
 #include <fstream>
 
-#include "BitInputReader.h"
+#include "AbstractBitInputReader.h"
 #include "sizes.h"
 
 template <class ReadOperations>
-class BasicBitReader : public BitInputReader {
+class BasicBitReader : public AbstractBitInputReader {
 public:
     explicit BasicBitReader(ReadOperations ops) : ops(std::move(ops)), lastByteRemBits(0), totalBits(0) {}
     ~BasicBitReader() override = default;
 
-    unsigned int nextWord(unsigned int& result) override {
+    unsigned int tryExtractWord(unsigned int& result) override {
         ops.readNBytes(&wt.bytes[0], S_WORD / S_BYTE);
         totalBits += S_WORD;
         result = wt.word;
         return S_WORD;
     }
 
-    unsigned int nextShort(short& result) override {
+    unsigned int tryExtractShort(short& result) override {
         wt.word = 0;
         ops.readNBytes(&wt.bytes[0], S_SHORT / S_BYTE);
         totalBits += S_SHORT;
@@ -28,19 +28,19 @@ public:
         return S_SHORT;
     }
 
-    unsigned int nextByte(unsigned char& result) override {
+    unsigned int tryExtractByte(unsigned char& result) override {
         totalBits += S_BYTE;
         if (lastByteRemBits == 0) {
             return privNextByte(result);
         } else {
             unsigned short resultShort;
-            auto read = nextNBits(8, resultShort);
+            auto read = tryExtractNBits(8, resultShort);
             result = resultShort;
             return read;
         }
     }
 
-    unsigned int nextNBits(unsigned char n, unsigned short& result) override {
+    unsigned int tryExtractNBits(unsigned char n, unsigned short& result) override {
         assert(n <= S_SHORT);
 
         unsigned char mask = (1 << lastByteRemBits) - 1;
@@ -87,13 +87,13 @@ public:
 
     bool nextBit() override {
         unsigned short result;
-        nextNBits(1, result);
+        tryExtractNBits(1, result);
         return result;
     }
 
     void skipNBits(unsigned char n) override {
         unsigned short dummy;
-        nextNBits(n, dummy);
+        tryExtractNBits(n, dummy);
     }
 
     void byteAlign() override {

@@ -1,6 +1,6 @@
 #include "types.h"
 
-std::map<int, BandIndexes> samplingFreqBandIndexes = {
+std::map<std::size_t, BandIndexes> samplingFreqBandIndexes = {
     {44100,
      {{0, 4, 8, 12, 16, 20, 24, 30, 36, 44, 52, 62, 74, 90, 110, 134, 162, 196, 238, 288, 342, 418, 576},
       {0, 4, 8, 12, 16, 22, 30, 40, 52, 66, 84, 106, 136, 192}}},
