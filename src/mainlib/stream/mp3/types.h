@@ -121,6 +121,6 @@ struct Frame {
 
 using FrameStartToken = unsigned char;
 
-extern std::map<int, BandIndexes> samplingFreqBandIndexes;
+extern std::map<std::size_t, BandIndexes> samplingFreqBandIndexes;
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_TYPES_H

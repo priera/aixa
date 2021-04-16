@@ -54,7 +54,9 @@ private:
     void dequantizeSamples(unsigned int samplingFreq,
                            const GranuleChannelSideInfo& channelInfo,
                            const GranuleChannelContent& channelContent);
-
+    void reorder(unsigned int samplingFreq,
+                 const GranuleChannelSideInfo& channelInfo,
+                 const GranuleChannelContent& channelContent);
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);

@@ -53,7 +53,7 @@ void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
                                                 std::size_t startIndex) {
     dequantizeSamples(samplingFreq, channelInfo, channelContent);
 
-    // reordering;
+    reorder(samplingFreq, channelInfo, channelContent);
 
     // stereo
 
@@ -82,6 +82,34 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
             dequantizedSample *= (sample < 0) ? -1 : 1;
             dequantized(band, sampleInd) = dequantizedSample;
         }
+    }
+}
+
+void FrameSynthesizer::reorder(unsigned int samplingFreq,
+                               const GranuleChannelSideInfo& channelInfo,
+                               const GranuleChannelContent& channelContent) {
+    if (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT) {
+        return;
+    }
+
+    if (channelInfo.mixedBlockFlag) {
+    } else {
+        auto temp = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS);
+
+        for (std::size_t band = 0; band < NR_SHORT_WINDOW_BANDS; band++) {
+            for (std::size_t window = 0; window < NR_SHORT_WINDOWS; window++) {
+                auto startLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band];
+                auto finalLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band + 1];
+                auto linesCount = finalLine - startLine;
+                for (std::size_t freqLine = 0; freqLine < linesCount; freqLine++) {
+                    auto srcLine = (startLine * NR_SHORT_WINDOWS) + (window * linesCount) + freqLine;
+                    auto dstLine = (startLine * NR_SHORT_WINDOWS) + window + (freqLine * NR_SHORT_WINDOWS);
+                    temp(dstLine / NR_CODED_SAMPLES_PER_BAND, dstLine % NR_CODED_SAMPLES_PER_BAND) =
+                        dequantized(srcLine / NR_CODED_SAMPLES_PER_BAND, srcLine % NR_CODED_SAMPLES_PER_BAND);
+                }
+            }
+        }
+        dequantized = std::move(temp);
     }
 }
 
