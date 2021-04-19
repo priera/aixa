@@ -20,9 +20,7 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> l
     frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
     dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
-    for (std::size_t i = 0; i < D_WINDOW_VECTORS; i++) {
-        fifo.emplace_front(NR_D_WINDOW_MATRIXED_VECTOR_SIZE);
-    }
+    resetFIFO();
 }
 
 FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
@@ -178,5 +176,15 @@ void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t s
         std::size_t samplesOffset = startIndex + (i * NR_BLOCK_SAMPLES);
         std::copy(result.constContent().begin(), result.constContent().end(),
                   samples.begin() + samplesOffset);
+    }
+}
+
+void FrameSynthesizer::clearState() { resetFIFO(); }
+
+void FrameSynthesizer::resetFIFO() {
+    fifo.clear();
+
+    for (std::size_t i = 0; i < D_WINDOW_VECTORS; i++) {
+        fifo.emplace_front(NR_D_WINDOW_MATRIXED_VECTOR_SIZE);
     }
 }

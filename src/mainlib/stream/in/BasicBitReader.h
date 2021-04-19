@@ -116,6 +116,12 @@ public:
 
     bool ended() const override { return ops.ended() && lastByteRemBits == 0; }
 
+    void seekToBeginning() override {
+        ops.seekToBeginning();
+        totalBits = 0;
+        lastByteRemBits = 0;
+    }
+
 private:
     ReadOperations ops;
 

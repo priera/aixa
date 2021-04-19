@@ -19,7 +19,8 @@ public:
 
     virtual ~Mp3Decoder() = default;
 
-    bool decodeNextFrame();
+    bool decodeNextFrame(FrameHeader& header);
+    void resetToBeginning();
 
 private:
     bool seekToNextFrame(FrameStartToken& tok);

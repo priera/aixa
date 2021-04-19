@@ -69,6 +69,12 @@ public:
         return inStream->extractBytes(buff, count);
     }
 
+    void seekToBeginning() override {
+        reservoir.clear();
+        inStream->seekToBeginning();
+        currentReader = inStream.get();
+    }
+
     unsigned int inStreamPos() const { return inStream->bitsRead(); }
     void startFrame(unsigned int mainDataBegin);
     void frameEnded(unsigned int frameSize, unsigned int bytesInHeaders);

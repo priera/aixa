@@ -10,7 +10,7 @@ Mp3Decoder::Mp3Decoder(std::unique_ptr<BitInputReader> reader,
     reader(std::move(reader)),
     frameDecoder(std::move(frameDecoder)), frameSynthesizer(std::move(frameSynthesizer)) {}
 
-bool Mp3Decoder::decodeNextFrame() {
+bool Mp3Decoder::decodeNextFrame(FrameHeader& header) {
     FrameStartToken t;
     if (!seekToNextFrame(t)) {
         return false;
@@ -19,6 +19,7 @@ bool Mp3Decoder::decodeNextFrame() {
     const auto& frame = frameDecoder->decode(t);
     frameSynthesizer->synthesize(frame);
 
+    header = frame.header;
     return true;
 }
 
@@ -46,4 +47,9 @@ bool Mp3Decoder::seekToNextFrame(FrameStartToken& tok) {
     tok = b;
     frameNum++;
     return true;
+}
+
+void Mp3Decoder::resetToBeginning() {
+    reader->seekToBeginning();
+    frameSynthesizer->clearState();
 }

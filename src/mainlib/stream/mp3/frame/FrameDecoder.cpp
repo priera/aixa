@@ -48,12 +48,12 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
 
     unsigned char bitRateIndex = reader->nextNBits(4);
     if (bitRateIndex == 0 || bitRateIndex >= 15)
-        throw InvalidStream("bad value of BitRateIndex field");
+        throw InvalidStreamFormat("bad value of BitRateIndex field");
     header.bitrate = bitRateList[bitRateIndex - 1];
 
     std::size_t freqIndex = reader->nextNBits(2);
     if (freqIndex > 2)
-        throw InvalidStream("bad value of frequencyIndex field");
+        throw InvalidStreamFormat("bad value of frequencyIndex field");
     header.samplingFreq = samplingFreqs[freqIndex];
 
     header.isPadded = reader->nextBit();
@@ -132,8 +132,8 @@ void FrameDecoder::decodeSideInformation() {
 
 void FrameDecoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
     if (chGranule.blockType == GranuleChannelSideInfo::BlockType::NORMAL)
-        throw InvalidStream(
-            "value \"NORMAL\" for block type is not allowed when windowSwitching flag is set");
+        throw InvalidStreamFormat(
+            "value \"NORMAL\" for blockType is not allowed when windowSwitching flag is set");
 
     if (chGranule.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT && !chGranule.mixedBlockFlag) {
         chGranule.region0_count = 8;

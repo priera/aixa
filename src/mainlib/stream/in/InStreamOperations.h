@@ -21,6 +21,8 @@ public:
         return !fileOk || in.eof();
     }
 
+    void seekToBeginning() { in.seekg(0); }
+
 private:
     std::ifstream in;
 };

@@ -27,5 +27,6 @@ public:
 
     virtual bool ended() const = 0;
     virtual std::size_t bitsRead() const = 0;
+    virtual void seekToBeginning() = 0;
 };
 #endif  // AIXA_SRC_MAINLIB_STREAM_IN_BITINPUTREADER_H

@@ -39,6 +39,7 @@ public:
     virtual ~FrameSynthesizer() = default;
 
     FrameSamples synthesize(const Frame& frame);
+    void clearState();
 
 private:
     static constexpr float GAIN_BASE = 210.f;
@@ -60,6 +61,8 @@ private:
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
+
+    void resetFIFO();
 
     std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer;
     std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer;

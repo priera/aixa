@@ -36,3 +36,5 @@ std::unique_ptr<BitInputReader> ByteReservoir::readerForPast(unsigned int nBytes
     ByteReservoirOperations ops(*this, startPos, nBytes);
     return std::make_unique<BasicBitReader<ByteReservoirOperations>>(ops);
 }
+
+void ByteReservoir::clear() { currentPos = 0; }

@@ -3,6 +3,8 @@
 
 #include <mainlib/stream/StreamFactory.h>
 
+#include "Mp3Decoder.h"
+
 class Mp3StreamFactory : public StreamFactory {
 public:
     explicit Mp3StreamFactory(std::string streamPath) : streamPath(std::move(streamPath)) {}
@@ -10,6 +12,11 @@ public:
     std::shared_ptr<Stream> probe() override;
 
 private:
+    static constexpr std::size_t PROBING_FRAMES = 4;
+
+    Mp3Decoder* buildDecoder();
+    void probeWithDecoder(Mp3Decoder& decoder, FrameHeader& header);
+
     std::string streamPath;
 };
 
