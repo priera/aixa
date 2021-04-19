@@ -28,6 +28,8 @@ private:
     std::unique_ptr<BitInputReader> reader;
     std::unique_ptr<FrameDecoder> frameDecoder;
     std::unique_ptr<FrameSynthesizer> frameSynthesizer;
+
+    std::size_t framesProcessed;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MP3DECODER_H

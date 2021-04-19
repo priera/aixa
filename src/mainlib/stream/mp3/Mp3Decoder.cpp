@@ -2,13 +2,12 @@
 
 #include <vector>
 
-static int frameNum = 0;
-
 Mp3Decoder::Mp3Decoder(std::unique_ptr<BitInputReader> reader,
                        std::unique_ptr<FrameDecoder> frameDecoder,
                        std::unique_ptr<FrameSynthesizer> frameSynthesizer) :
     reader(std::move(reader)),
-    frameDecoder(std::move(frameDecoder)), frameSynthesizer(std::move(frameSynthesizer)) {}
+    frameDecoder(std::move(frameDecoder)), frameSynthesizer(std::move(frameSynthesizer)), framesProcessed(0) {
+}
 
 bool Mp3Decoder::decodeNextFrame(FrameHeader& header) {
     FrameStartToken t;
@@ -19,6 +18,7 @@ bool Mp3Decoder::decodeNextFrame(FrameHeader& header) {
     const auto& frame = frameDecoder->decode(t);
     frameSynthesizer->synthesize(frame);
 
+    framesProcessed++;
     header = frame.header;
     return true;
 }
@@ -45,11 +45,11 @@ bool Mp3Decoder::seekToNextFrame(FrameStartToken& tok) {
         return false;
 
     tok = b;
-    frameNum++;
     return true;
 }
 
 void Mp3Decoder::resetToBeginning() {
     reader->seekToBeginning();
     frameSynthesizer->clearState();
+    framesProcessed = 0;
 }
