@@ -1,8 +1,7 @@
 #include "FrameDecoder.h"
 
 #include <mainlib/stream/in/sizes.h>
-
-#include <stdexcept>
+#include <mainlib/stream/mp3/exception/exceptions.h>
 
 std::vector<std::vector<unsigned char>> FrameDecoder::scaleFactorsCompression = {
     {0, 0, 0, 0, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4},
@@ -44,17 +43,17 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
     header.usesCRC = !(tok & 0x01);
 
     if (!(header.version == FrameHeader::Version::MPEG_1 && header.layer == FrameHeader::Layer::LAYER_3)) {
-        throw std::runtime_error("Not supported MP3 format");
+        throw NotSupportedStream();
     }
 
     unsigned char bitRateIndex = reader->nextNBits(4);
     if (bitRateIndex == 0 || bitRateIndex >= 15)
-        throw std::runtime_error("Not supported MP3 format");
+        throw InvalidStream("bad value of BitRateIndex field");
     header.bitrate = bitRateList[bitRateIndex - 1];
 
     std::size_t freqIndex = reader->nextNBits(2);
     if (freqIndex > 2)
-        throw std::runtime_error("Not supported MP3 format");
+        throw InvalidStream("bad value of frequencyIndex field");
     header.samplingFreq = samplingFreqs[freqIndex];
 
     header.isPadded = reader->nextBit();
@@ -63,7 +62,7 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
     header.mode = static_cast<FrameHeader::Mode>(reader->nextNBits(2));
     header.msStereo = reader->nextBit();
     header.intensityStereo = reader->nextBit();
-    reader->nextNBits(4);  // Emphasis is omitted too
+    reader->nextNBits(4);  // Emphasis field is omitted
 
     bytesInHeaders = 4;
 }
@@ -133,7 +132,8 @@ void FrameDecoder::decodeSideInformation() {
 
 void FrameDecoder::setRegionCountForGranule(GranuleChannelSideInfo& chGranule) {
     if (chGranule.blockType == GranuleChannelSideInfo::BlockType::NORMAL)
-        throw std::runtime_error("Not valid block type");
+        throw InvalidStream(
+            "value \"NORMAL\" for block type is not allowed when windowSwitching flag is set");
 
     if (chGranule.blockType == GranuleChannelSideInfo::BlockType::THREE_SHORT && !chGranule.mixedBlockFlag) {
         chGranule.region0_count = 8;
