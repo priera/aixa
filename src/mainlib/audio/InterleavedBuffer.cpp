@@ -4,18 +4,11 @@ InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size,
     channels(channels), currentChannel(0), m_frameSize(frame_size) {
     format_bits = snd_pcm_format_width(format);
     bytesPerSample = format_bits / 8;
-    phys_bps = snd_pcm_format_physical_width(format) / 8;
     little_endian = snd_pcm_format_big_endian(format) != 1;
-    to_unsigned = snd_pcm_format_unsigned(format) == 1;
     m_dataSize = m_frameSize * channels * bytesPerSample;
 
-    charFrame = static_cast<char *>(calloc(m_frameSize * channels, bytesPerSample));
-    if (charFrame == nullptr) {
-        throw std::bad_alloc();
-    }
+    charFrame = std::vector<char>(m_dataSize, 0);
 }
-
-InterleavedBuffer::~InterleavedBuffer() { free(charFrame); }
 
 std::vector<short> InterleavedBuffer::channel(unsigned int chan) const {
     assert(chan >= 0 && chan < channels);
