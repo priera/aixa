@@ -25,19 +25,20 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> l
 
 FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
     auto ret = FrameSamples();
-    auto& samples = ret.channel1;
+    auto samples = &ret.channel1;
     for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
         std::size_t startIndex = 0;
         for (unsigned int i = 0; i < NR_GRANULES; i++) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
             const auto& channelContent = frame.content.granules[i][channel];
 
-            synthesizeGranuleChannel(samples, channel, frame.header.samplingFreq, channelInfo, channelContent,
-                                     startIndex);
+            synthesizeGranuleChannel(*samples, channel, frame.header.samplingFreq, channelInfo,
+                                     channelContent, startIndex);
 
             startIndex = NR_GRANULE_SAMPLES;
         }
-        samples = ret.channel2;
+
+        samples = &ret.channel2;
     }
 
     return ret;

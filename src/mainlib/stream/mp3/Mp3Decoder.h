@@ -38,6 +38,8 @@ public:
 
     void resetToBeginning();
 
+    std::size_t framesDecoded() const { return framesProcessed; }
+
 private:
     std::unique_ptr<BitInputReader> reader;
     std::unique_ptr<FrameDecoder> frameDecoder;
