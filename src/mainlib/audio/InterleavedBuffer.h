@@ -31,7 +31,7 @@ private:
     char *charFrame;
 
     int format_bits;
-    int bytesPerSecond;
+    int bytesPerSample;
     int phys_bps;
     bool little_endian;
     bool to_unsigned;
