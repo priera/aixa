@@ -23,7 +23,7 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> l
     resetFIFO();
 }
 
-FrameSynthesizer::FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
+FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
     auto ret = FrameSamples();
     auto& samples = ret.channel1;
     for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {

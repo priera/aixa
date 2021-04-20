@@ -21,12 +21,6 @@ public:
     };
 
     using BlockWindows = std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix>;
-    using ChannelSamples = std::array<short, NR_FRAME_SAMPLES>;
-
-    struct FrameSamples {
-        ChannelSamples channel1;
-        ChannelSamples channel2;
-    };
 
     FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
                      std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,

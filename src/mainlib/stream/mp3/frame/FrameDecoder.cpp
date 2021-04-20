@@ -28,7 +28,7 @@ const Frame& FrameDecoder::decode(FrameStartToken token) {
 
 void FrameDecoder::computeFrameSize() {
     const auto& header = frame.header;
-    float byteRate = (static_cast<float>(header.bitrate * 1000) / S_BYTE);
+    float byteRate = (static_cast<float>(header.bitrate) / S_BYTE);
     unsigned int frameSize = (NR_FRAME_SAMPLES * byteRate) / header.samplingFreq;
     frameSize += (header.isPadded) ? 1 : 0;
 
@@ -49,7 +49,7 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
     unsigned char bitRateIndex = reader->nextNBits(4);
     if (bitRateIndex == 0 || bitRateIndex >= 15)
         throw InvalidStreamFormat("bad value of BitRateIndex field");
-    header.bitrate = bitRateList[bitRateIndex - 1];
+    header.bitrate = bitRateList[bitRateIndex - 1] * 1000;
 
     std::size_t freqIndex = reader->nextNBits(2);
     if (freqIndex > 2)

@@ -17,8 +17,6 @@ std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     auto header = FrameHeader();
     probeWithDecoder(*decoder, header);
 
-    decoder->resetToBeginning();
-
     return std::make_shared<Mp3Stream>(header, std::move(decoder));
 }
 
@@ -36,24 +34,24 @@ Mp3Decoder* Mp3StreamFactory::buildDecoder() {
 }
 
 void Mp3StreamFactory::probeWithDecoder(Mp3Decoder& decoder, FrameHeader& header) {
-    bool streamEnded = false;
+    bool streamOk = false;
 
-    // Decode first few frames. Since is possible that synchronization word will appear in ID3 tag info,
+    // Decode first few frames. Since is possible that synchronization word will appear in the ID3 tag info,
     // first frame will be omitted, along with its decoding errors
     // I assume the file does not change its encoding format, so the information from the last decoded frame
     // is used to configure the stream
     try {
-        streamEnded = decoder.decodeNextFrame(header);
+        streamOk = decoder.probeNextFrame(header);
     } catch (const MP3StreamException& e) {
         std::cerr << "Error when decoding first frame. Exception was:\n" << e.what() << std::endl;
     }
 
     std::size_t probingFrame = 0;
-    while (!streamEnded && probingFrame < PROBING_FRAMES) {
-        streamEnded = decoder.decodeNextFrame(header);
+    while (streamOk && probingFrame < PROBING_FRAMES) {
+        streamOk = decoder.probeNextFrame(header);
         probingFrame++;
     }
 
-    if (streamEnded)
+    if (!streamOk)
         throw InvalidStream(streamPath);
 }

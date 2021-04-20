@@ -119,6 +119,12 @@ struct Frame {
     MainDataContent content;
 };
 
+using ChannelSamples = std::array<short, NR_FRAME_SAMPLES>;
+struct FrameSamples {
+    ChannelSamples channel1;
+    ChannelSamples channel2;
+};
+
 using FrameStartToken = unsigned char;
 
 extern std::map<std::size_t, BandIndexes> samplingFreqBandIndexes;
