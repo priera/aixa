@@ -27,7 +27,7 @@ void ByteReservoir::append(unsigned int remainingBytes, BitInputReader& reader) 
 
 std::unique_ptr<BitInputReader> ByteReservoir::readerForPast(unsigned int nBytes) {
     unsigned int startPos;
-    if (nBytes < currentPos) {
+    if (nBytes <= currentPos) {
         startPos = currentPos - nBytes;
     } else {
         startPos = RESERVOIR_SIZE - (nBytes - currentPos);
