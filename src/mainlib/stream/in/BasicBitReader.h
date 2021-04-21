@@ -60,13 +60,12 @@ public:
             unsigned char b;
             unsigned char i;
             for (i = 0; i < toRead; i += S_BYTE) {
-                unsigned char toExtract = (toRead - i > S_BYTE) ? S_BYTE : toRead - i;
-                ret <<= toExtract;
-
                 if (privNextByte(b) == 0) {
                     break;
                 }
 
+                unsigned char toExtract = (toRead - i > S_BYTE) ? S_BYTE : toRead - i;
+                ret <<= toExtract;
                 ret += (b >> (S_BYTE - toExtract));
             }
 

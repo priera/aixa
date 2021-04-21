@@ -87,9 +87,10 @@ private:
         auto read = currentReader->tryExtractNBits(toRead, tmp);
         if (read < toRead) {
             checkReader();
+            unsigned short remainingBits = toRead - read;
             unsigned short remainder;
-            currentReader->tryExtractNBits(toRead - read, remainder);
-            tmp <<= read;
+            currentReader->tryExtractNBits(remainingBits, remainder);
+            tmp <<= remainingBits;
             tmp += remainder;
         }
         result = tmp;
