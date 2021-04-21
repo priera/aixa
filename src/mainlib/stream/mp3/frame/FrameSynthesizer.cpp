@@ -9,16 +9,15 @@ using namespace aixa::math;
 FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer,
                                    std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer,
                                    AntialiasCoefficients antialiasCoefficients,
-                                   aixa::math::DoubleMatrix cosineTransform,
                                    BlockWindows blockWindows,
                                    aixa::math::DoubleMatrix frequencyInversion,
                                    aixa::math::DoubleMatrix synFilter,
                                    aixa::math::DoubleMatrix dWindow) :
-    longWindowSFComputer(std::move(longWindowSFComputer)),
-    shortWindowSFComputer(std::move(shortWindowSFComputer)), antialiasCoefficients(antialiasCoefficients),
-    cosineTransform(std::move(cosineTransform)), blockWindows(std::move(blockWindows)),
-    frequencyInversion(std::move(frequencyInversion)), synthesisFilter(std::move(synFilter)),
-    dWindow(std::move(dWindow)), dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+    longWindowAlgorithms(std::move(longWindowSFComputer)),
+    shortWindowAlgorithms(std::move(shortWindowSFComputer)), antialiasCoefficients(antialiasCoefficients),
+    blockWindows(std::move(blockWindows)), frequencyInversion(std::move(frequencyInversion)),
+    synthesisFilter(std::move(synFilter)), dWindow(std::move(dWindow)),
+    dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
     timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
     resetFIFO();
 }
@@ -67,8 +66,8 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
                                          const GranuleChannelSideInfo& channelInfo,
                                          const GranuleChannelContent& channelContent) {
     auto& scaleFactorsComputer = (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT)
-                                     ? *longWindowSFComputer
-                                     : *shortWindowSFComputer;
+                                     ? *longWindowAlgorithms
+                                     : *shortWindowAlgorithms;
 
     auto windowScaleFactors =
         scaleFactorsComputer.computeScaleFactors(samplingFreq, channelInfo, channelContent);
@@ -140,7 +139,10 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
 
 void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms) {
     const auto& window = blockWindows.at(info.blockType);
-    auto overlappedTimeSamples = dequantized * cosineTransform * window;
+    auto& transformComputer = (info.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT)
+                                  ? *longWindowAlgorithms
+                                  : *shortWindowAlgorithms;
+    auto overlappedTimeSamples = transformComputer.computeInverseMDCT(dequantized, window);
 
     for (std::size_t bandInd = 0; bandInd < NR_FREQ_BANDS; bandInd++) {
         const auto bandSamples = overlappedTimeSamples.row(bandInd);

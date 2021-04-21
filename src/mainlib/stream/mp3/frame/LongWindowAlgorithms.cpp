@@ -25,3 +25,8 @@ Bands<double> LongWindowAlgorithms::computeScaleFactors(unsigned int samplingFre
 
     return ret;
 }
+
+aixa::math::DoubleMatrix LongWindowAlgorithms::computeInverseMDCT(const aixa::math::DoubleMatrix& dequantized,
+                                                                  const aixa::math::DoubleMatrix& window) {
+    return dequantized * cosineTransform * window;
+}

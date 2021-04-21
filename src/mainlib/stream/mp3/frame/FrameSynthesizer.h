@@ -25,7 +25,6 @@ public:
     FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer,
                      std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer,
                      AntialiasCoefficients antialiasCoefficients,
-                     aixa::math::DoubleMatrix cosineTransform,
                      BlockWindows blockWindows,
                      aixa::math::DoubleMatrix frequencyInversion,
                      aixa::math::DoubleMatrix synFilter,
@@ -58,11 +57,10 @@ private:
 
     void resetFIFO();
 
-    std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer;
-    std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer;
+    std::unique_ptr<BlockSynthesisAlgorithms> longWindowAlgorithms;
+    std::unique_ptr<BlockSynthesisAlgorithms> shortWindowAlgorithms;
 
     AntialiasCoefficients antialiasCoefficients;
-    aixa::math::DoubleMatrix cosineTransform;
     BlockWindows blockWindows;
     aixa::math::DoubleMatrix frequencyInversion;
     aixa::math::DoubleMatrix synthesisFilter;

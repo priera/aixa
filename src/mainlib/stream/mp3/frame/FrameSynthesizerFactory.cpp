@@ -8,19 +8,19 @@
 using namespace aixa::math;
 
 FrameSynthesizer* FrameSynthesizerFactory::build() const {
-    auto longWindowSFComputer = std::make_unique<LongWindowAlgorithms>();
-    auto shortWindowSFComputer = std::make_unique<ShortWindowAlgorithms>();
-
     auto antialiasCoefficients = computeAntialiasCoefficients();
-    auto cosineTransform = computeTransformMatrix();
+    auto longWindowTransform = computeLongWindowTransformMatrix();
     auto blockWindows = generateBlockWindows();
     auto frequencyInversion = computeFrequencyInversionMatrix();
     auto synFilter = computeTimeDomainSynFilter();
     auto dWindowMatrix = parseDWindowMatrix();
 
-    return new FrameSynthesizer(std::move(longWindowSFComputer), std::move(shortWindowSFComputer),
-                                antialiasCoefficients, cosineTransform, blockWindows, frequencyInversion,
-                                synFilter, dWindowMatrix);
+    auto longWindowAlgorithms = std::make_unique<LongWindowAlgorithms>(longWindowTransform);
+    auto shortWindowAlgorithms = std::make_unique<ShortWindowAlgorithms>();
+
+    return new FrameSynthesizer(std::move(longWindowAlgorithms), std::move(shortWindowAlgorithms),
+                                antialiasCoefficients, blockWindows, frequencyInversion, synFilter,
+                                dWindowMatrix);
 }
 
 FrameSynthesizer::AntialiasCoefficients FrameSynthesizerFactory::computeAntialiasCoefficients() const {
@@ -36,7 +36,7 @@ FrameSynthesizer::AntialiasCoefficients FrameSynthesizerFactory::computeAntialia
     return ret;
 }
 
-aixa::math::DoubleMatrix FrameSynthesizerFactory::computeTransformMatrix() const {
+aixa::math::DoubleMatrix FrameSynthesizerFactory::computeLongWindowTransformMatrix() const {
     auto ret = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND);
 
     const auto MAX_FREQ = 2 * NR_TOTAL_SAMPLES;

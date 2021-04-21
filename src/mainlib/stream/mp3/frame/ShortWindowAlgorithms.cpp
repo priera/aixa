@@ -69,3 +69,8 @@ Bands<double> ShortWindowAlgorithms::computeScaleFactors(unsigned int samplingFr
 
     return ret;
 }
+aixa::math::DoubleMatrix ShortWindowAlgorithms::computeInverseMDCT(
+    const aixa::math::DoubleMatrix& dequantized,
+    const aixa::math::DoubleMatrix& window) {
+    return aixa::math::DoubleMatrix(0, 0);
+}
