@@ -1,10 +1,10 @@
-#include "ShortWindowScaleFactorsComputer.h"
+#include "ShortWindowAlgorithms.h"
 
 #include <cmath>
 
-Bands<double> ShortWindowScaleFactorsComputer::compute(unsigned int samplingFreq,
-                                                       const GranuleChannelSideInfo& channelInfo,
-                                                       const GranuleChannelContent& channelContent) {
+Bands<double> ShortWindowAlgorithms::computeScaleFactors(unsigned int samplingFreq,
+                                                         const GranuleChannelSideInfo& channelInfo,
+                                                         const GranuleChannelContent& channelContent) {
     auto ret = Bands<double>();
 
     std::size_t sfBandInd = 0;

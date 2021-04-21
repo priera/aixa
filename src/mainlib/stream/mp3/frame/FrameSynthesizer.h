@@ -5,7 +5,7 @@
 
 #include <deque>
 
-#include "WindowScaleFactorsComputer.h"
+#include "BlockSynthesisAlgorithms.h"
 #include "mainlib/stream/mp3/types.h"
 
 class FrameSynthesizer {
@@ -22,8 +22,8 @@ public:
 
     using BlockWindows = std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix>;
 
-    FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
-                     std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+    FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer,
+                     std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer,
                      AntialiasCoefficients antialiasCoefficients,
                      aixa::math::DoubleMatrix cosineTransform,
                      BlockWindows blockWindows,
@@ -58,8 +58,8 @@ private:
 
     void resetFIFO();
 
-    std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer;
-    std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer;
+    std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer;
+    std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer;
 
     AntialiasCoefficients antialiasCoefficients;
     aixa::math::DoubleMatrix cosineTransform;

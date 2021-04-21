@@ -2,14 +2,14 @@
 
 #include <fstream>
 
-#include "LongWindowScaleFactorsComputer.h"
-#include "ShortWindowScaleFactorsComputer.h"
+#include "LongWindowAlgorithms.h"
+#include "ShortWindowAlgorithms.h"
 
 using namespace aixa::math;
 
 FrameSynthesizer* FrameSynthesizerFactory::build() const {
-    auto longWindowSFComputer = std::make_unique<LongWindowScaleFactorsComputer>();
-    auto shortWindowSFComputer = std::make_unique<ShortWindowScaleFactorsComputer>();
+    auto longWindowSFComputer = std::make_unique<LongWindowAlgorithms>();
+    auto shortWindowSFComputer = std::make_unique<ShortWindowAlgorithms>();
 
     auto antialiasCoefficients = computeAntialiasCoefficients();
     auto cosineTransform = computeTransformMatrix();

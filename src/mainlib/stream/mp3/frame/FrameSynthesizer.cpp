@@ -6,8 +6,8 @@
 
 using namespace aixa::math;
 
-FrameSynthesizer::FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
-                                   std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer,
+                                   std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer,
                                    AntialiasCoefficients antialiasCoefficients,
                                    aixa::math::DoubleMatrix cosineTransform,
                                    BlockWindows blockWindows,
@@ -70,7 +70,8 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
                                      ? *longWindowSFComputer
                                      : *shortWindowSFComputer;
 
-    auto windowScaleFactors = scaleFactorsComputer.compute(samplingFreq, channelInfo, channelContent);
+    auto windowScaleFactors =
+        scaleFactorsComputer.computeScaleFactors(samplingFreq, channelInfo, channelContent);
     double gainTerm = std::pow(2.0, (channelInfo.globalGain - GAIN_BASE) / 4.0);
 
     for (std::size_t band = 0; band < NR_FREQ_BANDS; band++) {
