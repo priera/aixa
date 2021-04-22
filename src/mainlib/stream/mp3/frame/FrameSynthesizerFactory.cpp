@@ -10,13 +10,14 @@ using namespace aixa::math;
 FrameSynthesizer* FrameSynthesizerFactory::build() const {
     auto antialiasCoefficients = computeAntialiasCoefficients();
     auto longWindowTransform = computeLongWindowTransformMatrix();
+    auto shortWindowTransform = computeShortWindowTransformMatrix();
     auto blockWindows = generateBlockWindows();
     auto frequencyInversion = computeFrequencyInversionMatrix();
     auto synFilter = computeTimeDomainSynFilter();
     auto dWindowMatrix = parseDWindowMatrix();
 
     auto longWindowAlgorithms = std::make_unique<LongWindowAlgorithms>(longWindowTransform);
-    auto shortWindowAlgorithms = std::make_unique<ShortWindowAlgorithms>();
+    auto shortWindowAlgorithms = std::make_unique<ShortWindowAlgorithms>(shortWindowTransform);
 
     return new FrameSynthesizer(std::move(longWindowAlgorithms), std::move(shortWindowAlgorithms),
                                 antialiasCoefficients, blockWindows, frequencyInversion, synFilter,
@@ -37,12 +38,27 @@ FrameSynthesizer::AntialiasCoefficients FrameSynthesizerFactory::computeAntialia
 }
 
 aixa::math::DoubleMatrix FrameSynthesizerFactory::computeLongWindowTransformMatrix() const {
-    auto ret = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND * 2, NR_CODED_SAMPLES_PER_BAND);
+    auto ret = aixa::math::DoubleMatrix(NR_TOTAL_SAMPLES, NR_CODED_SAMPLES_PER_BAND);
 
     const auto MAX_FREQ = 2 * NR_TOTAL_SAMPLES;
     for (std::size_t i = 0; i < NR_TOTAL_SAMPLES; i++) {
         for (std::size_t j = 0; j < NR_CODED_SAMPLES_PER_BAND; j++) {
-            auto freq = (2 * i + 1 + NR_CODED_SAMPLES_PER_BAND) * (2 * j + 1) % (4 * NR_TOTAL_SAMPLES);
+            auto freq = static_cast<double>((2 * i + 1 + NR_CODED_SAMPLES_PER_BAND) * (2 * j + 1) %
+                                            (4 * NR_TOTAL_SAMPLES));
+            ret(j, i) = std::cos((M_PI * freq) / MAX_FREQ);
+        }
+    }
+
+    return ret;
+}
+
+aixa::math::DoubleMatrix FrameSynthesizerFactory::computeShortWindowTransformMatrix() const {
+    auto ret = aixa::math::DoubleMatrix(NR_SHORT_WINDOW_BANDS, NR_SHORT_WINDOW_BAND_SAMPLES);
+
+    const auto MAX_FREQ = 2 * NR_SHORT_WINDOW_BANDS;
+    for (std::size_t i = 0; i < NR_SHORT_WINDOW_BANDS; i++) {
+        for (std::size_t j = 0; j < NR_SHORT_WINDOW_BAND_SAMPLES; j++) {
+            auto freq = static_cast<double>((2 * i + 1 + NR_SHORT_WINDOW_BAND_SAMPLES) * (2 * j + 1));
             ret(j, i) = std::cos((M_PI * freq) / MAX_FREQ);
         }
     }
@@ -54,9 +70,10 @@ FrameSynthesizer::BlockWindows FrameSynthesizerFactory::generateBlockWindows() c
     auto ret = FrameSynthesizer::BlockWindows();
 
     auto diagonalize = [](const DoubleVector& v) -> DoubleMatrix {
-        auto ret = DoubleMatrix(NR_TOTAL_SAMPLES, NR_TOTAL_SAMPLES);
+        auto dim = v.rows();
+        auto ret = DoubleMatrix(dim, dim);
 
-        for (std::size_t n = 0; n < NR_TOTAL_SAMPLES; n++) {
+        for (std::size_t n = 0; n < dim; n++) {
             ret(n, n) = v[n];
         }
 
@@ -85,12 +102,9 @@ FrameSynthesizer::BlockWindows FrameSynthesizerFactory::generateBlockWindows() c
     }
     ret.insert({GranuleChannelSideInfo::BlockType::START, std::move(diagonalize(v))});
 
-    v = DoubleVector(NR_TOTAL_SAMPLES);
-    for (i = 0; i < 12; i++) {
-        v[i] = std::sin(M_PI / 12 * (i + 0.5));
-    }
-    for (; i < NR_TOTAL_SAMPLES; i++) {
-        v[i] = 0.0;
+    v = DoubleVector(NR_SHORT_WINDOW_BANDS);
+    for (i = 0; i < NR_SHORT_WINDOW_BANDS; i++) {
+        v[i] = std::sin(M_PI / NR_SHORT_WINDOW_BANDS * (i + 0.5));
     }
     ret.insert({GranuleChannelSideInfo::BlockType::THREE_SHORT, std::move(diagonalize(v))});
 

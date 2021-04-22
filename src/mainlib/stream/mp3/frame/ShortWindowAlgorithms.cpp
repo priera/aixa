@@ -69,8 +69,37 @@ Bands<double> ShortWindowAlgorithms::computeScaleFactors(unsigned int samplingFr
 
     return ret;
 }
+
 aixa::math::DoubleMatrix ShortWindowAlgorithms::computeInverseMDCT(
     const aixa::math::DoubleMatrix& dequantized,
     const aixa::math::DoubleMatrix& window) {
-    return aixa::math::DoubleMatrix(0, 0);
+    auto buildShortWindowWithOffset = [](const aixa::math::DoubleMatrix& dequantized, std::size_t offset) {
+        auto ret = aixa::math::DoubleMatrix(NR_SHORT_WINDOW_BAND_SAMPLES, NR_FREQ_BANDS);
+        for (std::size_t row = 0; row < NR_FREQ_BANDS; row++) {
+            for (std::size_t col = 0; col < NR_SHORT_WINDOW_BAND_SAMPLES; col++) {
+                ret(row, col) = dequantized(row, (col * NR_SHORT_WINDOWS) + offset);
+            }
+        }
+
+        return ret;
+    };
+
+    auto aggregateShortWinToResult = [](const aixa::math::DoubleMatrix& shortWin,
+                                        aixa::math::DoubleMatrix& finalRes, std::size_t offset) {
+        for (std::size_t row = 0; row < shortWin.rows(); row++) {
+            for (std::size_t col = 0; col < shortWin.columns(); col++) {
+                auto colOnResult = 6 + col + (NR_SHORT_WINDOW_BAND_SAMPLES * offset);
+                finalRes(row, colOnResult) += shortWin(row, col);
+            }
+        }
+    };
+
+    auto ret = aixa::math::DoubleMatrix(NR_TOTAL_SAMPLES, NR_FREQ_BANDS);
+    for (std::size_t win = 0; win < NR_SHORT_WINDOWS; win++) {
+        auto tmp = buildShortWindowWithOffset(dequantized, win);
+        auto shortWinResult = tmp * cosineTransform * window;
+        aggregateShortWinToResult(shortWinResult, ret, win);
+    }
+
+    return ret;
 }
