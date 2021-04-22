@@ -11,11 +11,16 @@ AudioStreamParameters Mp3Stream::getParameters() const {
 
 void Mp3Stream::prepareForFirstRead() { decoder->resetToBeginning(); }
 
-bool Mp3Stream::ended() { return alreadyEnded || !decoder->seekToNextFrame(); }
+bool Mp3Stream::ended() { return alreadyEnded; }
+
+static int call = 0;
 
 void Mp3Stream::storeSamples(InterleavedBuffer& buffer) {
+    call++;
+
     auto samplesCount = buffer.samplesCount();
     auto data = buffer.samples();
+
     if (previousIterCopied) {
         std::copy(samples.channel1.begin() + previousIterCopied, samples.channel1.end(), data);
     }
@@ -23,19 +28,24 @@ void Mp3Stream::storeSamples(InterleavedBuffer& buffer) {
     std::size_t iterationsToDo = (samplesCount - previousIterCopied) / NR_FRAME_SAMPLES;
     std::size_t samplesCopied = previousIterCopied;
     for (std::size_t i = 0; i < iterationsToDo; i++) {
-        decoder->decodeFrame(samples);
-        std::copy(samples.channel1.begin(), samples.channel1.end(), &data[samplesCopied]);
-        samplesCopied += NR_FRAME_SAMPLES;
-
         alreadyEnded = !decoder->seekToNextFrame();
         if (alreadyEnded)
             break;
+
+        decoder->decodeFrame(samples);
+        std::copy(samples.channel1.begin(), samples.channel1.end(), &data[samplesCopied]);
+        samplesCopied += NR_FRAME_SAMPLES;
     }
 
+    std::size_t remainder = samplesCount - samplesCopied;
+    if (remainder > 0 && !alreadyEnded) {
+        alreadyEnded = !decoder->seekToNextFrame();
+    }
+
+    previousIterCopied = 0;
     if (alreadyEnded) {
         std::fill(&data[samplesCopied], &data[samplesCount], 0);
-    } else {
-        std::size_t remainder = samplesCount - samplesCopied;
+    } else if (remainder > 0) {
         decoder->decodeFrame(samples);
         std::copy(samples.channel1.begin(), samples.channel1.begin() + remainder, &data[samplesCopied]);
         previousIterCopied = remainder;
