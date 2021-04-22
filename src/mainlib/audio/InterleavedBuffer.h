@@ -24,7 +24,6 @@ public:
 
 private:
     int channels;
-    size_t currentChannel;
     snd_pcm_uframes_t m_frameSize;
     size_t m_dataSize;
 
