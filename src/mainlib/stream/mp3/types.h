@@ -55,6 +55,7 @@ constexpr std::size_t NR_SHORT_WINDOWS = 3;
 constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
+constexpr std::size_t NR_SHORT_WINDOW_RANGES = NR_SHORT_WINDOW_BANDS + 1;
 constexpr std::size_t NR_SHORT_WINDOW_BAND_SAMPLES = NR_SHORT_WINDOW_BANDS / 2;
 constexpr std::size_t NR_FREQ_BANDS = 32;              // Used in frequency-domain operations
 constexpr std::size_t NR_CODED_SAMPLES_PER_BAND = 18;  // Used in frequency-domain operations

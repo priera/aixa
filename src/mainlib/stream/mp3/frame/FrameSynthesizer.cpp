@@ -95,7 +95,7 @@ void FrameSynthesizer::reorder(unsigned int samplingFreq,
     } else {
         auto temp = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS);
 
-        for (std::size_t band = 0; band < NR_SHORT_WINDOW_BANDS; band++) {
+        for (std::size_t band = 0; band < NR_SHORT_WINDOW_RANGES; band++) {
             for (std::size_t window = 0; window < NR_SHORT_WINDOWS; window++) {
                 auto startLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band];
                 auto finalLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band + 1];
