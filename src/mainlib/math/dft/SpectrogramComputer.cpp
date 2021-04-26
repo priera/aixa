@@ -36,7 +36,7 @@ void SpectrogramComputer::init(size_t samplesSize) {
 }
 
 void SpectrogramComputer::storeMagnitude(const ComplexVector &result, std::vector<double> &storeAt) const {
-    const auto &content = result.constContent();
+    const auto &content = result.content();
     for (std::size_t i = 0; i < sliceSize; i++) {
         auto magnitude = content[i].magnitude();
         auto normalized = (magnitude < 1.0) ? 0.0 : 10 * std::log10(magnitude);

@@ -38,6 +38,7 @@ private:
     static constexpr float GAIN_BASE = 210.f;
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
+    static constexpr double MAX_DECODED_VALUE = 32768.0;
 
     void synthesizeGranuleChannel(ChannelSamples& samples,
                                   unsigned int channel,

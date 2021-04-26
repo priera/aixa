@@ -2,6 +2,7 @@
 
 #include <mainlib/math/types.h>
 
+#include <algorithm>
 #include <cmath>
 
 using namespace aixa::math;
@@ -169,6 +170,16 @@ void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t s
         return ret;
     };
 
+    auto clip = [](DoubleMatrix& result) {
+        std::for_each(result.content().begin(), result.content().end(), [](double& d) {
+            if (d >= MAX_DECODED_VALUE) {
+                d = MAX_DECODED_VALUE - 1;
+            } else if (d < -MAX_DECODED_VALUE) {
+                d = -MAX_DECODED_VALUE;
+            }
+        });
+    };
+
     auto matrixed = timeSamples.transpose() * synthesisFilter;
 
     for (std::size_t i = 0; i < NR_PCM_BLOCKS; i++) {
@@ -177,9 +188,9 @@ void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t s
         fifo.emplace_front(row.begin(), row.size());
         auto matrix = buildMatrix();
         auto result = SCALE * (dWindow.elemWiseProduct(matrix).collapseRows());
+        clip(result);
         std::size_t samplesOffset = startIndex + (i * NR_BLOCK_SAMPLES);
-        std::copy(result.constContent().begin(), result.constContent().end(),
-                  samples.begin() + samplesOffset);
+        std::copy(result.content().begin(), result.content().end(), samples.begin() + samplesOffset);
     }
 }
 

@@ -17,7 +17,7 @@ public:
     template <std::size_t ArrayDim>
     Matrix(std::size_t N, std::size_t M, const std::array<T, ArrayDim>& content) :
         Matrix(N, M, std::false_type()) {
-        std::copy(content.begin(), content.end(), std::back_inserter(this->content));
+        std::copy(content.begin(), content.end(), std::back_inserter(this->content_));
     }
 
     Matrix(const Matrix<T, TypeAxioms>& other) = default;
@@ -28,15 +28,15 @@ public:
     Matrix<T, TypeAxioms>& operator=(Matrix<T, TypeAxioms>&& other) noexcept = default;
 
     const T& operator()(std::size_t row, std::size_t column) const {
-        return content[row * columns_ + column];
+        return content_[row * columns_ + column];
     }
 
-    T& operator()(std::size_t row, std::size_t column) { return content[row * columns_ + column]; }
+    T& operator()(std::size_t row, std::size_t column) { return content_[row * columns_ + column]; }
 
     Matrix<T, TypeAxioms> operator*(T t) const {
         Matrix<T, TypeAxioms> ret(*this);
 
-        for (auto& elem : ret.content) elem *= t;
+        for (auto& elem : ret.content_) elem *= t;
 
         return std::move(ret);
     }
@@ -60,7 +60,7 @@ public:
 
         Matrix<T, TypeAxioms> ret(*this);
         for (std::size_t i = 0; i < size(); i++) {
-            ret.content[i] += other.content[i];
+            ret.content_[i] += other.content_[i];
         }
 
         return std::move(ret);
@@ -72,7 +72,7 @@ public:
 
         const auto size = this->size();
         for (std::size_t i = 0; i < size; i++) {
-            this->content[i] *= other.content[i];
+            this->content_[i] *= other.content_[i];
         }
     }
 
@@ -84,7 +84,7 @@ public:
 
     Matrix<T, TypeAxioms>& operator+=(const Matrix<T, TypeAxioms>& other) {
         auto sum = *this + other;
-        this->content.swap(sum.content);
+        this->content_.swap(sum.content_);
         return *this;
     }
 
@@ -104,7 +104,7 @@ public:
 
         bool eq = true;
         for (std::size_t i = 0; i < size(); i++) {
-            if (this->content[i] != other.content[i]) {
+            if (this->content_[i] != other.content_[i]) {
                 eq = false;
                 break;
             }
@@ -133,10 +133,11 @@ public:
     std::vector<T> row(std::size_t rowInd) const {
         auto beginOffset = rowInd * columns();
         auto end = (rowInd + 1) * columns();
-        return std::vector<T>(content.begin() + beginOffset, content.begin() + end);
+        return std::vector<T>(content_.begin() + beginOffset, content_.begin() + end);
     }
 
-    const std::vector<T>& constContent() const { return content; }
+    const std::vector<T>& content() const { return content_; }
+    std::vector<T>& content() { return content_; }
 
     std::size_t size() const { return rows_ * columns_; }
 
@@ -164,7 +165,7 @@ protected:
     std::size_t columns_;
     std::size_t rows_;
 
-    std::vector<T> content;
+    std::vector<T> content_;
 };
 
 template <typename T, typename TypeAxioms>

@@ -31,7 +31,7 @@ public:
     bool probeNextFrame(FrameHeader& header) {
         auto samples = FrameSamples();
         auto ret = seekToNextFrame();
-        // Will throw is frame is ill-formed
+        // Will throw if frame is ill-formed
         decodeFrame(header, samples);
         return ret;
     }

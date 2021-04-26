@@ -13,7 +13,7 @@ class Vector : public Matrix<T, ZeroComparer> {
 public:
     template <class OtherIt>
     Vector(OtherIt other, std::size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {
-        std::copy(other, other + M, this->content.begin());
+        std::copy(other, other + M, this->content_.begin());
     }
 
     explicit Vector(std::size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {}
@@ -31,9 +31,9 @@ public:
     ConstVectorProxy<T, ZeroComparer> slice(std::size_t beginning, std::size_t count) const;
     Vector<T, ZeroComparer> copy(std::size_t beginning, std::size_t count) const;
 
-    virtual const T& operator[](std::size_t n) const { return this->content[n]; }
+    virtual const T& operator[](std::size_t n) const { return this->content_[n]; }
 
-    T& operator[](std::size_t n) { return this->content[n]; }
+    T& operator[](std::size_t n) { return this->content_[n]; }
 
 protected:
     Vector(size_t M, std::false_type) : Matrix<T, ZeroComparer>(1, M, std::false_type()) {}
