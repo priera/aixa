@@ -205,6 +205,9 @@ void FrameDecoder::readShortWindowScaleFactors(GranuleChannelContent& channelCon
                 }
             }
         }
+        for (unsigned int window = 0; window < NR_SHORT_WINDOWS; window++) {
+            channelContent.shortWindowScaleFactorBands[window][NR_SHORT_WINDOW_BANDS] = 0;
+        }
     }
 }
 

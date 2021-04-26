@@ -99,7 +99,7 @@ struct SideInformation {
     GranuleChannelsData<GranuleChannelSideInfo> granules;
 };
 
-using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_BANDS>, NR_SHORT_WINDOWS>;
+using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_RANGES>, NR_SHORT_WINDOWS>;
 
 template <class Representation>
 using Bands = std::array<std::array<Representation, NR_CODED_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
