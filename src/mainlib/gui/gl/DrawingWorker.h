@@ -1,28 +1,25 @@
 #ifndef AIXA_OPENGLTASK_H
 #define AIXA_OPENGLTASK_H
 
+#include <mainlib/gui/scene/Scene.h>
+
 #include <QtCore/QThread>
-
-#include <QtGui/QSurfaceFormat>
 #include <QtGui/QSurface>
-
-
-class QSurfaceFormat;
-class QOpenGLContext;
-class QOffscreenSurface;
-class OpenGLWindow;
-class Scene;
+#include <QtGui/QSurfaceFormat>
 
 class DrawingWorker : public QThread {
-Q_OBJECT
+    Q_OBJECT
 public:
-    explicit DrawingWorker(std::unique_ptr<QOpenGLContext> &context,
-                           QSurface &contextSurface,
-                           Scene &scene);
+    explicit DrawingWorker(QSurface &contextSurface, Scene &scene);
 
     void run() override;
 
     void stop() { m_stop = true; }
+
+    void setContext(QOpenGLContext *ctx) {
+        context = std::unique_ptr<QOpenGLContext>(ctx);
+        context->moveToThread(this);
+    }
 
 signals:
     void computeLoopDone();
@@ -37,5 +34,4 @@ private:
     std::atomic<bool> m_stop;
 };
 
-
-#endif //AIXA_OPENGLTASK_H
+#endif  // AIXA_OPENGLTASK_H

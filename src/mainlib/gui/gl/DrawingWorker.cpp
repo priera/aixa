@@ -8,14 +8,10 @@
 #include "OpenGLWindow.h"
 #include "mainlib/gui/scene/Scene.h"
 
-DrawingWorker::DrawingWorker(std::unique_ptr<QOpenGLContext> &context, QSurface &contextSurface,
-                             Scene &scene) :
-    QThread(),
-    frameRate(60),  // TODO make this dependent on actual screen configuration
-    context(std::move(context)),
-    scene(&scene),
-    offscreenSurface(&contextSurface) {
-    this->context->moveToThread(this);
+DrawingWorker::DrawingWorker(QSurface &contextSurface, Scene &scene) :
+    QThread(), frameRate(60),  // TODO make this dependent on actual screen configuration
+    context(), scene(&scene), offscreenSurface(&contextSurface) {
+    // this->context->moveToThread(this);
 }
 
 void DrawingWorker::run() {

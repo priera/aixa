@@ -1,28 +1,43 @@
 #include "GraphicsEnvironmentFactory.h"
 
+#include <mainlib/gui/gl/DrawWidget.h>
 #include <mainlib/gui/gl/GLContextManager.h>
 #include <mainlib/gui/gl/OpenGLWindow.h>
 
+// std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSize &appInitialSize) {
+//    auto scene = std::make_unique<Scene>(appInitialSize.width(), appInitialSize.height());
+//
+//    auto context_p = GLContextManager::getInstance().createContext();
+//    auto context = std::unique_ptr<QOpenGLContext>(context_p);
+//    auto &surface = GLContextManager::getInstance().getOffscreenSurface();
+//
+//    auto drawingWorker = std::make_unique<DrawingWorker>(context, surface, *scene);
+//
+//    context_p = GLContextManager::getInstance().createContext();
+//    context = std::unique_ptr<QOpenGLContext>(context_p);
+//
+//    auto bitmapsProvider = std::make_unique<BitmapBuilders>();
+//
+//     auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context, *bitmapsProvider);
+//     openGlWindow->resize(appInitialSize.width(), appInitialSize.height());
+//
+//    QObject::connect(drawingWorker.get(), &DrawingWorker::computeLoopDone, openGlWindow.get(),
+//                     &OpenGLWindow::renderNow, Qt::QueuedConnection);
+//
+//    return std::make_unique<GraphicsEnvironment>(std::move(scene), std::move(drawingWorker),
+//                                                 std::move(openGlWindow), std::move(bitmapsProvider));
+//}
+
 std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSize &appInitialSize) {
     auto scene = std::make_unique<Scene>(appInitialSize.width(), appInitialSize.height());
-
-    auto context_p = GLContextManager::getInstance().createContext();
-    auto context = std::unique_ptr<QOpenGLContext>(context_p);
-    auto &surface = GLContextManager::getInstance().getOffscreenSurface();
-
-    auto drawingWorker = std::make_unique<DrawingWorker>(context, surface, *scene);
-
-    context_p = GLContextManager::getInstance().createContext();
-    context = std::unique_ptr<QOpenGLContext>(context_p);
-
     auto bitmapsProvider = std::make_unique<BitmapBuilders>();
 
-    auto openGlWindow = std::make_unique<OpenGLWindow>(*scene, context, *bitmapsProvider);
-    openGlWindow->resize(appInitialSize.width(), appInitialSize.height());
+    auto mainWidget = std::make_unique<DrawWidget>(*scene, *bitmapsProvider);
+    auto &surface = GLContextManager::getInstance().getOffscreenSurface();
 
-    QObject::connect(drawingWorker.get(), &DrawingWorker::computeLoopDone, openGlWindow.get(),
-                     &OpenGLWindow::renderNow, Qt::QueuedConnection);
+    auto drawingWorker = std::make_unique<DrawingWorker>(surface, *scene);
+    mainWidget->resize(appInitialSize.width(), appInitialSize.height());
 
     return std::make_unique<GraphicsEnvironment>(std::move(scene), std::move(drawingWorker),
-                                                 std::move(openGlWindow), std::move(bitmapsProvider));
+                                                 std::move(mainWidget), std::move(bitmapsProvider));
 }
