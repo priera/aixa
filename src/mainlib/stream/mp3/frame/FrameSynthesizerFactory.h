@@ -14,7 +14,8 @@ public:
 
 private:
     FrameSynthesizer::AntialiasCoefficients computeAntialiasCoefficients() const;
-    aixa::math::DoubleMatrix computeTransformMatrix() const;
+    aixa::math::DoubleMatrix computeLongWindowTransformMatrix() const;
+    aixa::math::DoubleMatrix computeShortWindowTransformMatrix() const;
     FrameSynthesizer::BlockWindows generateBlockWindows() const;
     aixa::math::DoubleMatrix computeFrequencyInversionMatrix() const;
     aixa::math::DoubleMatrix computeTimeDomainSynFilter() const;

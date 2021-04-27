@@ -85,7 +85,7 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
 
     snd_pcm_dump(alsaEnv.handle, alsaEnv.output);
 
-    /*Notice the asymmetry: internally ALSA stores five buffers (500000 us of audio)
+    /* Notice the asymmetry: internally ALSA stores five buffers (500000 us of audio)
      * while buffersRing stores one second */
     const auto BUFFERS_FOR_ONE_SECOND = 1000000 / alsaEnv.params.period_time;
     auto bufferGenerator =

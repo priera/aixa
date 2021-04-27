@@ -1,10 +1,10 @@
-#include "LongWindowScaleFactorsComputer.h"
+#include "LongWindowAlgorithms.h"
 
 #include <cmath>
 
-Bands<double> LongWindowScaleFactorsComputer::compute(unsigned int samplingFreq,
-                                                      const GranuleChannelSideInfo& channelInfo,
-                                                      const GranuleChannelContent& channelContent) {
+Bands<double> LongWindowAlgorithms::computeScaleFactors(unsigned int samplingFreq,
+                                                        const GranuleChannelSideInfo& channelInfo,
+                                                        const GranuleChannelContent& channelContent) {
     auto ret = Bands<double>();
     std::size_t scaleFactorBandInd = 1;
     std::size_t nextSubbandBoundary = samplingFreqBandIndexes[samplingFreq].longWindow[scaleFactorBandInd];
@@ -24,4 +24,9 @@ Bands<double> LongWindowScaleFactorsComputer::compute(unsigned int samplingFreq,
     }
 
     return ret;
+}
+
+aixa::math::DoubleMatrix LongWindowAlgorithms::computeInverseMDCT(const aixa::math::DoubleMatrix& dequantized,
+                                                                  const aixa::math::DoubleMatrix& window) {
+    return dequantized * cosineTransform * window;
 }

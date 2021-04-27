@@ -40,6 +40,8 @@ public:
 
         bool ended() const { return processed >= toRead; }
 
+        void seekToBeginning() { processed = toRead; }
+
     private:
         ByteReservoir &reservoir;
         unsigned int currentPos;
@@ -53,6 +55,7 @@ public:
 
     void append(unsigned int remainingBytes, BitInputReader &reader);
     std::unique_ptr<BitInputReader> readerForPast(unsigned int nBytes);
+    void clear();
 
 private:
     static constexpr unsigned int RESERVOIR_SIZE = 512;

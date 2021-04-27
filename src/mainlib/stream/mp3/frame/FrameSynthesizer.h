@@ -5,7 +5,7 @@
 
 #include <deque>
 
-#include "WindowScaleFactorsComputer.h"
+#include "BlockSynthesisAlgorithms.h"
 #include "mainlib/stream/mp3/types.h"
 
 class FrameSynthesizer {
@@ -21,17 +21,10 @@ public:
     };
 
     using BlockWindows = std::map<GranuleChannelSideInfo::BlockType, aixa::math::DoubleMatrix>;
-    using ChannelSamples = std::array<short, NR_FRAME_SAMPLES>;
 
-    struct FrameSamples {
-        ChannelSamples channel1;
-        ChannelSamples channel2;
-    };
-
-    FrameSynthesizer(std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer,
-                     std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer,
+    FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer,
+                     std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer,
                      AntialiasCoefficients antialiasCoefficients,
-                     aixa::math::DoubleMatrix cosineTransform,
                      BlockWindows blockWindows,
                      aixa::math::DoubleMatrix frequencyInversion,
                      aixa::math::DoubleMatrix synFilter,
@@ -39,11 +32,13 @@ public:
     virtual ~FrameSynthesizer() = default;
 
     FrameSamples synthesize(const Frame& frame);
+    void clearState();
 
 private:
     static constexpr float GAIN_BASE = 210.f;
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
+    static constexpr double MAX_DECODED_VALUE = 32768.0;
 
     void synthesizeGranuleChannel(ChannelSamples& samples,
                                   unsigned int channel,
@@ -61,11 +56,12 @@ private:
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
 
-    std::unique_ptr<WindowScaleFactorsComputer> longWindowSFComputer;
-    std::unique_ptr<WindowScaleFactorsComputer> shortWindowSFComputer;
+    void resetFIFO();
+
+    std::unique_ptr<BlockSynthesisAlgorithms> longWindowAlgorithms;
+    std::unique_ptr<BlockSynthesisAlgorithms> shortWindowAlgorithms;
 
     AntialiasCoefficients antialiasCoefficients;
-    aixa::math::DoubleMatrix cosineTransform;
     BlockWindows blockWindows;
     aixa::math::DoubleMatrix frequencyInversion;
     aixa::math::DoubleMatrix synthesisFilter;

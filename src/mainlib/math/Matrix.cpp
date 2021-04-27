@@ -9,7 +9,7 @@ namespace aixa::math {
 template <typename T, class TypeAxioms>
 Matrix<T, TypeAxioms>::Matrix(std::size_t N, std::size_t M, std::true_type allocate, T def) :
     columns_(N), rows_(M) {
-    content.resize(columns_ * rows_, def);
+    content_.resize(columns_ * rows_, def);
 }
 
 template <typename T, class TypeAxioms>

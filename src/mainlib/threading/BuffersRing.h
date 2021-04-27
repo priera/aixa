@@ -1,27 +1,24 @@
 #ifndef AIXA_SRC_MAINLIB_THREADING_BUFFERSRING_H
 #define AIXA_SRC_MAINLIB_THREADING_BUFFERSRING_H
 
+#include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <memory>
+#include <mutex>
 #include <utility>
 #include <vector>
-#include <memory>
-#include <functional>
-#include <mutex>
-#include <condition_variable>
-#include <atomic>
 
-template<class T>
+template <class T>
 class BuffersRing {
 public:
     class BuffersWatcher {
     public:
         using Done = std::function<void()>;
 
-        BuffersWatcher(std::shared_ptr<T> buff, Done done) :
-                buff(std::move(buff)),
-                done(std::move(done))
-        { }
+        BuffersWatcher(std::shared_ptr<T> buff, Done done) : buff(std::move(buff)), done(std::move(done)) {}
 
-        BuffersWatcher(BuffersWatcher &&other) noexcept {
+        BuffersWatcher(BuffersWatcher&& other) noexcept {
             buff = other.buff;
             other.buff = nullptr;
             done = other.done;
@@ -44,10 +41,9 @@ public:
 
     using ElemGenerator = std::function<std::shared_ptr<T>()>;
 
-    BuffersRing(size_t count, ElemGenerator generator)
-    : count(count),
-    fDoneReading(std::bind(&BuffersRing::bufferConsumed, this)),
-    fDoneWriting(std::bind(&BuffersRing::bufferWritten, this)) {
+    BuffersRing(size_t count, ElemGenerator generator) :
+        count(count), fDoneReading(std::bind(&BuffersRing::bufferConsumed, this)),
+        fDoneWriting(std::bind(&BuffersRing::bufferWritten, this)) {
         for (size_t i = 0; i < count; i++) {
             elems.push_back(generator());
         }
@@ -58,27 +54,18 @@ public:
     BuffersWatcher nextReadBuffer() {
         checkReadHalt();
 
-        BuffersWatcher ret(elems[readPos], fDoneReading);
-
-        return std::move(ret);
+        return BuffersWatcher(elems[readPos], fDoneReading);
     }
 
-    BuffersWatcher nextWriteBuffer() {
-        BuffersWatcher ret(elems[writePos], fDoneWriting);
+    BuffersWatcher nextWriteBuffer() { return BuffersWatcher(elems[writePos], fDoneWriting); }
 
-        return std::move(ret);
-    }
+    void doneWriting() { setStateTo(State::FLUSHING); }
 
-    void doneWriting() {
-        setStateTo(State::FLUSHING);
-    }
-
-    bool moreBuffers() {
-        return state != State::FINISHED;
-    }
+    bool moreBuffers() { return state != State::FINISHED; }
 
 protected:
-    enum class State {
+    enum class State
+    {
         READY,
         RUNNING,
         FLUSHING,
@@ -112,21 +99,20 @@ protected:
 private:
     void checkReadHalt() {
         switch (state) {
-            case State::READY:
-                {
-                    std::mutex m;
-                    std::unique_lock<std::mutex> lock(m);
+            case State::READY: {
+                std::mutex m;
+                std::unique_lock<std::mutex> lock(m);
 
-                    cvState.wait(lock, [this] { return state == State::RUNNING; });
-                }
-                break;
-            case State::RUNNING: //Buffer under-run
+                cvState.wait(lock, [this] { return state == State::RUNNING; });
+            } break;
+            case State::RUNNING:  // Buffer under-run
                 if (readPos == writePos)
                     readPos = (readPos - 1) % count;
                 break;
             case State::FINISHED:
                 throw std::runtime_error("Attempting read of flushed buffer");
-            default: break;
+            default:
+                break;
         }
     }
 
@@ -155,5 +141,4 @@ private:
     typename BuffersWatcher::Done fDoneReading, fDoneWriting;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_THREADING_BUFFERSRING_H
+#endif  // AIXA_SRC_MAINLIB_THREADING_BUFFERSRING_H

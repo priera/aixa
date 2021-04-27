@@ -55,6 +55,8 @@ constexpr std::size_t NR_SHORT_WINDOWS = 3;
 constexpr std::size_t NR_SUB_BAND_GROUPS = 4;
 constexpr std::size_t NR_LONG_WINDOW_BANDS = 21;
 constexpr std::size_t NR_SHORT_WINDOW_BANDS = 12;
+constexpr std::size_t NR_SHORT_WINDOW_RANGES = NR_SHORT_WINDOW_BANDS + 1;
+constexpr std::size_t NR_SHORT_WINDOW_BAND_SAMPLES = NR_SHORT_WINDOW_BANDS / 2;
 constexpr std::size_t NR_FREQ_BANDS = 32;              // Used in frequency-domain operations
 constexpr std::size_t NR_CODED_SAMPLES_PER_BAND = 18;  // Used in frequency-domain operations
 constexpr std::size_t NR_TOTAL_SAMPLES = 2 * NR_CODED_SAMPLES_PER_BAND;
@@ -97,7 +99,7 @@ struct SideInformation {
     GranuleChannelsData<GranuleChannelSideInfo> granules;
 };
 
-using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_BANDS>, NR_SHORT_WINDOWS>;
+using ShortWindowScaleFactors = std::array<std::array<int, NR_SHORT_WINDOW_RANGES>, NR_SHORT_WINDOWS>;
 
 template <class Representation>
 using Bands = std::array<std::array<Representation, NR_CODED_SAMPLES_PER_BAND>, NR_FREQ_BANDS>;
@@ -117,6 +119,12 @@ struct Frame {
     FrameHeader header;
     SideInformation sideInfo;
     MainDataContent content;
+};
+
+using ChannelSamples = std::array<short, NR_FRAME_SAMPLES>;
+struct FrameSamples {
+    ChannelSamples channel1;
+    ChannelSamples channel2;
 };
 
 using FrameStartToken = unsigned char;

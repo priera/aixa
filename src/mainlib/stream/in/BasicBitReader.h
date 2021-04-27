@@ -60,13 +60,12 @@ public:
             unsigned char b;
             unsigned char i;
             for (i = 0; i < toRead; i += S_BYTE) {
-                unsigned char toExtract = (toRead - i > S_BYTE) ? S_BYTE : toRead - i;
-                ret <<= toExtract;
-
                 if (privNextByte(b) == 0) {
                     break;
                 }
 
+                unsigned char toExtract = (toRead - i > S_BYTE) ? S_BYTE : toRead - i;
+                ret <<= toExtract;
                 ret += (b >> (S_BYTE - toExtract));
             }
 
@@ -115,6 +114,12 @@ public:
     unsigned long bitsRead() const override { return totalBits; }
 
     bool ended() const override { return ops.ended() && lastByteRemBits == 0; }
+
+    void seekToBeginning() override {
+        ops.seekToBeginning();
+        totalBits = 0;
+        lastByteRemBits = 0;
+    }
 
 private:
     ReadOperations ops;

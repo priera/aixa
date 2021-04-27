@@ -1,21 +1,22 @@
 #ifndef AIXA_BUFFERS_H
 #define AIXA_BUFFERS_H
 
-#include <vector>
-
 #include <alsa/asoundlib.h>
+
+#include <vector>
 
 class InterleavedBuffer {
 public:
     InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size, snd_pcm_format_t format);
 
-    virtual ~InterleavedBuffer();
+    virtual ~InterleavedBuffer() = default;
 
-    char *raw() const { return charFrame; }
+    const char *raw() const { return charFrame.data(); }
     size_t dataSize() const { return m_dataSize; }
 
-    //Notice following function only works if system is little endian
-    short *samples() const { return reinterpret_cast<short *>(&charFrame[0]); };
+    // Notice following functions only works if system is little endian
+    short *samples() { return reinterpret_cast<short *>(charFrame.data()); };
+    const short *samples() const { return reinterpret_cast<const short *>(charFrame.data()); };
     size_t samplesCount() const { return m_frameSize * channels; };
     bool isLittleEndian() const { return little_endian; }
 
@@ -23,19 +24,14 @@ public:
 
 private:
     int channels;
-    size_t currentChannel;
     snd_pcm_uframes_t m_frameSize;
     size_t m_dataSize;
 
-    //TODO: use a vector of char. Thank you
-    char *charFrame;
+    std::vector<char> charFrame;
 
     int format_bits;
-    int bps;
-    int phys_bps;
+    int bytesPerSample;
     bool little_endian;
-    bool to_unsigned;
-
 };
 
-#endif //AIXA_BUFFERS_H
+#endif  // AIXA_BUFFERS_H

@@ -9,6 +9,7 @@ using namespace std::chrono_literals;
 using namespace aixa::math;
 
 static const auto STREAM = "/home/pedro/alsaTests/amics_mono.mp3";
+// static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 // static const auto STREAM = "??";
 
 int main(int argc, char *argv[]) {
