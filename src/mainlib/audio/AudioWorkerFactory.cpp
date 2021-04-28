@@ -11,11 +11,11 @@
 
 using namespace aixa::math;
 
-std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std::string &streamPath) {
+AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamPath) {
     auto stream = tryToGetStream(streamPath);
 
     if (!stream) {
-        return std::unique_ptr<AudioWorker>(nullptr);
+        return nullptr;
     }
 
     auto streamParams = stream->getParameters();
@@ -31,7 +31,7 @@ std::unique_ptr<AudioWorker> AudioWorkerFactory::buildWithInputStream(const std:
     auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing,
                                                  std::move(volumeManager), std::move(spectrogramComputer));
 
-    return std::make_unique<AudioWorker>(environment, std::move(streamReader), std::move(publisher));
+    return new AudioWorker(environment, std::move(streamReader), std::move(publisher));
 }
 
 std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &streamPath) {

@@ -68,9 +68,7 @@ void DrawWidget::dropEvent(QDropEvent *event) {
     const QMimeData *mimeData = event->mimeData();
 
     if (mimeData->hasUrls()) {
-        for (const auto &url : mimeData->urls()) {
-            std::cout << url.toString().toStdString() << std::endl;
-        }
+        emit urlDropped(mimeData->urls().first());
     }
     event->acceptProposedAction();
 }

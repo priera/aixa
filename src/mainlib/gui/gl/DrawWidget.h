@@ -18,6 +18,7 @@ public:
 
 signals:
     void initialized(QOpenGLContext *context);
+    void urlDropped(const QUrl &url);
 
 public slots:
     void notifyNewValue(const Note &note) override;

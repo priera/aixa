@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    auto audioWorker = AudioWorkerFactory().buildWithInputStream(STREAM);
+    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(STREAM);
+    auto audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
 
     audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment->getSpectrogramConsumer());
 

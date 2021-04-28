@@ -13,7 +13,7 @@ class GraphicsEnvironment : public QObject {
 public:
     GraphicsEnvironment(std::unique_ptr<Scene> scene,
                         std::unique_ptr<DrawingWorker> drawingWorker,
-                        std::unique_ptr<DrawWidget> mainWindow,
+                        std::unique_ptr<DrawWidget> mainWin,
                         std::unique_ptr<BitmapBuilders> bitmapsProvider);
 
     ~GraphicsEnvironment() override = default;
@@ -28,8 +28,12 @@ public:
         return bitmapsProvider->getSpectrogramConsumer();
     }
 
+signals:
+    void streamReceived(std::filesystem::path path);
+
 private slots:
     void startWorker(QOpenGLContext* guiContext);
+    void checkProposedStream(const QUrl& url);
 
 private:
     std::unique_ptr<Scene> scene;
