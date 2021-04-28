@@ -5,41 +5,60 @@
 
 #include <QApplication>
 
-using namespace std::chrono_literals;
-using namespace aixa::math;
-
-static const auto STREAM = "/home/pedro/alsaTests/amics_mono.mp3";
-// static const auto STREAM = "/home/pedro/alsaTests/amics.wav";
 // static const auto STREAM = "??";
 
-int main(int argc, char *argv[]) {
+static void setupAudioWithStream(const std::filesystem::path& streamPath,
+                                 GraphicsEnvironment& graphicsEnvironment,
+                                 std::unique_ptr<AudioWorker>& audioWorker) {
+    if (audioWorker) {
+        audioWorker->stop();
+    }
+
+    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath);
+    audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
+
+    audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment.getSpectrogramConsumer());
+
+    audioWorker->start();
+}
+
+int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     const auto w = static_cast<int>(1920 * 3.0 / 4);
     const auto h = static_cast<int>(1080 * 3.0 / 4);
     const auto appSize = QSize(w, h);
 
+    std::unique_ptr<AudioWorker> audioWorker = nullptr;
     auto graphicsEnvironment = GraphicsEnvironmentFactory::build(appSize);
 
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(STREAM);
-    auto audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
+    auto audioSetupFunc = [&graphicsEnvironment, &audioWorker](const std::filesystem::path& streamPath) {
+        setupAudioWithStream(streamPath, *graphicsEnvironment, audioWorker);
+    };
+    QObject::connect(graphicsEnvironment.get(), &GraphicsEnvironment::streamReceived, audioSetupFunc);
 
-    audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment->getSpectrogramConsumer());
-
-    auto commandCollection = audioWorker->getCommandCollection();
-
-    MainEventFilter mainEventFilter(commandCollection, noteSetter);
-    app.installEventFilter(&mainEventFilter);
+    //    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(STREAM);
+    //    auto audioWorker2 = std::unique_ptr<AudioWorker>(audioWorker_p);
+    //
+    //    audioWorker2->getSpectrogramGenerator().setReceiver(graphicsEnvironment->getSpectrogramConsumer());
+    //
+    //    auto commandCollection = audioWorker2->getCommandCollection();
+    //
+    //    MainEventFilter mainEventFilter(commandCollection, noteSetter);
+    //    app.installEventFilter(&mainEventFilter);
 
     graphicsEnvironment->start();
-    audioWorker->start();
+    // audioWorker2->start();
 
     int ret = app.exec();
 
-    audioWorker->stop();
+    if (audioWorker) {
+        audioWorker->stop();
+    }
+    // audioWorker2->stop();
     graphicsEnvironment->stop();
 
     return ret;

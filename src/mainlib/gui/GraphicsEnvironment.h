@@ -29,7 +29,7 @@ public:
     }
 
 signals:
-    void streamReceived(std::filesystem::path path);
+    void streamReceived(const std::filesystem::path& path);
 
 private slots:
     void startWorker(QOpenGLContext* guiContext);

@@ -35,6 +35,5 @@ void GraphicsEnvironment::checkProposedStream(const QUrl& url) {
     if (!exists(stdPath))
         return;
 
-    std::cout << stdPath << std::endl;
     emit streamReceived(stdPath);
 }
