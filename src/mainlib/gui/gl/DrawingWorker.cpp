@@ -4,15 +4,12 @@
 #include <chrono>
 #include <thread>
 
-#include "GLContextManager.h"
-#include "OpenGLWindow.h"
 #include "mainlib/gui/scene/Scene.h"
 
-DrawingWorker::DrawingWorker(QSurface &contextSurface, Scene &scene) :
-    QThread(), frameRate(60),  // TODO make this dependent on actual screen configuration
-    context(), scene(&scene), offscreenSurface(&contextSurface) {
-    // this->context->moveToThread(this);
-}
+DrawingWorker::DrawingWorker(std::unique_ptr<QSurface> contextSurface, Scene &scene) :
+    QThread(), scene(&scene), offscreenSurface(std::move(contextSurface)),
+    frameRate(60),  // TODO make frameRate dependent on actual screen configuration
+    context() {}
 
 void DrawingWorker::run() {
     long int iterationTimeus = (1 / ((float)frameRate)) * 1000000;
@@ -21,7 +18,7 @@ void DrawingWorker::run() {
     auto ticksRender = durationRender.count();
 
     context->create();
-    context->makeCurrent(offscreenSurface);
+    context->makeCurrent(offscreenSurface.get());
 
     m_stop = false;
     while (!m_stop) {

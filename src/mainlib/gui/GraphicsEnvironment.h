@@ -4,8 +4,6 @@
 #include <mainlib/audio/note/Note.h>
 #include <mainlib/gui/gl/DrawWidget.h>
 #include <mainlib/gui/gl/DrawingWorker.h>
-#include <mainlib/gui/gl/GLContextManager.h>
-#include <mainlib/gui/gl/OpenGLWindow.h>
 #include <mainlib/gui/scene/Scene.h>
 
 #include <memory>
@@ -22,10 +20,7 @@ public:
 
     void start() { mainWindow->show(); }
 
-    void stop() {
-        drawingWorker->stop();
-        GLContextManager::release();
-    }
+    void stop() { drawingWorker->stop(); }
 
     std::shared_ptr<NotesListener> getNotesListener() { return mainWindow; }
 

@@ -10,7 +10,7 @@
 class DrawingWorker : public QThread {
     Q_OBJECT
 public:
-    explicit DrawingWorker(QSurface &contextSurface, Scene &scene);
+    explicit DrawingWorker(std::unique_ptr<QSurface> contextSurface, Scene &scene);
 
     void run() override;
 
@@ -25,11 +25,11 @@ signals:
     void computeLoopDone();
 
 private:
-    int frameRate;
-
-    std::unique_ptr<QOpenGLContext> context;
     Scene *scene;
-    QSurface *offscreenSurface;
+    std::unique_ptr<QSurface> offscreenSurface;
+
+    int frameRate;
+    std::unique_ptr<QOpenGLContext> context;
 
     std::atomic<bool> m_stop;
 };
