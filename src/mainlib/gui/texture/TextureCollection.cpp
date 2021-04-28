@@ -2,6 +2,8 @@
 
 #include <mainlib/gui/gl/utils.h>
 
+#include <iostream>
+
 TextureCollection::TextureCollection(BitmapBuilders& bitmapBuilders) :
     QOpenGLFunctions(QOpenGLContext::currentContext()->shareContext()), bitmapBuilders(&bitmapBuilders) {
     initializeOpenGLFunctions();

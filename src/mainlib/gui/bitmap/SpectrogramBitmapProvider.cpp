@@ -54,3 +54,8 @@ QColor SpectrogramBitmapProvider::computeColor(double db) {
 inline int SpectrogramBitmapProvider::project(double value, int min, int max) {
     return (value * (max - min)) + min;
 }
+
+void SpectrogramBitmapProvider::reset() {
+    lastColumn = 0;
+    bitmapData.assign(WIDTH * height * PIXEL_SIZE, 0);
+}

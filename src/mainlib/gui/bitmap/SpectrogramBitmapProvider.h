@@ -16,6 +16,8 @@ public:
 
     void sendNewValue(aixa::math::SpectrogramFragment&& fragment) override;
 
+    void reset();
+
 private:
     static constexpr double MAX_DB = 60;
 

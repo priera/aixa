@@ -18,6 +18,7 @@ public:
     SharedBitmapProvider imageProvider(const std::filesystem::path &path);
     Bitmap buildProcedural();
     SharedBitmapProvider spectrogram();
+    void resetSpectrogram();
 
     std::shared_ptr<aixa::math::SpectrogramConsumer> getSpectrogramConsumer() {
         return spectrogramBitmapProvider;
