@@ -37,3 +37,5 @@ void GraphicsEnvironment::checkProposedStream(const QUrl& url) {
 
     emit streamReceived(stdPath);
 }
+
+void GraphicsEnvironment::resetSpectrogram() { bitmapsProvider->resetSpectrogram(); }

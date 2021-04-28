@@ -17,6 +17,7 @@ static void setupSystemsForAudioStream(const std::filesystem::path& streamPath,
     auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath);
     audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
 
+    graphicsEnvironment.resetSpectrogram();
     audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment.getSpectrogramConsumer());
 
     auto commandCollection = audioWorker->getCommandCollection();

@@ -22,6 +22,8 @@ public:
 
     void stop() { drawingWorker->stop(); }
 
+    void resetSpectrogram();
+
     std::shared_ptr<NotesListener> getNotesListener() { return mainWindow; }
 
     std::shared_ptr<aixa::math::SpectrogramConsumer> getSpectrogramConsumer() {

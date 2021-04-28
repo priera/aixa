@@ -21,3 +21,5 @@ SharedBitmapProvider BitmapBuilders::imageProvider(const std::filesystem::path &
 Bitmap BitmapBuilders::buildProcedural() { return ProceduralProvider().buildBitmap(); }
 
 SharedBitmapProvider BitmapBuilders::spectrogram() { return spectrogramBitmapProvider; }
+
+void BitmapBuilders::resetSpectrogram() { spectrogramBitmapProvider->reset(); }
