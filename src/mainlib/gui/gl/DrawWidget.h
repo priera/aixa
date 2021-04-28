@@ -6,6 +6,8 @@
 
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QPaintEvent>
+#include <QResizeEvent>
 #include <memory>
 
 class DrawWidget : public QOpenGLWidget, public NotesListener, protected QOpenGLFunctions {
@@ -25,6 +27,9 @@ protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
+
+    //    bool event(QEvent* event) override;
+    //    void paintEvent(QPaintEvent *e) override;
 
 private:
     Scene *scene;

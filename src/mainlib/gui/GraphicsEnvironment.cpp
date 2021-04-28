@@ -12,9 +12,11 @@ GraphicsEnvironment::GraphicsEnvironment(std::unique_ptr<Scene> scene,
             &DrawWidget::renderNow, Qt::QueuedConnection);
 }
 
-void GraphicsEnvironment::startWorker(QOpenGLContext* sharedContext) {
+void GraphicsEnvironment::startWorker(QOpenGLContext* guiContext) {
     auto context = new QOpenGLContext();
-    context->setShareContext(sharedContext);
+    context->setShareContext(guiContext->shareContext());
+    std::cout << "New context " << context << " using gui: " << guiContext << " "
+              << "and shared: " << guiContext->shareContext() << std::endl;
     drawingWorker->setContext(context);
     drawingWorker->start();
 }

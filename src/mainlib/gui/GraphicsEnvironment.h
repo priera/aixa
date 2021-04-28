@@ -34,7 +34,7 @@ public:
     }
 
 private slots:
-    void startWorker(QOpenGLContext* sharedContext);
+    void startWorker(QOpenGLContext* guiContext);
 
 private:
     std::unique_ptr<Scene> scene;
