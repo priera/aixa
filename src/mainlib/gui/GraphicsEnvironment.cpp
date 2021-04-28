@@ -15,8 +15,6 @@ GraphicsEnvironment::GraphicsEnvironment(std::unique_ptr<Scene> scene,
 void GraphicsEnvironment::startWorker(QOpenGLContext* guiContext) {
     auto context = new QOpenGLContext();
     context->setShareContext(guiContext->shareContext());
-    std::cout << "New context " << context << " using gui: " << guiContext << " "
-              << "and shared: " << guiContext->shareContext() << std::endl;
     drawingWorker->setContext(context);
     drawingWorker->start();
 }

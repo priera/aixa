@@ -6,8 +6,6 @@
 
 TextureCollection::TextureCollection(BitmapBuilders& bitmapBuilders) :
     QOpenGLFunctions(QOpenGLContext::currentContext()->shareContext()), bitmapBuilders(&bitmapBuilders) {
-    std::cout << "c1: " << QOpenGLContext::currentContext() << " "
-              << QOpenGLContext::currentContext()->shareContext() << std::endl;
     initializeOpenGLFunctions();
 }
 
