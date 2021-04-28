@@ -4,6 +4,9 @@
 #include <mainlib/gui/objects/CentralNoteManager.h>
 #include <mainlib/gui/scene/Scene.h>
 
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <memory>
@@ -25,6 +28,10 @@ protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
+
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
 
 private:
     Scene *scene;

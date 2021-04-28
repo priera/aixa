@@ -4,11 +4,15 @@
 #include <mainlib/gui/objects/SpectrogramPlane.h>
 #include <mainlib/gui/objects/YScale.h>
 
+#include <QMimeData>
+
 #include "utils.h"
 
 DrawWidget::DrawWidget(Scene &scene, BitmapBuilders &bitmapBuilders) :
     QOpenGLWidget(), QOpenGLFunctions(), scene(&scene), bitmapBuilders(&bitmapBuilders),
-    centralNoteManager(nullptr), textureCollection(nullptr) {}
+    centralNoteManager(nullptr), textureCollection(nullptr) {
+    setAcceptDrops(true);
+}
 
 void DrawWidget::notifyNewValue(const Note &note) {
     if (centralNoteManager)
@@ -57,3 +61,18 @@ void DrawWidget::paintGL() {
     scene->draw();
     glCheckError();
 }
+
+void DrawWidget::dragEnterEvent(QDragEnterEvent *event) { event->acceptProposedAction(); }
+
+void DrawWidget::dropEvent(QDropEvent *event) {
+    const QMimeData *mimeData = event->mimeData();
+
+    if (mimeData->hasUrls()) {
+        for (const auto &url : mimeData->urls()) {
+            std::cout << url.toString().toStdString() << std::endl;
+        }
+    }
+    event->acceptProposedAction();
+}
+
+void DrawWidget::dragLeaveEvent(QDragLeaveEvent *event) { event->accept(); }
