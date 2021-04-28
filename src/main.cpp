@@ -5,19 +5,22 @@
 
 #include <QApplication>
 
-// static const auto STREAM = "??";
-
-static void setupAudioWithStream(const std::filesystem::path& streamPath,
-                                 GraphicsEnvironment& graphicsEnvironment,
-                                 std::unique_ptr<AudioWorker>& audioWorker) {
+static void setupSystemsForAudioStream(const std::filesystem::path& streamPath,
+                                       GraphicsEnvironment& graphicsEnvironment,
+                                       MainEventFilter& eventFilter,
+                                       std::unique_ptr<AudioWorker>& audioWorker) {
     if (audioWorker) {
         audioWorker->stop();
+        eventFilter.removeTransientCommands();
     }
 
     auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath);
     audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
 
     audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment.getSpectrogramConsumer());
+
+    auto commandCollection = audioWorker->getCommandCollection();
+    eventFilter.addCommandsFromCollection(commandCollection);
 
     audioWorker->start();
 }
@@ -35,30 +38,22 @@ int main(int argc, char* argv[]) {
     NoteSetter noteSetter;
     noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    auto audioSetupFunc = [&graphicsEnvironment, &audioWorker](const std::filesystem::path& streamPath) {
-        setupAudioWithStream(streamPath, *graphicsEnvironment, audioWorker);
-    };
-    QObject::connect(graphicsEnvironment.get(), &GraphicsEnvironment::streamReceived, audioSetupFunc);
+    MainEventFilter mainEventFilter(noteSetter);
+    app.installEventFilter(&mainEventFilter);
 
-    //    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(STREAM);
-    //    auto audioWorker2 = std::unique_ptr<AudioWorker>(audioWorker_p);
-    //
-    //    audioWorker2->getSpectrogramGenerator().setReceiver(graphicsEnvironment->getSpectrogramConsumer());
-    //
-    //    auto commandCollection = audioWorker2->getCommandCollection();
-    //
-    //    MainEventFilter mainEventFilter(commandCollection, noteSetter);
-    //    app.installEventFilter(&mainEventFilter);
+    auto audioSetupCallback = [&graphicsEnvironment, &audioWorker,
+                               &mainEventFilter](const std::filesystem::path& streamPath) {
+        setupSystemsForAudioStream(streamPath, *graphicsEnvironment, mainEventFilter, audioWorker);
+    };
+    QObject::connect(graphicsEnvironment.get(), &GraphicsEnvironment::streamReceived, audioSetupCallback);
 
     graphicsEnvironment->start();
-    // audioWorker2->start();
 
     int ret = app.exec();
 
     if (audioWorker) {
         audioWorker->stop();
     }
-    // audioWorker2->stop();
     graphicsEnvironment->stop();
 
     return ret;
