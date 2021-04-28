@@ -4,8 +4,6 @@
 #include <mainlib/gui/objects/SpectrogramPlane.h>
 #include <mainlib/gui/objects/YScale.h>
 
-#include <QEvent>
-
 #include "utils.h"
 
 DrawWidget::DrawWidget(Scene &scene, BitmapBuilders &bitmapBuilders) :
@@ -17,10 +15,7 @@ void DrawWidget::notifyNewValue(const Note &note) {
         centralNoteManager->setNewFrontNote(note);
 }
 
-void DrawWidget::renderNow() {
-    paintGL();
-    update();
-}
+void DrawWidget::renderNow() { update(); }
 
 void DrawWidget::initializeGL() {
     initializeOpenGLFunctions();
@@ -53,24 +48,12 @@ void DrawWidget::initializeGL() {
     glCheckError();
 }
 
-void DrawWidget::resizeGL(int w, int h) {
-    this->makeCurrent();
-
-    glViewport(0, 0, w, h);
-
-    this->doneCurrent();
-}
+void DrawWidget::resizeGL(int w, int h) { glViewport(0, 0, w, h); }
 
 void DrawWidget::paintGL() {
-    // According to Qt's documentation, following line shouldn't be necessary.
-    // But bugs arise if this is not done explicitly here
-    this->makeCurrent();
-
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     scene->draw();
     glCheckError();
-
-    this->doneCurrent();
 }
