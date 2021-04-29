@@ -14,7 +14,7 @@
 class DrawWidget : public QOpenGLWidget, public NotesListener, protected QOpenGLFunctions {
     Q_OBJECT
 public:
-    DrawWidget(Scene &scene, BitmapBuilders &bitmapBuilders);
+    DrawWidget(Scene &scene);
 
 signals:
     void initialized(QOpenGLContext *context);
@@ -36,7 +36,6 @@ protected:
 
 private:
     Scene *scene;
-    BitmapBuilders *bitmapBuilders;
 
     std::unique_ptr<CentralNoteManager> centralNoteManager;
     TextureCollection *textureCollection;

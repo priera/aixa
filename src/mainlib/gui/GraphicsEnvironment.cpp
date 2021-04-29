@@ -8,14 +8,18 @@ GraphicsEnvironment::GraphicsEnvironment(std::unique_ptr<Scene> scene,
                                          std::unique_ptr<BitmapBuilders> bitmapsProvider) :
     QObject(),
     scene(std::move(scene)), drawingWorker(std::move(drawingWorker)), mainWindow(std::move(mainWin)),
-    bitmapsProvider(std::move(bitmapsProvider)) {
-    connect(mainWindow.get(), &DrawWidget::initialized, this, &GraphicsEnvironment::startWorker);
+    bitmapsProvider(std::move(bitmapsProvider)), textureCollection(), sceneState() {
+    connect(mainWindow.get(), &DrawWidget::initialized, this, &GraphicsEnvironment::setupUsingContext);
     connect(mainWindow.get(), &DrawWidget::urlDropped, this, &GraphicsEnvironment::checkProposedStream);
     connect(this->drawingWorker.get(), &DrawingWorker::computeLoopDone, this->mainWindow.get(),
             &DrawWidget::renderNow, Qt::QueuedConnection);
 }
 
-void GraphicsEnvironment::startWorker(QOpenGLContext* guiContext) {
+void GraphicsEnvironment::setupUsingContext(QOpenGLContext* guiContext) {
+    this->textureCollection = std::make_unique<TextureCollection>(*bitmapsProvider);
+    this->sceneState = std::make_unique<SceneState>(*scene, *textureCollection, *bitmapsProvider);
+    this->sceneState->showAudioVisualizations();
+
     auto context = new QOpenGLContext();
     context->setShareContext(guiContext->shareContext());
     drawingWorker->setContext(context);

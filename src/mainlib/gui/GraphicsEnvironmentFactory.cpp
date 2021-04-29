@@ -1,6 +1,7 @@
 #include "GraphicsEnvironmentFactory.h"
 
 #include <mainlib/gui/gl/DrawWidget.h>
+#include <mainlib/gui/scene/SceneState.h>
 
 #include <QOffscreenSurface>
 
@@ -20,7 +21,7 @@ std::unique_ptr<GraphicsEnvironment> GraphicsEnvironmentFactory::build(const QSi
     auto scene = std::make_unique<Scene>(appInitialSize.width(), appInitialSize.height());
     auto bitmapsProvider = std::make_unique<BitmapBuilders>();
 
-    auto mainWidget = std::make_unique<DrawWidget>(*scene, *bitmapsProvider);
+    auto mainWidget = std::make_unique<DrawWidget>(*scene);
 
     auto drawingWorker = std::make_unique<DrawingWorker>(std::move(offscreenSurface), *scene);
     mainWidget->resize(appInitialSize.width(), appInitialSize.height());

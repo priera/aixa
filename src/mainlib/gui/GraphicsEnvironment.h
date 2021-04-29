@@ -5,6 +5,7 @@
 #include <mainlib/gui/gl/DrawWidget.h>
 #include <mainlib/gui/gl/DrawingWorker.h>
 #include <mainlib/gui/scene/Scene.h>
+#include <mainlib/gui/scene/SceneState.h>
 
 #include <memory>
 
@@ -34,7 +35,7 @@ signals:
     void streamReceived(const std::filesystem::path& path);
 
 private slots:
-    void startWorker(QOpenGLContext* guiContext);
+    void setupUsingContext(QOpenGLContext* guiContext);
     void checkProposedStream(const QUrl& url);
 
 private:
@@ -42,6 +43,9 @@ private:
     std::unique_ptr<DrawingWorker> drawingWorker;
     std::shared_ptr<DrawWidget> mainWindow;
     std::unique_ptr<BitmapBuilders> bitmapsProvider;
+
+    std::unique_ptr<TextureCollection> textureCollection;
+    std::unique_ptr<SceneState> sceneState;
 };
 
 #endif  // AIXA_SRC_MAINLIB_GUI_GRAPHICSENVIRONMENT_H
