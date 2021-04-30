@@ -15,7 +15,8 @@ public:
     void update();
     void draw();
     void clear();
-    void addObject(std::shared_ptr<ShadedRenderableObject> object);
+    void add(std::shared_ptr<ShadedRenderableObject> object);
+    void remove(const std::shared_ptr<ShadedRenderableObject>& object);
 
 private:
     void waitUntilModificationDone();

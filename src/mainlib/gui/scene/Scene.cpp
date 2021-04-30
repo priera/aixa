@@ -8,7 +8,7 @@ Scene::Scene(int w, int h) : beingModified(false) {
     projection *= view;
 }
 
-void Scene::addObject(std::shared_ptr<ShadedRenderableObject> object) {
+void Scene::add(std::shared_ptr<ShadedRenderableObject> object) {
     beingModified = true;
     objects.push_back(std::move(object));
     beingModified = false;
@@ -43,4 +43,10 @@ void Scene::waitUntilModificationDone() {
     std::mutex m;
     std::unique_lock<std::mutex> l(m);
     cvModifyingCollection.wait(l, [this]() { return !beingModified; });
+}
+
+void Scene::remove(const std::shared_ptr<ShadedRenderableObject> &object) {
+    beingModified = true;
+    std::remove(objects.begin(), objects.end(), object);
+    beingModified = false;
 }
