@@ -3,14 +3,15 @@
 #include <mainlib/gui/bitmap/GlyphMetrics.h>
 #include <mainlib/gui/gl/utils.h>
 
-ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program, std::string text, unsigned int pixelSize,
-                                   float x, float y, float ratio, TextureCollection &textureCollection) :
+ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program,
+                                   std::string text,
+                                   unsigned int pixelSize,
+                                   float x,
+                                   float y,
+                                   float ratio,
+                                   TextureCollection &textureCollection) :
     RenderableObject(program, Dimensions{0.9f, 1.125f, 0.1f}),
-    text(std::move(text)),
-    pixelSize(pixelSize),
-    x(x),
-    y(y),
-    ratio(ratio),
+    text(std::move(text)), pixelSize(pixelSize), x(x), y(y), ratio(ratio),
     textureCollection(&textureCollection) {}
 
 void ImmutableTextBox::init() {
@@ -41,8 +42,8 @@ void ImmutableTextBox::doMyRender() {
     float xStart = x;
 
     for (auto c : text) {
-        auto texture = textureCollection->getCharacterTexture(c, pixelSize);
-        const auto metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
+        auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
+        const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
 
         float xpos = xStart + (metrics.left * ratio);
         float ypos = y - (metrics.height * ratio - metrics.top * ratio);

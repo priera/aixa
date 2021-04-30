@@ -18,7 +18,7 @@ GraphicsEnvironment::GraphicsEnvironment(std::unique_ptr<Scene> scene,
 void GraphicsEnvironment::setupUsingContext(QOpenGLContext* guiContext) {
     this->textureCollection = std::make_unique<TextureCollection>(*bitmapsProvider);
     this->sceneState = std::make_unique<SceneState>(*scene, *textureCollection, *bitmapsProvider);
-    this->sceneState->showAudioVisualizations();
+    this->sceneState->showUXControls();
 
     auto context = new QOpenGLContext();
     context->setShareContext(guiContext->shareContext());
@@ -42,4 +42,7 @@ void GraphicsEnvironment::checkProposedStream(const QUrl& url) {
     emit streamReceived(stdPath);
 }
 
-void GraphicsEnvironment::resetSpectrogram() { bitmapsProvider->resetSpectrogram(); }
+void GraphicsEnvironment::showAudioVisualizations() {
+    bitmapsProvider->resetSpectrogram();
+    this->sceneState->showAudioVisualizations();
+}

@@ -1,13 +1,19 @@
 #include "SceneState.h"
 
 #include <mainlib/globals.h>
+#include <mainlib/gui/objects/InstructionsBanner.h>
 #include <mainlib/gui/objects/SpectrogramPlane.h>
 #include <mainlib/gui/objects/YScale.h>
 
 SceneState::SceneState(Scene &scene, TextureCollection &textureCollection, BitmapBuilders &bitmapBuilders) :
     scene(&scene), textureCollection(&textureCollection), bitmapBuilders(&bitmapBuilders) {}
 
-void SceneState::showUXControls() { scene->clear(); }
+void SceneState::showUXControls() {
+    scene->clear();
+
+    auto instructionsBanner = std::make_shared<InstructionsBanner>(*this->textureCollection);
+    scene->add(instructionsBanner);
+}
 
 void SceneState::showAudioVisualizations() {
     scene->clear();

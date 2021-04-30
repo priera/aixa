@@ -77,6 +77,9 @@ float &RenderableObject::chooseParamForAnimation(AnimationParam param) {
             return dim.height;
         case AnimationParam::D:
             return dim.depth;
+        default:
+            // This actually never will be thrown, but compilers complain less if this line is present
+            throw std::runtime_error("invalid animation param");
     }
 }
 

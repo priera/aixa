@@ -23,7 +23,7 @@ public:
 
     void stop() { drawingWorker->stop(); }
 
-    void resetSpectrogram();
+    void showAudioVisualizations();
 
     std::shared_ptr<NotesListener> getNotesListener() { return mainWindow; }
 
