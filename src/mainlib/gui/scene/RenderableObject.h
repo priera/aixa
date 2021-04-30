@@ -1,13 +1,12 @@
 #ifndef AIXA_RENDERABLEOBJECT_H
 #define AIXA_RENDERABLEOBJECT_H
 
-#include <map>
-#include <mutex>
-#include <memory>
-
+#include <QtGui/QMatrix4x4>
 #include <QtGui/QOpenGLExtraFunctions>
 #include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QMatrix4x4>
+#include <map>
+#include <memory>
+#include <mutex>
 
 #include "Animation.h"
 #include "Dimensions.h"
@@ -22,25 +21,25 @@ public:
     bool isInitialized() const { return initialized; }
 
     void update();
-    void render(QMatrix4x4 & projectionMatrix);
+    void render(QMatrix4x4 &projectionMatrix);
 
     void moveCenterAt(float x, float y, float z);
     void rotate(float degrees);
     void scale(float amount);
 
     void addChildObject(float z, std::shared_ptr<RenderableObject> object);
+    void clearChildren();
 
 protected:
-    enum class AnimationParam {
+    enum class AnimationParam
+    {
         W,
         H,
         D,
         ANGLE
     };
 
-    void setProgram(QOpenGLShaderProgram &program) {
-        this->program = &program;
-    }
+    void setProgram(QOpenGLShaderProgram &program) { this->program = &program; }
 
     virtual bool readyToInitialize();
     virtual void init();
@@ -49,13 +48,17 @@ protected:
     virtual void updateDone();
 
     virtual void doMyRender();
-    virtual void beforeRender(const QMatrix4x4 & projectionMatrix);
+    virtual void beforeRender(const QMatrix4x4 &projectionMatrix);
     virtual void afterRender();
 
     virtual void applyChildTransformations(RenderableObject &pObject);
 
-    void setupAnimation(AnimationParam param, std::chrono::milliseconds duration, unsigned int samples, \
-        float startValue, float endValue, const Animation::HermiteParams & params);
+    void setupAnimation(AnimationParam param,
+                        std::chrono::milliseconds duration,
+                        unsigned int samples,
+                        float startValue,
+                        float endValue,
+                        const Animation::HermiteParams &params);
 
     Dimensions dim;
     float angle{0};
@@ -77,4 +80,4 @@ private:
     bool initialized{false};
 };
 
-#endif //AIXA_RENDERABLEOBJECT_H
+#endif  // AIXA_RENDERABLEOBJECT_H

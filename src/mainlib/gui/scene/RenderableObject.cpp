@@ -18,6 +18,8 @@ void RenderableObject::addChildObject(float z, std::shared_ptr<RenderableObject>
     children[zpos] = std::move(object);
 }
 
+void RenderableObject::clearChildren() { children.clear(); }
+
 void RenderableObject::update() {
     updateMatrix.setToIdentity();
     doMyUpdate();
