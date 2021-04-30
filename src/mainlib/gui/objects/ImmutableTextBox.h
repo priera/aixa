@@ -6,8 +6,24 @@
 
 class ImmutableTextBox : public RenderableObject {
 public:
-    ImmutableTextBox(QOpenGLShaderProgram &program, std::string text, unsigned int pixelSize, float x,
-                     float y, float ratio, TextureCollection &textureCollection);
+    enum class Alignment
+    {
+        LEFT,
+        CENTER
+    };
+
+    struct BoxFormat {
+        float left;
+        float top;
+        Alignment alignment = Alignment::LEFT;
+    };
+
+    ImmutableTextBox(QOpenGLShaderProgram &program,
+                     std::string text,
+                     BoxFormat boxFormat,
+                     unsigned int pixelSize,
+                     float ratio,
+                     TextureCollection &textureCollection);
     ~ImmutableTextBox() override = default;
 
 protected:
@@ -16,11 +32,15 @@ protected:
     void doMyRender() override;
 
 private:
+    void computeXOffset();
+
     std::string text;
+    BoxFormat boxFormat;
     unsigned int pixelSize;
-    float x, y, ratio;
+    float ratio;
     TextureCollection *textureCollection;
 
+    float xOffset;
     unsigned int vertexAttr, vertexBuff;
 };
 

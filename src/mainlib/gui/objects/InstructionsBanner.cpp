@@ -25,7 +25,8 @@ void InstructionsBanner::changeInstruction() {
     this->clearChildren();
 
     const auto& text = instructionsSet[currentInstruction];
-    auto instructionTextBox = std::make_shared<ImmutableTextBox>(*this->program, text, FONT_SIZE, 0.5f, 0.5,
+    auto boxFormat = ImmutableTextBox::BoxFormat{0.5, 0.5, ImmutableTextBox::Alignment::CENTER};
+    auto instructionTextBox = std::make_shared<ImmutableTextBox>(*this->program, text, boxFormat, FONT_SIZE,
                                                                  RATIO, *this->textureCollection);
     addChildObject(0.1, instructionTextBox);
 

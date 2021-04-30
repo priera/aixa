@@ -5,14 +5,30 @@
 
 ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program,
                                    std::string text,
+                                   BoxFormat boxFormat,
                                    unsigned int pixelSize,
-                                   float x,
-                                   float y,
                                    float ratio,
                                    TextureCollection &textureCollection) :
     RenderableObject(program, Dimensions{0.9f, 1.125f, 0.1f}),
-    text(std::move(text)), pixelSize(pixelSize), x(x), y(y), ratio(ratio),
-    textureCollection(&textureCollection) {}
+    text(std::move(text)), boxFormat(boxFormat), pixelSize(pixelSize), ratio(ratio),
+    textureCollection(&textureCollection) {
+    computeXOffset();
+}
+
+void ImmutableTextBox::computeXOffset() {
+    xOffset = 0.0;
+
+    if (boxFormat.alignment == Alignment::CENTER) {
+        for (auto c : text) {
+            auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
+            const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
+
+            xOffset += static_cast<float>(metrics.advanceX >> 6u) * ratio;
+        }
+
+        xOffset /= 2;
+    }
+}
 
 void ImmutableTextBox::init() {
     glGenVertexArrays(1, &vertexAttr);
@@ -39,14 +55,14 @@ void ImmutableTextBox::doMyRender() {
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(vertexAttr);
 
-    float xStart = x;
+    float xStart = boxFormat.left - xOffset;
 
     for (auto c : text) {
         auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
         const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
 
         float xpos = xStart + (metrics.left * ratio);
-        float ypos = y - (metrics.height * ratio - metrics.top * ratio);
+        float ypos = boxFormat.top - (metrics.height * ratio - metrics.top * ratio);
 
         float w = metrics.width * ratio;
         float h = metrics.height * ratio;
@@ -62,7 +78,7 @@ void ImmutableTextBox::doMyRender() {
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         xStart +=
-            (metrics.advanceX >> 6U) * ratio;  // bitshift by 6 to get value in pixels (2^6 = 64 (divide
+            (metrics.advanceX >> 6u) * ratio;  // bitshift by 6 to get value in pixels (2^6 = 64 (divide
                                                // amount of 1/64th pixels by 64 to get amount of pixels))
     }
 

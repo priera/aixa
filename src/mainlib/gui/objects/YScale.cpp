@@ -42,9 +42,10 @@ void YScale::init() {
     for (auto& content : scaleContent) {
         float yPos = content.first;
         std::string text = std::move(content.second);
-
-        auto textBox = std::make_shared<ImmutableTextBox>(*this->program, text, FONT_SIZE, 0.0f, yPos, RATIO,
+        auto boxFormat = ImmutableTextBox::BoxFormat{0.0, yPos};
+        auto textBox = std::make_shared<ImmutableTextBox>(*this->program, text, boxFormat, FONT_SIZE, RATIO,
                                                           *this->textureCollection);
+
         addChildObject(zPos, textBox);
         zPos += 0.01f;
     }
