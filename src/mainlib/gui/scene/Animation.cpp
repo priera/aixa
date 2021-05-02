@@ -3,9 +3,23 @@
 #include <cassert>
 #include <iostream>
 
-Animation::Animation() : HermiteCoefficients(buildCoefficients()), done_(true) {}
+Animation::Animation(Animation::Params &&params) :
+    samples(params.samples), startValue(params.startValue), endValue(params.endValue),
+    updateFunction(std::move(params.update)), HermiteCoefficients(buildCoefficients()), done_(false),
+    evaluatedOnce(false) {
+    timeBetweenSamples = params.duration / params.samples;
 
-Animation::~Animation() {}
+    float allParams[] = {0.0,
+                         0.0,
+                         1.0,
+                         1.0,
+                         params.hParams.m0x * GRADIENT_SCALE,
+                         params.hParams.m0y * GRADIENT_SCALE,
+                         params.hParams.m1x * GRADIENT_SCALE,
+                         params.hParams.m1y * GRADIENT_SCALE};
+
+    hermiteParams = QGenericMatrix<2, 4, float>(allParams);
+}
 
 QGenericMatrix<4, 4, float> Animation::buildCoefficients() {
     float values[16] = {1, 0, 0, 0, 0, 0, 1, 0, -3, 3, -2, -1, 2, -2, 1, 1};
@@ -13,40 +27,14 @@ QGenericMatrix<4, 4, float> Animation::buildCoefficients() {
     return QGenericMatrix<4, 4, float>(values);
 }
 
-void Animation::reset(std::chrono::milliseconds duration,
-                      unsigned int samples,
-                      float startValue,
-                      float endValue,
-                      const HermiteParams &hmP,
-                      UpdateFunc update) {
-    assert(duration.count() > 0);
-    assert(samples >= 2);
-
-    this->samples = samples;
-    this->startValue = startValue;
-    this->endValue = endValue;
-    this->updateFunction = std::move(update);
-
-    timeBetweenSamples = duration / samples;
-
-    float allParams[] = {0.0,
-                         0.0,
-                         1.0,
-                         1.0,
-                         hmP.m0x * GRADIENT_SCALE,
-                         hmP.m0y * GRADIENT_SCALE,
-                         hmP.m1x * GRADIENT_SCALE,
-                         hmP.m1y * GRADIENT_SCALE};
-
-    hermiteParams = QGenericMatrix<2, 4, float>(allParams);
-
-    begin = std::chrono::steady_clock::now();
-    done_ = false;
-}
-
-void Animation::evaluate(const std::chrono::steady_clock::time_point &at, float &v) {
+void Animation::evaluate(const AnimationClock::time_point &at, float v) {
     if (done_)
         return;
+
+    if (!evaluatedOnce) {
+        begin = std::chrono::steady_clock::now();
+        evaluatedOnce = true;
+    }
 
     float sample = (at - begin) / timeBetweenSamples;
 

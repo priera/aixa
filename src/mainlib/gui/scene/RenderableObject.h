@@ -9,6 +9,7 @@
 #include <mutex>
 
 #include "Animation.h"
+#include "AnimationList.h"
 #include "Dimensions.h"
 
 class RenderableObject : protected QOpenGLExtraFunctions {
@@ -57,13 +58,9 @@ protected:
 
     virtual void applyChildTransformations(RenderableObject &pObject);
 
-    void setupAnimation(AnimationParam param,
-                        std::chrono::milliseconds duration,
-                        unsigned int samples,
-                        float startValue,
-                        float endValue,
-                        const Animation::HermiteParams &params,
-                        Animation::UpdateFunc updateFunc);
+    void addAnimation(AnimationParam animable, Animation::Params &&animationParams) {
+        animations[animable].add(std::forward<Animation::Params>(animationParams));
+    }
 
     Dimensions dim;
     float angle{0};
@@ -82,7 +79,7 @@ private:
 
     std::mutex updateMutex;
 
-    std::map<AnimationParam, Animation> animations;
+    std::map<AnimationParam, AnimationList> animations;
     bool initialized{false};
 };
 

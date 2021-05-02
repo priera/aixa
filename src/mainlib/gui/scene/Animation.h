@@ -9,29 +9,30 @@ class RenderableObject;
 class Animation {
 public:
     using UpdateFunc = std::function<void(float)>;
+    using AnimationClock = std::chrono::steady_clock;
 
     // In order to test these parameters, use webs like https://cubic-bezier.com
     struct HermiteParams {
         float m0x, m0y, m1x, m1y;
     };
 
-    Animation();
-    virtual ~Animation();
+    struct Params {
+        std::chrono::milliseconds duration;
+        unsigned int samples;
+        float startValue;
+        float endValue;
+        HermiteParams hParams;
+        UpdateFunc update;
+    };
 
-    void reset(std::chrono::milliseconds duration,
-               unsigned int samples,
-               float startValue,
-               float endValue,
-               const HermiteParams &params,
-               UpdateFunc update);
+    explicit Animation(Params&& params);
+    virtual ~Animation() = default;
 
-    void evaluate(const std::chrono::steady_clock::time_point &at, float &v);
-    bool done() const { return done_; }
+    void evaluate(const AnimationClock::time_point& at, float v);
+    bool done() const noexcept { return done_; }
 
 private:
     static QGenericMatrix<4, 4, float> buildCoefficients();
-
-    const QGenericMatrix<4, 4, float> HermiteCoefficients;
 
     static constexpr float GRADIENT_SCALE = 3.3;
 
@@ -40,7 +41,10 @@ private:
     float endValue;
     UpdateFunc updateFunction;
 
+    const QGenericMatrix<4, 4, float> HermiteCoefficients;
     bool done_;
+    bool evaluatedOnce;
+
     QGenericMatrix<2, 4, float> hermiteParams;
 
     std::chrono::steady_clock::time_point begin;

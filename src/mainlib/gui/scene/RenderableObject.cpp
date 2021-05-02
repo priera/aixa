@@ -98,16 +98,6 @@ void RenderableObject::doMyUpdate() {
     }
 }
 
-void RenderableObject::setupAnimation(AnimationParam param,
-                                      std::chrono::milliseconds duration,
-                                      unsigned int samples,
-                                      float startValue,
-                                      float endValue,
-                                      const Animation::HermiteParams &params,
-                                      Animation::UpdateFunc updateFunc) {
-    animations[param].reset(duration, samples, startValue, endValue, params, std::move(updateFunc));
-}
-
 void RenderableObject::doMyRender() {}
 
 void RenderableObject::beforeRender(const QMatrix4x4 &projectionMatrix) {}
