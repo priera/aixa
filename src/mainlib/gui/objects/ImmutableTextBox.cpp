@@ -47,9 +47,11 @@ void ImmutableTextBox::init() {
     glBindVertexArray(0);
 
     if (boxFormat.animateTextColor) {
-        Animation::HermiteParams hermiteParams = {0.42, 0.0, 0.9, 1.0};
+        Animation::HermiteParams fadeInParams = {0.42, 0.0, 0.9, 1.0};
+        Animation::HermiteParams fadeOutParams = {0.0, 0.0, 0.58, 1.0};
         auto updateColor = [this](float v) { this->setColor(v); };
-        addAnimation(AnimationParam::COLOR, {2200ms, 30, 0, DEFAULT_COLOR, hermiteParams, updateColor});
+        addAnimation(AnimationParam::COLOR, {2200ms, 30, 0, DEFAULT_COLOR, fadeInParams, updateColor});
+        addAnimation(AnimationParam::COLOR, {2200ms, 30, DEFAULT_COLOR, 0, fadeOutParams, updateColor});
     }
 }
 

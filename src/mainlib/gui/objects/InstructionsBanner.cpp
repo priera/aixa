@@ -8,7 +8,7 @@ InstructionsBanner::InstructionsBanner(TextureCollection& textureCollection) :
                            Dimensions{0.9f, 1.125f, 0.1f}),
     textureCollection(&textureCollection), currentInstruction(0) {
     timer = std::make_unique<QTimer>();
-    timer->setInterval(5000ms);
+    timer->setInterval(4600ms);
     timer->connect(timer.get(), &QTimer::timeout, [this]() { changeInstruction(); });
 
     instructionsSet = {"drag & drop a wav file", "drag & drop a mp3 file", "ESC to exit"};
