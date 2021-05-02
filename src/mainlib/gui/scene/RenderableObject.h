@@ -30,16 +30,20 @@ public:
     void addChildObject(float z, std::shared_ptr<RenderableObject> object);
     void clearChildren();
 
+    float getColor() const noexcept { return color; }
+
 protected:
     enum class AnimationParam
     {
         W,
         H,
         D,
-        ANGLE
+        ANGLE,
+        COLOR
     };
 
     void setProgram(QOpenGLShaderProgram &program) { this->program = &program; }
+    void setColor(float color) noexcept { this->color = color; }
 
     virtual bool readyToInitialize();
     virtual void init();
@@ -58,10 +62,12 @@ protected:
                         unsigned int samples,
                         float startValue,
                         float endValue,
-                        const Animation::HermiteParams &params);
+                        const Animation::HermiteParams &params,
+                        Animation::UpdateFunc updateFunc);
 
     Dimensions dim;
     float angle{0};
+    float color{0};
 
     std::map<int, std::shared_ptr<RenderableObject>> children;
 

@@ -79,6 +79,8 @@ float &RenderableObject::chooseParamForAnimation(AnimationParam param) {
             return dim.height;
         case AnimationParam::D:
             return dim.depth;
+        case AnimationParam::COLOR:
+            return color;
         default:
             // This actually never will be thrown, but compilers complain less if this line is present
             throw std::runtime_error("invalid animation param");
@@ -94,8 +96,6 @@ void RenderableObject::doMyUpdate() {
 
         animation.second.evaluate(t, chooseParamForAnimation(animation.first));
     }
-
-    rotate(angle);
 }
 
 void RenderableObject::setupAnimation(AnimationParam param,
@@ -103,8 +103,9 @@ void RenderableObject::setupAnimation(AnimationParam param,
                                       unsigned int samples,
                                       float startValue,
                                       float endValue,
-                                      const Animation::HermiteParams &params) {
-    animations[param].reset(duration, samples, startValue, endValue, params);
+                                      const Animation::HermiteParams &params,
+                                      Animation::UpdateFunc updateFunc) {
+    animations[param].reset(duration, samples, startValue, endValue, params, std::move(updateFunc));
 }
 
 void RenderableObject::doMyRender() {}

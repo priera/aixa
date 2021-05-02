@@ -15,18 +15,27 @@ public:
     struct BoxFormat {
         float left;
         float top;
+        bool animateTextColor = false;
         Alignment alignment = Alignment::LEFT;
+    };
+
+    struct TextFormat {
+        int pixelSize;
+        float textRatio;
+        float color = DEFAULT_COLOR;
     };
 
     ImmutableTextBox(QOpenGLShaderProgram &program,
                      std::string text,
                      BoxFormat boxFormat,
-                     unsigned int pixelSize,
-                     float ratio,
+                     TextFormat textFormat,
                      TextureCollection &textureCollection);
+
     ~ImmutableTextBox() override = default;
 
 protected:
+    static constexpr float DEFAULT_COLOR = 0.7;
+
     void init() override;
 
     void doMyRender() override;
@@ -36,8 +45,7 @@ private:
 
     std::string text;
     BoxFormat boxFormat;
-    unsigned int pixelSize;
-    float ratio;
+    TextFormat textFormat;
     TextureCollection *textureCollection;
 
     float xOffset;

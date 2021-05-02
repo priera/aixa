@@ -16,7 +16,7 @@ public:
 protected:
     void init() override;
 
-private slots:
+private:
     void changeInstruction();
 
 private:

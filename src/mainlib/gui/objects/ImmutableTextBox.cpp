@@ -3,15 +3,17 @@
 #include <mainlib/gui/bitmap/GlyphMetrics.h>
 #include <mainlib/gui/gl/utils.h>
 
+using namespace std::chrono_literals;
+
 ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program,
                                    std::string text,
                                    BoxFormat boxFormat,
-                                   unsigned int pixelSize,
-                                   float ratio,
+                                   TextFormat textFormat,
                                    TextureCollection &textureCollection) :
     RenderableObject(program, Dimensions{0.9f, 1.125f, 0.1f}),
-    text(std::move(text)), boxFormat(boxFormat), pixelSize(pixelSize), ratio(ratio),
+    text(std::move(text)), boxFormat(boxFormat), textFormat(textFormat),
     textureCollection(&textureCollection) {
+    this->setColor(textFormat.color);
     computeXOffset();
 }
 
@@ -20,10 +22,10 @@ void ImmutableTextBox::computeXOffset() {
 
     if (boxFormat.alignment == Alignment::CENTER) {
         for (auto c : text) {
-            auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
+            auto &texture = textureCollection->getCharacterTexture(c, textFormat.pixelSize);
             const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
 
-            xOffset += static_cast<float>(metrics.advanceX >> 6u) * ratio;
+            xOffset += static_cast<float>(metrics.advanceX >> 6u) * textFormat.textRatio;
         }
 
         xOffset /= 2;
@@ -43,22 +45,29 @@ void ImmutableTextBox::init() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    if (boxFormat.animateTextColor) {
+        Animation::HermiteParams params = {0.42, 0.0, 0.9, 1.0};
+        setupAnimation(AnimationParam::COLOR, 2200ms, 30, 0, DEFAULT_COLOR, params,
+                       [this](float v) { this->setColor(v); });
+    }
 }
 
 void ImmutableTextBox::doMyRender() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    const auto textColor = QVector3D(0.7f, 0.7f, 0.7f);
+    const auto textColor = QVector3D(color, color, color);
     program->setUniformValue("textColor", textColor);
 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(vertexAttr);
 
     float xStart = boxFormat.left - xOffset;
+    auto ratio = textFormat.textRatio;
 
     for (auto c : text) {
-        auto &texture = textureCollection->getCharacterTexture(c, pixelSize);
+        auto &texture = textureCollection->getCharacterTexture(c, textFormat.pixelSize);
         const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
 
         float xpos = xStart + (metrics.left * ratio);
