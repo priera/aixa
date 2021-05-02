@@ -7,7 +7,8 @@
 #include "GlyphMetrics.h"
 
 FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
-    if (FT_Init_FreeType(&ft)) throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
+    if (FT_Init_FreeType(&ft))
+        throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
 
     if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 0, &face))
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
@@ -29,11 +30,13 @@ Bitmap &FreeTypeCharacterBitmapProvider::getCharacter(char c, unsigned int pixel
 
 Bitmap *FreeTypeCharacterBitmapProvider::cacheLookup(char c, unsigned int pixelSize) {
     auto fontSizeIt = cache.find(pixelSize);
-    if (fontSizeIt == cache.end()) return nullptr;
+    if (fontSizeIt == cache.end())
+        return nullptr;
 
     auto &charCache = fontSizeIt->second;
     auto charIt = charCache.find(c);
-    if (charIt == charCache.end()) return nullptr;
+    if (charIt == charCache.end())
+        return nullptr;
 
     return &charIt->second;
 }
@@ -42,7 +45,7 @@ Bitmap &FreeTypeCharacterBitmapProvider::storeNewGlyph(char c, unsigned int pixe
     FT_Set_Pixel_Sizes(face, 0, pixelSize);
 
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-        throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
+        throw std::runtime_error("ERROR::FREETYPE: Failed to load Glyph");
 
     auto buffer = face->glyph->bitmap.buffer;
     auto byteSize = face->glyph->bitmap.rows * face->glyph->bitmap.width;

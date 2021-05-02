@@ -1,6 +1,5 @@
 #include "Animation.h"
 
-#include <cassert>
 #include <iostream>
 
 Animation::Animation(Animation::Params &&params) :
@@ -27,12 +26,15 @@ QGenericMatrix<4, 4, float> Animation::buildCoefficients() {
     return QGenericMatrix<4, 4, float>(values);
 }
 
+// Animations are evaluated using Hermite Interpolation.
+// Check: https://en.wikipedia.org/wiki/Cubic_Hermite_spline
+// and Real Time Rendering [Third Edition], Section 13.1.4: Cubic Hermite Interpolation
 void Animation::evaluate(const AnimationClock::time_point &at, float v) {
     if (done_)
         return;
 
     if (!evaluatedOnce) {
-        begin = std::chrono::steady_clock::now();
+        begin = AnimationClock::now();
         evaluatedOnce = true;
     }
 
