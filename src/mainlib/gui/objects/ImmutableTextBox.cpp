@@ -3,15 +3,34 @@
 #include <mainlib/gui/bitmap/GlyphMetrics.h>
 #include <mainlib/gui/gl/utils.h>
 
-ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program, std::string text, unsigned int pixelSize,
-                                   float x, float y, float ratio, TextureCollection &textureCollection) :
+using namespace std::chrono_literals;
+
+ImmutableTextBox::ImmutableTextBox(QOpenGLShaderProgram &program,
+                                   std::string text,
+                                   BoxFormat boxFormat,
+                                   TextFormat textFormat,
+                                   TextureCollection &textureCollection) :
     RenderableObject(program, Dimensions{0.9f, 1.125f, 0.1f}),
-    text(std::move(text)),
-    pixelSize(pixelSize),
-    x(x),
-    y(y),
-    ratio(ratio),
-    textureCollection(&textureCollection) {}
+    text(std::move(text)), boxFormat(boxFormat), textFormat(textFormat),
+    textureCollection(&textureCollection) {
+    this->setColor(textFormat.color);
+    computeXOffset();
+}
+
+void ImmutableTextBox::computeXOffset() {
+    xOffset = 0.0;
+
+    if (boxFormat.alignment == Alignment::CENTER) {
+        for (auto c : text) {
+            auto &texture = textureCollection->getCharacterTexture(c, textFormat.pixelSize);
+            const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
+
+            xOffset += static_cast<float>(metrics.advanceX >> 6u) * textFormat.textRatio;
+        }
+
+        xOffset /= 2;
+    }
+}
 
 void ImmutableTextBox::init() {
     glGenVertexArrays(1, &vertexAttr);
@@ -26,26 +45,35 @@ void ImmutableTextBox::init() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    if (boxFormat.animateTextColor) {
+        Animation::HermiteParams fadeInParams = {0.42, 0.0, 0.9, 1.0};
+        Animation::HermiteParams fadeOutParams = {0.0, 0.0, 0.58, 1.0};
+        auto updateColor = [this](float v) { this->setColor(v); };
+        addAnimation(AnimationParam::COLOR, {2200ms, 30, 0, DEFAULT_COLOR, fadeInParams, updateColor});
+        addAnimation(AnimationParam::COLOR, {2200ms, 30, DEFAULT_COLOR, 0, fadeOutParams, updateColor});
+    }
 }
 
 void ImmutableTextBox::doMyRender() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    const auto textColor = QVector3D(0.7f, 0.7f, 0.7f);
+    const auto textColor = QVector3D(color, color, color);
     program->setUniformValue("textColor", textColor);
 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(vertexAttr);
 
-    float xStart = x;
+    float xStart = boxFormat.left - xOffset;
+    auto ratio = textFormat.textRatio;
 
     for (auto c : text) {
-        auto texture = textureCollection->getCharacterTexture(c, pixelSize);
-        const auto metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
+        auto &texture = textureCollection->getCharacterTexture(c, textFormat.pixelSize);
+        const auto &metrics = *(static_cast<GlyphMetrics *>(texture.getBitmap().data.get()));
 
         float xpos = xStart + (metrics.left * ratio);
-        float ypos = y - (metrics.height * ratio - metrics.top * ratio);
+        float ypos = boxFormat.top - (metrics.height * ratio - metrics.top * ratio);
 
         float w = metrics.width * ratio;
         float h = metrics.height * ratio;
@@ -61,7 +89,7 @@ void ImmutableTextBox::doMyRender() {
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         xStart +=
-            (metrics.advanceX >> 6U) * ratio;  // bitshift by 6 to get value in pixels (2^6 = 64 (divide
+            (metrics.advanceX >> 6u) * ratio;  // bitshift by 6 to get value in pixels (2^6 = 64 (divide
                                                // amount of 1/64th pixels by 64 to get amount of pixels))
     }
 

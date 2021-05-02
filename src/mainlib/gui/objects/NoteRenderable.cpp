@@ -15,8 +15,8 @@ void NoteRenderable::setCharacterText(Texture &charTex) {
     updateOnCharData();
 
     Animation::HermiteParams params = {0.25, 0.81, 0.31, 0.0};
-
-    setupAnimation(AnimationParam::ANGLE, 500ms, 20, -180, 0, params);
+    auto rotateNote = [this](float v) { this->rotate(v); };
+    addAnimation(AnimationParam::ANGLE, {500ms, 20, -180, 0, params, rotateNote});
 }
 
 void NoteRenderable::doMyRender() {

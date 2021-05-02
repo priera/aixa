@@ -2,6 +2,7 @@
 #define AIXA_SRC_MAINLIB_GUI_GL_SCENE_H
 
 #include <QtGui/QMatrix4x4>
+#include <condition_variable>
 
 #include "ShadedRenderableObject.h"
 
@@ -11,13 +12,18 @@ public:
 
     virtual ~Scene() = default;
 
-    void addObject(std::shared_ptr<ShadedRenderableObject> object) { objects.push_back(std::move(object)); }
-
     void update();
     void draw();
+    void clear();
+    void add(std::shared_ptr<ShadedRenderableObject> object);
+    void remove(const std::shared_ptr<ShadedRenderableObject>& object);
 
 private:
+    void waitUntilModificationDone();
+
     QMatrix4x4 projection;
+    std::condition_variable cvModifyingCollection;
+    bool beingModified;
 
     std::vector<std::shared_ptr<ShadedRenderableObject>> objects;
 };
