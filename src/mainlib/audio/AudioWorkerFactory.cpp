@@ -31,7 +31,7 @@ AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamP
     auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing,
                                                  std::move(volumeManager), std::move(spectrogramComputer));
 
-    return new AudioWorker(environment, std::move(streamReader), std::move(publisher));
+    return new AudioWorker(std::move(streamReader), std::move(publisher));
 }
 
 std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &streamPath) {
