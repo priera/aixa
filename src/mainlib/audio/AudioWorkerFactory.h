@@ -10,6 +10,7 @@
 #include "AudioWorker.h"
 
 using namespace aixa::math;
+using namespace std::chrono_literals;
 
 class AudioWorkerFactory {
 public:
@@ -23,6 +24,17 @@ public:
     }
 
 private:
+    static constexpr auto PERIOD_TIME = 100000us;
+    static constexpr auto BUFFERS_FOR_ONE_SECOND = 1s / PERIOD_TIME;
+
+    using FPSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+
+    static int computeFrameSize(int streamSampleRate, std::chrono::microseconds periodDuration) {
+        auto periodInSeconds = FPSeconds(periodDuration).count();
+        auto periodSize = static_cast<float>(streamSampleRate) * periodInSeconds;
+        return static_cast<int>(periodSize);
+    }
+
     std::shared_ptr<Stream> tryToGetStream(const std::string &streamPath);
 
     AudioEnvironment setupAudioEnvironment(AudioStreamParameters &streamParams);

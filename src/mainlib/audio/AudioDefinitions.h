@@ -34,9 +34,9 @@ inline AudioParameters getDefaultAudioParameters() {
 }
 
 struct AlsaParameters {
-    std::string device;       /* playback device */
-    unsigned int buffer_time; /* ring buffer length in us */
-    unsigned int period_time; /* period time in us */
+    std::string device;                   /* playback device */
+    unsigned int buffer_time;             /* ring buffer length in us */
+    std::chrono::microseconds periodTime; /* period time */
 };
 
 struct AlsaEnvironment {

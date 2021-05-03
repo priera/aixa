@@ -11,14 +11,13 @@ using namespace aixa::math;
 class Publisher {
 public:
     explicit Publisher(AlsaEnvironment alsaEnv,
-        std::shared_ptr<SamplesRing> samplesRing,
-        std::unique_ptr<VolumeManager> volumeManager,
-        std::unique_ptr<SpectrogramComputer> spectrogramComputer) :
-            alsaEnv(std::move(alsaEnv)),
-            samplesRing(std::move(samplesRing)),
-            volumeManager(std::move(volumeManager)),
-            spectrogramComputer(std::move(spectrogramComputer)),
-            sleepTime(std::chrono::microseconds(this->alsaEnv.params.period_time)) {}
+                       std::shared_ptr<SamplesRing> samplesRing,
+                       std::unique_ptr<VolumeManager> volumeManager,
+                       std::unique_ptr<SpectrogramComputer> spectrogramComputer) :
+        alsaEnv(std::move(alsaEnv)),
+        samplesRing(std::move(samplesRing)), volumeManager(std::move(volumeManager)),
+        spectrogramComputer(std::move(spectrogramComputer)),
+        sleepTime(std::chrono::microseconds(this->alsaEnv.params.periodTime)) {}
 
     virtual ~Publisher() = default;
 
@@ -28,9 +27,7 @@ public:
 
     void decreaseVolume() { volumeManager->decreaseVolume(); }
 
-    SpectrogramGenerator &getSpectrogramGenerator() {
-        return *spectrogramComputer;
-    }
+    SpectrogramGenerator &getSpectrogramGenerator() { return *spectrogramComputer; }
 
 private:
     void attemptStreamRecovery(int err);
@@ -44,5 +41,4 @@ private:
     std::chrono::microseconds sleepTime;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_AUDIO_PUBLISHER_H
+#endif  // AIXA_SRC_MAINLIB_AUDIO_PUBLISHER_H

@@ -11,6 +11,7 @@
 #include "InterleavedBufferGenerator.h"
 
 using namespace aixa::math;
+using namespace std::chrono_literals;
 
 AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamPath) {
     auto stream = tryToGetStream(streamPath);
@@ -49,7 +50,7 @@ std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &st
 
 AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters &streamParams) {
     AlsaEnvironment alsaEnv;
-    alsaEnv.params = AlsaParameters{"default", 500000, 100000};
+    alsaEnv.params = AlsaParameters{"default", 500000, 100000us};
 
     if (!streamParams.littleEndianSamples)
         throw std::runtime_error("Stream format not supported: samples are not in little-endian");
@@ -68,11 +69,8 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
         format = device.nearestFormat(format);
     }
 
-    /* Notice the asymmetry: internally ALSA stores five buffers (500000 us of audio)
-     * while buffersRing stores one second */
-    const auto BUFFERS_FOR_ONE_SECOND = 1000000 / alsaEnv.params.period_time;
-    auto bufferGenerator =
-        InterleavedBufferGenerator(streamParams.channels, alsaEnv.frame_size, streamParams.format);
+    const auto frameSize = computeFrameSize(streamParams.rate, PERIOD_TIME);
+    auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, frameSize, streamParams.format);
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
 
     return AudioEnvironment(streamParams, alsaEnv, samplesRing);

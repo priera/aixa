@@ -5,7 +5,7 @@ AudioStreamParameters Mp3Stream::getParameters() const {
         static_cast<unsigned int>(streamDefinition.samplingFreq * streamDefinition.channels() * 2);
     return {SND_PCM_FORMAT_S16,
             snd_pcm_format_little_endian(SND_PCM_FORMAT_S16) == 1,
-            streamDefinition.samplingFreq,
+            static_cast<int>(streamDefinition.samplingFreq),
             static_cast<int>(streamDefinition.channels()),
             bytesPerSecond,
             16};
