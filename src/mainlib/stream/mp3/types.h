@@ -45,7 +45,7 @@ struct FrameHeader {
     bool msStereo;
     bool intensityStereo;
 
-    std::size_t channels() const { return (mode == Mode::SINGLE_CHANNEL) ? 1 : 2; }
+    int channels() const { return (mode == Mode::SINGLE_CHANNEL) ? 1 : 2; }
 };
 
 constexpr std::size_t NR_CHANNELS = 2;

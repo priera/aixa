@@ -1,46 +1,46 @@
 #ifndef AIXA_AUDIODEFINITIONS_H
 #define AIXA_AUDIODEFINITIONS_H
 
+#include <alsa/asoundlib.h>
+#include <mainlib/threading/BuffersRing.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <alsa/asoundlib.h>
-#include <mainlib/threading/BuffersRing.h>
-
 #include "InterleavedBuffer.h"
 
 struct AudioStreamParameters {
-    snd_pcm_format_t format;    /* sample format */
-    bool littleEndianSamples;   /* if false: big endian */
-    unsigned int rate;          /* stream rate */
-    unsigned int channels;      /* count of channels */
-    unsigned int bps;           /* bytes per second */
-    unsigned int bitsSample;    /* bits per sample */
+    snd_pcm_format_t format;  /* sample format */
+    bool littleEndianSamples; /* if false: big endian */
+    int rate;                 /* stream rate */
+    int channels;             /* count of channels */
+    unsigned int bps;         /* bytes per second */
+    int bitsSample;           /* bits per sample */
 };
 
 struct AudioParameters {
-    std::string device;   /* playback device */
-    snd_pcm_format_t format;    /* sample format */
-    unsigned int rate;          /* stream rate */
-    unsigned int channels;      /* count of channels */
-    unsigned int buffer_time;   /* ring buffer length in us */
-    unsigned int period_time;   /* period time in us */
+    std::string device;       /* playback device */
+    snd_pcm_format_t format;  /* sample format */
+    unsigned int rate;        /* stream rate */
+    unsigned int channels;    /* count of channels */
+    unsigned int buffer_time; /* ring buffer length in us */
+    unsigned int period_time; /* period time in us */
     double freq;
 };
 
 inline AudioParameters getDefaultAudioParameters() {
-    return { "default", SND_PCM_FORMAT_S16, 44100, 1, 500000, 100000, 440 };
+    return {"default", SND_PCM_FORMAT_S16, 44100, 1, 500000, 100000, 440};
 }
 
 struct AlsaParameters {
-    std::string device;         /* playback device */
-    unsigned int buffer_time;   /* ring buffer length in us */
-    unsigned int period_time;   /* period time in us */
+    std::string device;       /* playback device */
+    unsigned int buffer_time; /* ring buffer length in us */
+    unsigned int period_time; /* period time in us */
 };
 
 struct AlsaEnvironment {
-    //TODO: fix memory leaks
+    // TODO: fix memory leaks
 
     AlsaParameters params;
 
@@ -56,14 +56,15 @@ struct AlsaEnvironment {
 using SamplesRing = BuffersRing<InterleavedBuffer>;
 
 struct AudioEnvironment {
-    AudioEnvironment(AudioStreamParameters parameters, AlsaEnvironment &environment, std::shared_ptr<SamplesRing> ring) :
-            params(parameters),
-            platform(environment),
-            samplesRing(std::move(ring)) {}
+    AudioEnvironment(AudioStreamParameters parameters,
+                     AlsaEnvironment &environment,
+                     std::shared_ptr<SamplesRing> ring) :
+        params(parameters),
+        platform(environment), samplesRing(std::move(ring)) {}
 
     AudioStreamParameters params;
     AlsaEnvironment platform;
     std::shared_ptr<SamplesRing> samplesRing;
 };
 
-#endif //AIXA_AUDIODEFINITIONS_H
+#endif  // AIXA_AUDIODEFINITIONS_H
