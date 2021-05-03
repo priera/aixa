@@ -5,55 +5,92 @@
 
 bool Publisher::exec() {
     bool done = false;
-    waitForStream();
+
+    // auto device = audioOutput->start();
+    auto outDevice = QAudioDeviceInfo::defaultOutputDevice();
+    if (!outDevice.isFormatSupported(format)) {
+        std::cerr << "Your device does not support required stream format" << std::endl;
+        format = outDevice.nearestFormat(format);
+    }
+    auto output = new QAudioOutput(outDevice, format);
+    auto device = output->start();
 
     if (samplesRing->moreBuffers()) {
         auto buffer = samplesRing->nextReadBuffer();
 
-        //0.1 seconds buffer = 4410 samples
+        // 0.1 seconds buffer = 4410 samples
         auto firstChannel = buffer->channel(0);
         auto doubleVector = aixa::math::DoubleVector(firstChannel.begin(), firstChannel.size());
 
         spectrogramComputer->computeOn(doubleVector);
 
         volumeManager->applyTo(*buffer);
-        int err = snd_pcm_writei(alsaEnv.handle, buffer->raw(), alsaEnv.frame_size);
+        auto written = device->write(buffer->raw(), 4410 * 2 * 2);
+        std::cout << written << std::endl;
 
-        if (err < 0)
-            attemptStreamRecovery(err);
+        //        int err = snd_pcm_writei(alsaEnv.handle, buffer->raw(), alsaEnv.frame_size);
+        //
+        //        if (err < 0)
+        //            attemptStreamRecovery(err);
     } else {
         done = true;
+        audioOutput->stop();
     }
 
     return done;
 }
 
-void Publisher::attemptStreamRecovery(int err) {
-    //Other possible error codes than under-run not considered yet
-    if (err == -EPIPE) {    /* under-run */
-        err = snd_pcm_prepare(alsaEnv.handle);
-        if (err < 0) {
-            std::stringstream s;
-            s << snd_strerror(err);
-            throw std::runtime_error(s.str());
-        }
-    }
-}
+// bool Publisher::exec() {
+//    bool done = false;
+//    waitForStream();
+//
+//    if (samplesRing->moreBuffers()) {
+//        auto buffer = samplesRing->nextReadBuffer();
+//
+//        //0.1 seconds buffer = 4410 samples
+//        auto firstChannel = buffer->channel(0);
+//        auto doubleVector = aixa::math::DoubleVector(firstChannel.begin(), firstChannel.size());
+//
+//        spectrogramComputer->computeOn(doubleVector);
+//
+//        volumeManager->applyTo(*buffer);
+//        int err = snd_pcm_writei(alsaEnv.handle, buffer->raw(), alsaEnv.frame_size);
+//
+//        if (err < 0)
+//            attemptStreamRecovery(err);
+//    } else {
+//        done = true;
+//    }
+//
+//    return done;
+//}
 
-void Publisher::waitForStream() {
-    snd_pcm_uframes_t framesAvailable, frameSize;
+// void Publisher::attemptStreamRecovery(int err) {
+//    //Other possible error codes than under-run not considered yet
+//    if (err == -EPIPE) {    /* under-run */
+//        err = snd_pcm_prepare(alsaEnv.handle);
+//        if (err < 0) {
+//            std::stringstream s;
+//            s << snd_strerror(err);
+//            throw std::runtime_error(s.str());
+//        }
+//    }
+//}
 
-    frameSize = alsaEnv.frame_size;
-    do {
-        framesAvailable = snd_pcm_avail_update(alsaEnv.handle);
-
-        if (framesAvailable < frameSize) {
-            if (framesAvailable < 0) {
-                std::cout << "Error when checking stream state: " << snd_strerror(framesAvailable) << std::endl;
-                attemptStreamRecovery(framesAvailable);
-            } else {
-                std::this_thread::sleep_for(sleepTime);
-            }
-        }
-    } while (framesAvailable < frameSize);
-}
+// void Publisher::waitForStream() {
+//    snd_pcm_uframes_t framesAvailable, frameSize;
+//
+//    frameSize = alsaEnv.frame_size;
+//    do {
+//        framesAvailable = snd_pcm_avail_update(alsaEnv.handle);
+//
+//        if (framesAvailable < frameSize) {
+//            if (framesAvailable < 0) {
+//                std::cout << "Error when checking stream state: " << snd_strerror(framesAvailable) <<
+//                std::endl; attemptStreamRecovery(framesAvailable);
+//            } else {
+//                std::this_thread::sleep_for(sleepTime);
+//            }
+//        }
+//    } while (framesAvailable < frameSize);
+//}

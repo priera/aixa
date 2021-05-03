@@ -11,12 +11,14 @@ using namespace aixa::math;
 class Publisher {
 public:
     explicit Publisher(AlsaEnvironment alsaEnv,
+                       QAudioFormat format,
+                       std::shared_ptr<QAudioOutput> audioOutput,
                        std::shared_ptr<SamplesRing> samplesRing,
                        std::unique_ptr<VolumeManager> volumeManager,
                        std::unique_ptr<SpectrogramComputer> spectrogramComputer) :
         alsaEnv(std::move(alsaEnv)),
-        samplesRing(std::move(samplesRing)), volumeManager(std::move(volumeManager)),
-        spectrogramComputer(std::move(spectrogramComputer)),
+        format(format), audioOutput(std::move(audioOutput)), samplesRing(std::move(samplesRing)),
+        volumeManager(std::move(volumeManager)), spectrogramComputer(std::move(spectrogramComputer)),
         sleepTime(std::chrono::microseconds(this->alsaEnv.params.periodTime)) {}
 
     virtual ~Publisher() = default;
@@ -35,6 +37,8 @@ private:
     void waitForStream();
 
     AlsaEnvironment alsaEnv;
+    QAudioFormat format;
+    std::shared_ptr<QAudioOutput> audioOutput;
     std::shared_ptr<SamplesRing> samplesRing;
     std::unique_ptr<VolumeManager> volumeManager;
     std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer;

@@ -4,6 +4,7 @@
 #include <alsa/asoundlib.h>
 #include <mainlib/threading/BuffersRing.h>
 
+#include <QAudioOutput>
 #include <string>
 #include <utility>
 #include <vector>
@@ -56,10 +57,16 @@ struct AlsaEnvironment {
 using SamplesRing = BuffersRing<InterleavedBuffer>;
 
 struct AudioEnvironment {
-    AudioEnvironment(AlsaEnvironment &environment, std::shared_ptr<SamplesRing> ring) :
-        platform(environment), samplesRing(std::move(ring)) {}
+    AudioEnvironment(AlsaEnvironment &environment,
+                     QAudioFormat format,
+                     std::shared_ptr<QAudioOutput> output,
+                     std::shared_ptr<SamplesRing> ring) :
+        platform(environment),
+        format(format), output(std::move(output)), samplesRing(std::move(ring)) {}
 
     AlsaEnvironment platform;
+    QAudioFormat format;
+    std::shared_ptr<QAudioOutput> output;
     std::shared_ptr<SamplesRing> samplesRing;
 };
 

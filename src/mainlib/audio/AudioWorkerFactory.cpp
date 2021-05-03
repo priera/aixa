@@ -26,12 +26,13 @@ AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamP
     auto streamReader = std::make_unique<StreamReader>(stream, environment.samplesRing);
     auto volumeManager = std::make_unique<VolumeManager>();
 
-    double sampleRate = 1.0 / streamParams.rate;
-    auto spectrogramComputer_p = SpectrogramBuilder(sampleRate).build(USE_LOG_SCALES);
+    double sampleInterval = 1.0 / streamParams.rate;
+    auto spectrogramComputer_p = SpectrogramBuilder(sampleInterval).build(USE_LOG_SCALES);
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
-    auto publisher = std::make_unique<Publisher>(environment.platform, environment.samplesRing,
-                                                 std::move(volumeManager), std::move(spectrogramComputer));
+    auto publisher = std::make_unique<Publisher>(environment.platform, environment.format, environment.output,
+                                                 environment.samplesRing, std::move(volumeManager),
+                                                 std::move(spectrogramComputer));
 
     return new AudioWorker(std::move(streamReader), std::move(publisher));
 }
@@ -69,9 +70,12 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
         format = device.nearestFormat(format);
     }
 
+    // auto output = std::make_shared<QAudioOutput>(device, format);
+    auto output = std::shared_ptr<QAudioOutput>();
+
     const auto frameSize = computeFrameSize(streamParams.rate, PERIOD_TIME);
     auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, frameSize, streamParams.format);
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
 
-    return AudioEnvironment(alsaEnv, samplesRing);
+    return AudioEnvironment(alsaEnv, format, output, samplesRing);
 }
