@@ -56,13 +56,9 @@ struct AlsaEnvironment {
 using SamplesRing = BuffersRing<InterleavedBuffer>;
 
 struct AudioEnvironment {
-    AudioEnvironment(AudioStreamParameters parameters,
-                     AlsaEnvironment &environment,
-                     std::shared_ptr<SamplesRing> ring) :
-        params(parameters),
+    AudioEnvironment(AlsaEnvironment &environment, std::shared_ptr<SamplesRing> ring) :
         platform(environment), samplesRing(std::move(ring)) {}
 
-    AudioStreamParameters params;
     AlsaEnvironment platform;
     std::shared_ptr<SamplesRing> samplesRing;
 };

@@ -73,5 +73,5 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
     auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, frameSize, streamParams.format);
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
 
-    return AudioEnvironment(streamParams, alsaEnv, samplesRing);
+    return AudioEnvironment(alsaEnv, samplesRing);
 }
