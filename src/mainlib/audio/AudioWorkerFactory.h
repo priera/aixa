@@ -38,10 +38,6 @@ private:
     std::shared_ptr<Stream> tryToGetStream(const std::string &streamPath);
 
     AudioEnvironment setupAudioEnvironment(AudioStreamParameters &streamParams);
-
-    //    int setHwParams(AlsaEnvironment &env, const AudioStreamParameters &parameters);
-    //
-    //    int setSwParams(AlsaEnvironment &environment, const AudioStreamParameters &parameters);
 };
 
 #endif  // AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKERFACTORY_H
