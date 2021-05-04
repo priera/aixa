@@ -4,12 +4,15 @@
 
 #include "WavFunctions.h"
 
-AudioStreamParameters WavStream::getParameters() const {
-    auto sampleFormat = SND_PCM_FORMAT_S16;
-
-    return AudioStreamParameters{sampleFormat,          snd_pcm_format_little_endian(sampleFormat) == 1,
-                                 format.samplingRate,   static_cast<unsigned int>(format.channels),
-                                 format.bytesPerSecond, static_cast<unsigned int>(format.bitsPerSample)};
+QAudioFormat WavStream::getParameters() const {
+    QAudioFormat ret;
+    ret.setSampleRate(format.samplingRate);
+    ret.setChannelCount(format.channels);
+    ret.setSampleSize(format.bitsPerSample);
+    ret.setCodec("audio/pcm");
+    ret.setByteOrder(QAudioFormat::LittleEndian);
+    ret.setSampleType(QAudioFormat::SignedInt);
+    return ret;
 }
 
 void WavStream::prepareForFirstRead() {

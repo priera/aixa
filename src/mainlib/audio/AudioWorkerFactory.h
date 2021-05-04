@@ -37,7 +37,7 @@ private:
 
     std::shared_ptr<Stream> tryToGetStream(const std::string &streamPath);
 
-    AudioEnvironment setupAudioEnvironment(AudioStreamParameters &streamParams);
+    AudioEnvironment setupAudioEnvironment(QAudioFormat &format);
 };
 
 #endif  // AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKERFACTORY_H

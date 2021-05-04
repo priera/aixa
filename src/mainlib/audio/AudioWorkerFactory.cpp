@@ -26,7 +26,7 @@ AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamP
     auto streamReader = std::make_unique<StreamReader>(stream, environment.samplesRing);
     auto volumeManager = std::make_unique<VolumeManager>();
 
-    double sampleInterval = 1.0 / streamParams.rate;
+    double sampleInterval = 1.0 / streamParams.sampleRate();
     auto spectrogramComputer_p = SpectrogramBuilder(sampleInterval).build(USE_LOG_SCALES);
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
@@ -49,17 +49,10 @@ std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &st
     return ret;
 }
 
-AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters &streamParams) {
-    if (!streamParams.littleEndianSamples)
+AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(QAudioFormat &format) {
+    if (format.byteOrder() != QAudioFormat::Endian::LittleEndian) {
         throw std::runtime_error("Stream format not supported: samples are not in little-endian");
-
-    QAudioFormat format;
-    format.setSampleRate(streamParams.rate);
-    format.setChannelCount(streamParams.channels);
-    format.setSampleSize(streamParams.bitsSample);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::SignedInt);
+    }
 
     auto device = QAudioDeviceInfo::defaultOutputDevice();
     if (!device.isFormatSupported(format)) {
@@ -67,9 +60,10 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
         format = device.nearestFormat(format);
     }
 
-    const auto frameCount = computeFrameSize(streamParams.rate, PERIOD_TIME);
-    auto frameSize = frameCount * (streamParams.bitsSample / 8) * streamParams.channels;
-    auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, frameCount, streamParams.format);
+    const auto frameCount = computeFrameSize(format.sampleRate(), PERIOD_TIME);
+    auto bytesPerSample = format.sampleSize() / 8;
+    auto frameSize = frameCount * bytesPerSample * format.channelCount();
+    auto bufferGenerator = InterleavedBufferGenerator(format.channelCount(), frameCount, bytesPerSample);
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator(),
                                                      frameCount, frameSize, PERIOD_TIME);
 

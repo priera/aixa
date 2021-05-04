@@ -7,8 +7,8 @@
 
 class InterleavedBufferGenerator {
 public:
-    InterleavedBufferGenerator(unsigned int channels, std::size_t frameSize, snd_pcm_format_t format) :
-        channels(channels), frameSize(frameSize), format(format) {}
+    InterleavedBufferGenerator(unsigned int channels, std::size_t frameSize, unsigned int bytesPerSample) :
+        channels(channels), frameSize(frameSize), bytesPerSample(bytesPerSample) {}
 
     virtual ~InterleavedBufferGenerator() = default;
 
@@ -17,7 +17,7 @@ public:
 private:
     unsigned int channels;
     std::size_t frameSize;
-    snd_pcm_format_t format;
+    unsigned int bytesPerSample;
 };
 
 #endif  // AIXA_SRC_MAINLIB_AUDIO_INTERLEAVEDBUFFERGENERATOR_H

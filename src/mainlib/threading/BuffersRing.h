@@ -30,9 +30,9 @@ public:
             }
         }
 
-        T& operator*() const noexcept { return *buff; }
+        T& operator*() noexcept { return *buff; }
 
-        T* operator->() const noexcept { return buff.get(); }
+        T* operator->() noexcept { return buff.get(); }
 
     private:
         std::shared_ptr<T> buff;

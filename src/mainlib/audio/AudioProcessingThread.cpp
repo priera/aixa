@@ -1,7 +1,5 @@
 #include "AudioProcessingThread.h"
 
-#include <iostream>
-
 AudioProcessingThread::AudioProcessingThread(
     std::shared_ptr<QAudioOutput> audioOutput,
     std::shared_ptr<SamplesRing> samplesRing,

@@ -10,8 +10,7 @@
 class WavStream : public Stream {
 public:
     WavStream(const std::string &filePath, WavFormat format) :
-        f(std::make_unique<FileReader>(filePath)),
-        format(format) {
+        f(std::make_unique<FileReader>(filePath)), format(format) {
         if (format.bitsPerSample != 16) {
             throw std::runtime_error("Not allowed WAV stream format");
         }
@@ -19,7 +18,7 @@ public:
 
     ~WavStream() override = default;
 
-    AudioStreamParameters getParameters() const override;
+    QAudioFormat getParameters() const override;
     bool ended() override;
     void storeSamples(InterleavedBuffer &buffer) override;
     void prepareForFirstRead() override;

@@ -37,7 +37,7 @@ struct FrameHeader {
     Layer layer;
     bool usesCRC;
     unsigned int bitrate;
-    unsigned int samplingFreq;
+    int samplingFreq;
     bool isPadded;
     Mode mode;
 
