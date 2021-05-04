@@ -13,14 +13,10 @@
 using SamplesRing = BuffersRing<InterleavedBuffer>;
 
 struct AudioEnvironment {
-    AudioEnvironment(QAudioFormat format,
-                     std::shared_ptr<QAudioOutput> output,
-                     std::shared_ptr<SamplesRing> ring) :
-        format(format),
-        output(std::move(output)), samplesRing(std::move(ring)) {}
+    AudioEnvironment(QAudioFormat format, std::shared_ptr<SamplesRing> ring) :
+        format(format), samplesRing(std::move(ring)) {}
 
     QAudioFormat format;
-    std::shared_ptr<QAudioOutput> output;
     std::shared_ptr<SamplesRing> samplesRing;
 };
 

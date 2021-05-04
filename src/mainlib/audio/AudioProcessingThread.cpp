@@ -1,18 +1,25 @@
 #include "AudioProcessingThread.h"
 
+#include <iostream>
+
 AudioProcessingThread::AudioProcessingThread(
-    std::shared_ptr<QAudioOutput> audioOutput,
+    QAudioFormat format,
     std::shared_ptr<SamplesRing> samplesRing,
     std::unique_ptr<VolumeManager> volumeManager,
     std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer) :
     QThread(),
-    audioOutput(std::move(audioOutput)), samplesRing(std::move(samplesRing)),
-    volumeManager(std::move(volumeManager)), spectrogramComputer(std::move(spectrogramComputer)),
-    toWrite(this->samplesRing->getBufferSize()) {
-    this->audioOutput->moveToThread(this);
-}
+    format(format), samplesRing(std::move(samplesRing)), volumeManager(std::move(volumeManager)),
+    spectrogramComputer(std::move(spectrogramComputer)), toWrite(this->samplesRing->getBufferSize()) {}
 
 void AudioProcessingThread::run() {
+    auto physicalDevice = QAudioDeviceInfo::defaultOutputDevice();
+    if (!physicalDevice.isFormatSupported(format)) {
+        std::cerr << "Your device does not support required stream format" << std::endl;
+        format = physicalDevice.nearestFormat(format);
+    }
+
+    auto audioOutput = std::make_unique<QAudioOutput>(physicalDevice, format);
+
     auto device = audioOutput->start();
     while (samplesRing->moreBuffers() && !this->isInterruptionRequested()) {
         auto buffer = samplesRing->nextReadBuffer();

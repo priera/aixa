@@ -12,7 +12,7 @@
 class AudioProcessingThread : public QThread {
     Q_OBJECT
 public:
-    AudioProcessingThread(std::shared_ptr<QAudioOutput> audioOutput,
+    AudioProcessingThread(QAudioFormat format,
                           std::shared_ptr<SamplesRing> samplesRing,
                           std::unique_ptr<VolumeManager> volumeManager,
                           std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer);
@@ -29,7 +29,6 @@ private:
     static constexpr unsigned long SLEEP_BETWEEN_WRITES = 7;
 
     QAudioFormat format;
-    std::shared_ptr<QAudioOutput> audioOutput;
     std::shared_ptr<SamplesRing> samplesRing;
     std::unique_ptr<VolumeManager> volumeManager;
     std::unique_ptr<aixa::math::SpectrogramComputer> spectrogramComputer;

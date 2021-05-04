@@ -1,7 +1,6 @@
 #include "AudioWorkerFactory.h"
 
 #include <mainlib/globals.h>
-#include <mainlib/math/dft/FourierTransformFactory.h>
 #include <mainlib/math/dft/SpectrogramBuilder.h>
 #include <mainlib/stream/StreamTypes.h>
 
@@ -31,7 +30,7 @@ AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamP
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
     auto processingThread =
-        std::make_unique<AudioProcessingThread>(environment.output, environment.samplesRing,
+        std::make_unique<AudioProcessingThread>(environment.format, environment.samplesRing,
                                                 std::move(volumeManager), std::move(spectrogramComputer));
 
     return new AudioWorker(std::move(streamReader), std::move(processingThread));
@@ -54,12 +53,6 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(QAudioFormat &format)
         throw std::runtime_error("Stream format not supported: samples are not in little-endian");
     }
 
-    auto device = QAudioDeviceInfo::defaultOutputDevice();
-    if (!device.isFormatSupported(format)) {
-        std::cerr << "Your device does not support required stream format" << std::endl;
-        format = device.nearestFormat(format);
-    }
-
     const auto frameCount = computeFrameSize(format.sampleRate(), PERIOD_TIME);
     auto bytesPerSample = format.sampleSize() / 8;
     auto frameSize = frameCount * bytesPerSample * format.channelCount();
@@ -67,6 +60,5 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(QAudioFormat &format)
     auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator(),
                                                      frameCount, frameSize, PERIOD_TIME);
 
-    auto output = std::make_shared<QAudioOutput>(device, format);
-    return AudioEnvironment(format, output, samplesRing);
+    return AudioEnvironment(format, samplesRing);
 }
