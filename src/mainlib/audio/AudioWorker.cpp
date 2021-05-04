@@ -2,9 +2,10 @@
 
 #include "Commands.h"
 
-AudioWorker::AudioWorker(std::unique_ptr<StreamReader> reader, std::unique_ptr<Publisher> publisher) :
-    reader(std::move(reader)), publisher(std::move(publisher)), readingThread(*this->reader),
-    publishingThread(*this->publisher) {
+AudioWorker::AudioWorker(std::unique_ptr<StreamReader> reader,
+                         std::unique_ptr<AudioProcessingThread> processingThread) :
+    reader(std::move(reader)),
+    readingThread(*this->reader), processingThread(std::move(processingThread)) {
     auto volumeUp = new VolumeUp(*this);
     auto volumeDown = new VolumeDown(*this);
 
@@ -14,16 +15,17 @@ AudioWorker::AudioWorker(std::unique_ptr<StreamReader> reader, std::unique_ptr<P
 
 void AudioWorker::start() {
     readingThread.start();
-    publishingThread.start();
+    processingThread->start();
 }
 
 void AudioWorker::stop() {
     readingThread.stopAndWait();
-    publishingThread.stopAndWait();
+    // publishingThread.stopAndWait();
+    processingThread->requestInterruption();
 }
 
-void AudioWorker::increaseVolume() { publisher->increaseVolume(); }
+void AudioWorker::increaseVolume() { processingThread->increaseVolume(); }
 
-void AudioWorker::decreaseVolume() { publisher->decreaseVolume(); }
+void AudioWorker::decreaseVolume() { processingThread->decreaseVolume(); }
 
 CommandCollection AudioWorker::getCommandCollection() { return myCommands; }

@@ -1,6 +1,6 @@
 #include "InterleavedBuffer.h"
 
-InterleavedBuffer::InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size, snd_pcm_format_t format) :
+InterleavedBuffer::InterleavedBuffer(int channels, std::size_t frame_size, snd_pcm_format_t format) :
     channels(channels), m_frameSize(frame_size) {
     format_bits = snd_pcm_format_width(format);
     bytesPerSample = format_bits / 8;

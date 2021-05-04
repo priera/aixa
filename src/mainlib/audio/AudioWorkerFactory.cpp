@@ -30,11 +30,11 @@ AudioWorker *AudioWorkerFactory::buildWithInputStream(const std::string &streamP
     auto spectrogramComputer_p = SpectrogramBuilder(sampleInterval).build(USE_LOG_SCALES);
     auto spectrogramComputer = std::unique_ptr<SpectrogramComputer>(spectrogramComputer_p);
 
-    auto publisher = std::make_unique<Publisher>(environment.platform, environment.format, environment.output,
-                                                 environment.samplesRing, std::move(volumeManager),
-                                                 std::move(spectrogramComputer));
+    auto processingThread =
+        std::make_unique<AudioProcessingThread>(environment.output, environment.samplesRing,
+                                                std::move(volumeManager), std::move(spectrogramComputer));
 
-    return new AudioWorker(std::move(streamReader), std::move(publisher));
+    return new AudioWorker(std::move(streamReader), std::move(processingThread));
 }
 
 std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &streamPath) {
@@ -70,12 +70,12 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
         format = device.nearestFormat(format);
     }
 
-    // auto output = std::make_shared<QAudioOutput>(device, format);
-    auto output = std::shared_ptr<QAudioOutput>();
+    const auto frameCount = computeFrameSize(streamParams.rate, PERIOD_TIME);
+    auto frameSize = frameCount * (streamParams.bitsSample / 8) * streamParams.channels;
+    auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, frameCount, streamParams.format);
+    auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator(),
+                                                     frameCount, frameSize, PERIOD_TIME);
 
-    const auto frameSize = computeFrameSize(streamParams.rate, PERIOD_TIME);
-    auto bufferGenerator = InterleavedBufferGenerator(streamParams.channels, frameSize, streamParams.format);
-    auto samplesRing = std::make_shared<SamplesRing>(BUFFERS_FOR_ONE_SECOND, bufferGenerator.generator());
-
+    auto output = std::make_shared<QAudioOutput>(device, format);
     return AudioEnvironment(alsaEnv, format, output, samplesRing);
 }

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "AudioProcessingThread.h"
 #include "Publisher.h"
 #include "StreamReader.h"
 
@@ -13,13 +14,14 @@ using namespace aixa::math;
 
 class AudioWorker : public CommandListener {
 public:
-    AudioWorker(std::unique_ptr<StreamReader> reader, std::unique_ptr<Publisher> publisher);
+    AudioWorker(std::unique_ptr<StreamReader> reader,
+                std::unique_ptr<AudioProcessingThread> processingThread);
 
     ~AudioWorker() override = default;
 
     CommandCollection getCommandCollection() override;
 
-    SpectrogramGenerator &getSpectrogramGenerator() { return publisher->getSpectrogramGenerator(); }
+    SpectrogramGenerator &getSpectrogramGenerator() { return processingThread->getSpectrogramGenerator(); }
 
     void start();
     void stop();
@@ -29,13 +31,11 @@ public:
 
 private:
     using ReadingThread = WorkerThread<StreamReader>;
-    using PublishingThread = WorkerThread<Publisher>;
 
     std::unique_ptr<StreamReader> reader;
-    std::unique_ptr<Publisher> publisher;
 
     ReadingThread readingThread;
-    PublishingThread publishingThread;
+    std::unique_ptr<AudioProcessingThread> processingThread;
 
     CommandCollection myCommands;
 };

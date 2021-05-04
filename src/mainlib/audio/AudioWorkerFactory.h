@@ -29,10 +29,10 @@ private:
 
     using FPSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
 
-    static int computeFrameSize(int streamSampleRate, std::chrono::microseconds periodDuration) {
+    static std::size_t computeFrameSize(int streamSampleRate, std::chrono::microseconds periodDuration) {
         auto periodInSeconds = FPSeconds(periodDuration).count();
         auto periodSize = static_cast<float>(streamSampleRate) * periodInSeconds;
-        return static_cast<int>(periodSize);
+        return static_cast<std::size_t>(periodSize);
     }
 
     std::shared_ptr<Stream> tryToGetStream(const std::string &streamPath);

@@ -7,7 +7,7 @@
 
 class InterleavedBuffer {
 public:
-    InterleavedBuffer(int channels, snd_pcm_uframes_t frame_size, snd_pcm_format_t format);
+    InterleavedBuffer(int channels, std::size_t frame_size, snd_pcm_format_t format);
 
     virtual ~InterleavedBuffer() = default;
 
@@ -24,7 +24,7 @@ public:
 
 private:
     int channels;
-    snd_pcm_uframes_t m_frameSize;
+    size_t m_frameSize;
     size_t m_dataSize;
 
     std::vector<char> charFrame;
