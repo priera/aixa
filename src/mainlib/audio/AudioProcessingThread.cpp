@@ -14,7 +14,7 @@ AudioProcessingThread::AudioProcessingThread(
 
 void AudioProcessingThread::run() {
     auto device = audioOutput->start();
-    while (samplesRing->moreBuffers()) {
+    while (samplesRing->moreBuffers() && !this->isInterruptionRequested()) {
         auto buffer = samplesRing->nextReadBuffer();
 
         auto firstChannel = buffer->channel(0);

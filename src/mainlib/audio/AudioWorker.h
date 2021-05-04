@@ -37,6 +37,9 @@ private:
     std::unique_ptr<AudioProcessingThread> processingThread;
 
     CommandCollection myCommands;
+    std::condition_variable cvProcessingThread;
+
+    bool processingThreadStopped;
 };
 
 #endif  // AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H
