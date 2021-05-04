@@ -19,21 +19,22 @@ void Mp3Stream::storeSamples(InterleavedBuffer& buffer) {
     auto samplesCount = buffer.samplesCount();
     auto data = buffer.samples();
 
+    const auto samplesPerFrame = streamDefinition.channels() * NR_FRAME_SAMPLES;
     std::size_t samplesCopied = 0;
     if (previousIterCopied) {
-        std::copy(samples.channel1.begin() + previousIterCopied, samples.channel1.end(), data);
-        samplesCopied = NR_FRAME_SAMPLES - previousIterCopied;
+        copyFrameSamples(samplesPerFrame, data, previousIterCopied / streamDefinition.channels());
+        samplesCopied = samplesPerFrame - previousIterCopied;
     }
 
-    std::size_t iterationsToDo = (samplesCount - samplesCopied) / NR_FRAME_SAMPLES;
+    std::size_t iterationsToDo = (samplesCount - samplesCopied) / samplesPerFrame;
     for (std::size_t i = 0; i < iterationsToDo; i++) {
         alreadyEnded = !decoder->seekToNextFrame();
         if (alreadyEnded)
             break;
 
         decoder->decodeFrame(samples);
-        std::copy(samples.channel1.begin(), samples.channel1.end(), &data[samplesCopied]);
-        samplesCopied += NR_FRAME_SAMPLES;
+        copyFrameSamples(samplesPerFrame, &data[samplesCopied]);
+        samplesCopied += samplesPerFrame;
     }
 
     std::size_t remainder = samplesCount - samplesCopied;
@@ -46,7 +47,18 @@ void Mp3Stream::storeSamples(InterleavedBuffer& buffer) {
         std::fill(&data[samplesCopied], &data[samplesCount], 0);
     } else if (remainder > 0) {
         decoder->decodeFrame(samples);
-        std::copy(samples.channel1.begin(), samples.channel1.begin() + remainder, &data[samplesCopied]);
+        copyFrameSamples(remainder, &data[samplesCopied]);
         previousIterCopied = remainder;
+    }
+}
+
+void Mp3Stream::copyFrameSamples(std::size_t count, short* to, std::size_t startOffset) const {
+    if (streamDefinition.channels() == 1) {
+        std::copy(samples.channel1.begin() + startOffset, samples.channel1.begin() + count, to);
+    } else {
+        for (std::size_t i = startOffset, destInd = 0; destInd < count; i++, destInd += 2) {
+            to[destInd] = samples.channel1[i];
+            to[destInd + 1] = samples.channel2[i];
+        }
     }
 }
