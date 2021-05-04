@@ -32,8 +32,8 @@ FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
             const auto& channelContent = frame.content.granules[i][channel];
 
-            synthesizeGranuleChannel(*samples, channel, frame.header.samplingFreq, channelInfo,
-                                     channelContent, startIndex);
+            synthesizeGranuleChannel(*samples, channel, frame.header, channelInfo, channelContent,
+                                     startIndex);
 
             startIndex = NR_GRANULE_SAMPLES;
         }
@@ -46,15 +46,15 @@ FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
 
 void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
                                                 unsigned int channel,
-                                                unsigned int samplingFreq,
+                                                const FrameHeader& header,
                                                 const GranuleChannelSideInfo& channelInfo,
                                                 const GranuleChannelContent& channelContent,
                                                 std::size_t startIndex) {
-    dequantizeSamples(samplingFreq, channelInfo, channelContent);
+    dequantizeSamples(header.samplingFreq, channelInfo, channelContent);
 
-    reorder(samplingFreq, channelInfo, channelContent);
+    reorder(header.samplingFreq, channelInfo, channelContent);
 
-    // stereo
+    stereo(header.mode, channelInfo, channelContent);
 
     antialias(channelInfo);
 
@@ -110,6 +110,17 @@ void FrameSynthesizer::reorder(unsigned int samplingFreq,
             }
         }
         dequantized = std::move(temp);
+    }
+}
+
+void FrameSynthesizer::stereo(FrameHeader::Mode mode,
+                              const GranuleChannelSideInfo& channelInfo,
+                              const GranuleChannelContent& channelContent) {
+    if (mode == FrameHeader::Mode::JOINT_STEREO) {
+        // TODO
+        // This is the only case where this function should do something
+        // For all other modes each channel's data is independent
+        // and does not need special processing to be decoded
     }
 }
 

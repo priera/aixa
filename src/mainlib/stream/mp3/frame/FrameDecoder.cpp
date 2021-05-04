@@ -60,6 +60,9 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
     reader->nextBit();  // Skip private bit
 
     header.mode = static_cast<FrameHeader::Mode>(reader->nextNBits(2));
+    if (header.mode == FrameHeader::Mode::JOINT_STEREO)
+        throw InvalidStreamFormat("Dual channel files with joint stereo are not supported");
+
     header.msStereo = reader->nextBit();
     header.intensityStereo = reader->nextBit();
     reader->nextNBits(4);  // Emphasis field is omitted

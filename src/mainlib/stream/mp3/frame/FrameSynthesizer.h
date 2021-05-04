@@ -42,7 +42,7 @@ private:
 
     void synthesizeGranuleChannel(ChannelSamples& samples,
                                   unsigned int channel,
-                                  unsigned int samplingFreq,
+                                  const FrameHeader& header,
                                   const GranuleChannelSideInfo& channelInfo,
                                   const GranuleChannelContent& channelContent,
                                   std::size_t startIndex);
@@ -52,6 +52,9 @@ private:
     void reorder(unsigned int samplingFreq,
                  const GranuleChannelSideInfo& channelInfo,
                  const GranuleChannelContent& channelContent);
+    void stereo(FrameHeader::Mode mode,
+                const GranuleChannelSideInfo& channelInfo,
+                const GranuleChannelContent& channelContent);
     void antialias(const GranuleChannelSideInfo& channelInfo);
     void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
