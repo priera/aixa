@@ -2,38 +2,28 @@
 
 using namespace std::chrono_literals;
 
-AudioStreamParameters SyntheticStream::getParameters() const {
-    auto sampleFormat = SND_PCM_FORMAT_S16;
-    const auto sampleRate = 44100;
-    const auto bytesPerSample = 2;
-    const auto channels = 1;
-    const auto bytesPerSecond = sampleRate * bytesPerSample * channels;
-
-    return AudioStreamParameters{sampleFormat,
-                                 snd_pcm_format_little_endian(sampleFormat) == 1,
-                                 sampleRate,
-                                 channels,
-                                 bytesPerSecond,
-                                 bytesPerSample * 8};
+QAudioFormat SyntheticStream::getParameters() const {
+    QAudioFormat ret;
+    ret.setSampleRate(44100);
+    ret.setChannelCount(1);
+    ret.setSampleSize(16);
+    ret.setCodec("audio/pcm");
+    ret.setByteOrder(QAudioFormat::LittleEndian);
+    ret.setSampleType(QAudioFormat::SignedInt);
+    return ret;
 }
 
 SyntheticStream::SyntheticStream(std::size_t signalSize,
-    double samplePeriod,
-    std::vector<StreamStep> streamSteps) :
+                                 double samplePeriod,
+                                 std::vector<StreamStep> streamSteps) :
     Stream(),
-    signalSize(signalSize),
-    streamSteps(std::move(streamSteps)),
-    sineGenerator(signalSize, samplePeriod, 0) {
+    signalSize(signalSize), streamSteps(std::move(streamSteps)), sineGenerator(signalSize, samplePeriod, 0) {
     currentStep = this->streamSteps.cbegin();
 }
 
-void SyntheticStream::prepareForFirstRead() {
-    begin = Clock::now();
-}
+void SyntheticStream::prepareForFirstRead() { begin = Clock::now(); }
 
-bool SyntheticStream::ended() {
-    return currentStep == (streamSteps.end() - 1);
-}
+bool SyntheticStream::ended() { return currentStep == (streamSteps.end() - 1); }
 
 void SyntheticStream::storeSamples(InterleavedBuffer &buffer) {
     auto current = Clock::now();

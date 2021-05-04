@@ -1,29 +1,26 @@
 #ifndef AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H
 #define AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H
 
+#include <mainlib/CommandListener.h>
+#include <mainlib/threading/WorkerThread.h>
+
 #include <memory>
 
-#include <mainlib/threading/WorkerThread.h>
-#include <mainlib/CommandListener.h>
-
+#include "AudioProcessingThread.h"
 #include "StreamReader.h"
-#include "Publisher.h"
 
 using namespace aixa::math;
 
 class AudioWorker : public CommandListener {
 public:
-    AudioWorker(AudioEnvironment env,
-            std::unique_ptr<StreamReader> reader,
-            std::unique_ptr<Publisher> publisher);
+    AudioWorker(std::unique_ptr<StreamReader> reader,
+                std::unique_ptr<AudioProcessingThread> processingThread);
 
     ~AudioWorker() override = default;
 
     CommandCollection getCommandCollection() override;
 
-    SpectrogramGenerator &getSpectrogramGenerator() {
-        return publisher->getSpectrogramGenerator();
-    }
+    SpectrogramGenerator &getSpectrogramGenerator() { return processingThread->getSpectrogramGenerator(); }
 
     void start();
     void stop();
@@ -33,17 +30,16 @@ public:
 
 private:
     using ReadingThread = WorkerThread<StreamReader>;
-    using PublishingThread = WorkerThread<Publisher>;
 
-    AudioEnvironment env;
     std::unique_ptr<StreamReader> reader;
-    std::unique_ptr<Publisher> publisher;
 
     ReadingThread readingThread;
-    PublishingThread publishingThread;
+    std::unique_ptr<AudioProcessingThread> processingThread;
 
     CommandCollection myCommands;
+    std::condition_variable cvProcessingThread;
+
+    bool processingThreadStopped;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H
+#endif  // AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H

@@ -11,7 +11,7 @@ public:
         streamDefinition(streamDefinition), decoder(std::move(decoder)), samples(), alreadyEnded(false),
         previousIterCopied(0) {}
 
-    AudioStreamParameters getParameters() const override;
+    QAudioFormat getParameters() const override;
     void prepareForFirstRead() override;
     bool ended() override;
     void storeSamples(InterleavedBuffer &buffer) override;

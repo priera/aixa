@@ -30,9 +30,9 @@ public:
             }
         }
 
-        T& operator*() const noexcept { return *buff; }
+        T& operator*() noexcept { return *buff; }
 
-        T* operator->() const noexcept { return buff.get(); }
+        T* operator->() noexcept { return buff.get(); }
 
     private:
         std::shared_ptr<T> buff;
@@ -41,8 +41,14 @@ public:
 
     using ElemGenerator = std::function<std::shared_ptr<T>()>;
 
-    BuffersRing(size_t count, ElemGenerator generator) :
-        count(count), fDoneReading(std::bind(&BuffersRing::bufferConsumed, this)),
+    BuffersRing(size_t count,
+                ElemGenerator generator,
+                std::size_t bufferCount,
+                std::size_t bufferSize,
+                std::chrono::microseconds bufferPeriod) :
+        count(count),
+        bufferCount(bufferCount), bufferSize(bufferSize), bufferPeriod(bufferPeriod),
+        fDoneReading(std::bind(&BuffersRing::bufferConsumed, this)),
         fDoneWriting(std::bind(&BuffersRing::bufferWritten, this)) {
         for (size_t i = 0; i < count; i++) {
             elems.push_back(generator());
@@ -50,6 +56,12 @@ public:
     }
 
     virtual ~BuffersRing() = default;
+
+    std::size_t getBufferCount() const noexcept { return bufferCount; }
+
+    std::size_t getBufferSize() const noexcept { return bufferSize; }
+
+    std::chrono::microseconds getBufferPeriod() const noexcept { return bufferPeriod; }
 
     BuffersWatcher nextReadBuffer() {
         checkReadHalt();
@@ -121,7 +133,7 @@ private:
         cvState.notify_one();
     }
 
-    void addToConsumed(size_t incValue) {
+    void addToConsumed(std::size_t incValue) {
         consumed += incValue;
         cvConsumed.notify_one();
     }
@@ -133,8 +145,13 @@ private:
         cvConsumed.wait(lock, [this] { return consumed >= (count / 2); });
     }
 
+    std::size_t count;
+    std::size_t bufferCount;
+    std::size_t bufferSize;
+    std::chrono::microseconds bufferPeriod;
+
     std::vector<std::shared_ptr<T>> elems;
-    size_t count, readPos{0}, writePos{0};
+    std::size_t readPos{0}, writePos{0};
     std::atomic_size_t consumed{0};
     volatile State state{State::READY};
     std::condition_variable cvState, cvConsumed;

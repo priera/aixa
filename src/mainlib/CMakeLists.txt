@@ -11,7 +11,6 @@ target_include_directories(${TARGET_NAME} PUBLIC
         ${FREETYPE_INCLUDE_DIRS})
 
 target_link_libraries(${TARGET_NAME}
-        asound
         ${QT_LIBS}
         freetype)
 

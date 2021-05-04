@@ -1,12 +1,11 @@
 #ifndef AIXA_SRC_MAINLIB_STREAM_SYNTHETIC_SYNTHETICSTREAM_H
 #define AIXA_SRC_MAINLIB_STREAM_SYNTHETIC_SYNTHETICSTREAM_H
 
+#include <mainlib/audio/note/Chord.h>
+#include <mainlib/math/SineGenerator.h>
 #include <mainlib/stream/Stream.h>
 
 #include <chrono>
-
-#include <mainlib/math/SineGenerator.h>
-#include <mainlib/audio/note/Chord.h>
 
 class SyntheticStream : public Stream {
 public:
@@ -18,11 +17,9 @@ public:
         std::chrono::time_point<Clock> startTime;
     };
 
-    SyntheticStream(std::size_t signalSize,
-                    double samplePeriod,
-                    std::vector<StreamStep> streamSteps);
+    SyntheticStream(std::size_t signalSize, double samplePeriod, std::vector<StreamStep> streamSteps);
 
-    AudioStreamParameters getParameters() const override;
+    QAudioFormat getParameters() const override;
     void prepareForFirstRead() override;
     bool ended() override;
     void storeSamples(InterleavedBuffer &buffer) override;
@@ -36,5 +33,4 @@ private:
     aixa::math::SineGenerator sineGenerator;
 };
 
-
-#endif //AIXA_SRC_MAINLIB_STREAM_SYNTHETIC_SYNTHETICSTREAM_H
+#endif  // AIXA_SRC_MAINLIB_STREAM_SYNTHETIC_SYNTHETICSTREAM_H

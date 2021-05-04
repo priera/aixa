@@ -1,14 +1,14 @@
 #include "Mp3Stream.h"
 
-AudioStreamParameters Mp3Stream::getParameters() const {
-    auto bytesPerSecond =
-        static_cast<unsigned int>(streamDefinition.samplingFreq * streamDefinition.channels() * 2);
-    return {SND_PCM_FORMAT_S16,
-            snd_pcm_format_little_endian(SND_PCM_FORMAT_S16) == 1,
-            streamDefinition.samplingFreq,
-            static_cast<unsigned int>(streamDefinition.channels()),
-            bytesPerSecond,
-            16};
+QAudioFormat Mp3Stream::getParameters() const {
+    QAudioFormat ret;
+    ret.setSampleRate(streamDefinition.samplingFreq);
+    ret.setChannelCount(streamDefinition.channels());
+    ret.setSampleSize(16);
+    ret.setCodec("audio/pcm");
+    ret.setByteOrder(QAudioFormat::LittleEndian);
+    ret.setSampleType(QAudioFormat::SignedInt);
+    return ret;
 }
 
 void Mp3Stream::prepareForFirstRead() { decoder->resetToBeginning(); }
