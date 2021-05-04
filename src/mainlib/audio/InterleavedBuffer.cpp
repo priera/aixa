@@ -1,5 +1,7 @@
 #include "InterleavedBuffer.h"
 
+#include <cassert>
+
 InterleavedBuffer::InterleavedBuffer(int channels, std::size_t frame_size, unsigned int bytesPerSample) :
     channels(channels), m_frameSize(frame_size), bytesPerSample(bytesPerSample) {
     m_dataSize = m_frameSize * channels * bytesPerSample;

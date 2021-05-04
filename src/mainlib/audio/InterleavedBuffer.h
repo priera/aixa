@@ -1,8 +1,6 @@
 #ifndef AIXA_BUFFERS_H
 #define AIXA_BUFFERS_H
 
-#include <alsa/asoundlib.h>
-
 #include <vector>
 
 class InterleavedBuffer {
