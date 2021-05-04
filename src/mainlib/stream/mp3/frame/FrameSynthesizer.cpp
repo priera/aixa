@@ -19,6 +19,8 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> lon
     blockWindows(std::move(blockWindows)), frequencyInversion(std::move(frequencyInversion)),
     synthesisFilter(std::move(synFilter)), dWindow(std::move(dWindow)),
     dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+    channelDequantized({aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+                        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS)}),
     timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
     resetFIFO();
 }
@@ -26,18 +28,25 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> lon
 FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
     auto ret = FrameSamples();
     auto samples = &ret.channel1;
-    for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
+    for (unsigned int i = 0; i < NR_GRANULES; i++) {
         std::size_t startIndex = 0;
-        for (unsigned int i = 0; i < NR_GRANULES; i++) {
+
+        for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
             const auto& channelContent = frame.content.granules[i][channel];
 
-            synthesizeGranuleChannel(*samples, channel, frame.header, channelInfo, channelContent,
-                                     startIndex);
-
-            startIndex = NR_GRANULE_SAMPLES;
+            channelDequantized[i] = dequantizeSamples(frame.header.samplingFreq, channelInfo, channelContent);
         }
 
+        jointStereo(frame.header);
+
+        for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
+            const auto& channelInfo = frame.sideInfo.granules[i][channel];
+
+            synthesizeGranuleChannel(*samples, channel, frame.header, channelInfo, startIndex);
+
+            startIndex = NR_GRANULE_SAMPLES;  // ?
+        }
         samples = &ret.channel2;
     }
 
@@ -48,13 +57,8 @@ void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
                                                 unsigned int channel,
                                                 const FrameHeader& header,
                                                 const GranuleChannelSideInfo& channelInfo,
-                                                const GranuleChannelContent& channelContent,
                                                 std::size_t startIndex) {
-    dequantizeSamples(header.samplingFreq, channelInfo, channelContent);
-
-    reorder(header.samplingFreq, channelInfo, channelContent);
-
-    stereo(header.mode, channelInfo, channelContent);
+    reorder(header.samplingFreq, channelInfo);
 
     antialias(channelInfo);
 
@@ -63,9 +67,10 @@ void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
     polyphaseSynthesis(samples, startIndex);
 }
 
-void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
-                                         const GranuleChannelSideInfo& channelInfo,
-                                         const GranuleChannelContent& channelContent) {
+aixa::math::DoubleMatrix FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
+                                                             const GranuleChannelSideInfo& channelInfo,
+                                                             const GranuleChannelContent& channelContent) {
+    auto ret = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS);
     auto& scaleFactorsComputer = (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT)
                                      ? *longWindowAlgorithms
                                      : *shortWindowAlgorithms;
@@ -80,14 +85,14 @@ void FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
             auto sample = channelContent.freqBands[band][sampleInd];
             auto dequantizedSample = std::pow(std::abs(sample), 4.0 / 3.0) * gainTerm * scaleFactorTerm;
             dequantizedSample *= (sample < 0) ? -1 : 1;
-            dequantized(band, sampleInd) = dequantizedSample;
+            ret(band, sampleInd) = dequantizedSample;
         }
     }
+
+    return ret;
 }
 
-void FrameSynthesizer::reorder(unsigned int samplingFreq,
-                               const GranuleChannelSideInfo& channelInfo,
-                               const GranuleChannelContent& channelContent) {
+void FrameSynthesizer::reorder(unsigned int samplingFreq, const GranuleChannelSideInfo& channelInfo) {
     if (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT) {
         return;
     }
@@ -120,15 +125,33 @@ void FrameSynthesizer::reorder(unsigned int samplingFreq,
     dequantized = std::move(temp);
 }
 
-void FrameSynthesizer::stereo(FrameHeader::Mode mode,
-                              const GranuleChannelSideInfo& channelInfo,
-                              const GranuleChannelContent& channelContent) {
-    if (mode == FrameHeader::Mode::JOINT_STEREO) {
-        // TODO
-        // This is the only case where this function should do something
-        // For all other modes each channel's data is independent
-        // and does not need special processing to be decoded
+void FrameSynthesizer::jointStereo(const FrameHeader& header) {
+    if (header.mode != FrameHeader::Mode::JOINT_STEREO)
+        return;
+
+    const auto& firstChannel = channelDequantized[0];
+    const auto& secondChannel = channelDequantized[1];
+
+    std::array<aixa::math::DoubleMatrix, 2> temp = {
+        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS)};
+
+    for (std::size_t row = 0; row < NR_FREQ_BANDS; row++) {
+        for (std::size_t col = 0; col < NR_CODED_SAMPLES_PER_BAND; col++) {
+            double firstChannelSample, secondChannelSample;
+            if (header.msStereo) {
+                firstChannelSample = (firstChannel(row, col) + secondChannel(row, col)) / 1.41421356;
+                secondChannelSample = (firstChannel(row, col) - secondChannel(row, col)) / 1.41421356;
+            } else {
+                firstChannelSample = firstChannel(row, col);
+                secondChannelSample = secondChannel(row, col);
+            }
+            temp[0](row, col) = firstChannelSample;
+            temp[1](row, col) = secondChannelSample;
+        }
     }
+
+    channelDequantized = std::move(temp);
 }
 
 void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
