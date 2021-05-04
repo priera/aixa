@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "AudioProcessingThread.h"
-#include "Publisher.h"
 #include "StreamReader.h"
 
 using namespace aixa::math;

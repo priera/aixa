@@ -50,9 +50,6 @@ std::shared_ptr<Stream> AudioWorkerFactory::tryToGetStream(const std::string &st
 }
 
 AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters &streamParams) {
-    AlsaEnvironment alsaEnv;
-    alsaEnv.params = AlsaParameters{"default", 500000, 100000us};
-
     if (!streamParams.littleEndianSamples)
         throw std::runtime_error("Stream format not supported: samples are not in little-endian");
 
@@ -77,5 +74,5 @@ AudioEnvironment AudioWorkerFactory::setupAudioEnvironment(AudioStreamParameters
                                                      frameCount, frameSize, PERIOD_TIME);
 
     auto output = std::make_shared<QAudioOutput>(device, format);
-    return AudioEnvironment(alsaEnv, format, output, samplesRing);
+    return AudioEnvironment(format, output, samplesRing);
 }
