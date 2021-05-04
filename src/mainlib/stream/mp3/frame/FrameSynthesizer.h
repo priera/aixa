@@ -35,6 +35,11 @@ public:
     void clearState();
 
 private:
+    using ChannelsDequantized = std::array<aixa::math::DoubleMatrix, NR_CHANNELS>;
+    using GranulesDequantized = std::array<ChannelsDequantized, NR_GRANULES>;
+
+    static GranulesDequantized buildGranulesDequantized();
+
     static constexpr float GAIN_BASE = 210.f;
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
@@ -43,15 +48,25 @@ private:
     aixa::math::DoubleMatrix dequantizeSamples(unsigned int samplingFreq,
                                                const GranuleChannelSideInfo& channelInfo,
                                                const GranuleChannelContent& channelContent);
+    void jointStereo(const FrameHeader& header, ChannelsDequantized& channelsDequantized);
+
     void synthesizeGranuleChannel(ChannelSamples& samples,
-                                  unsigned int channel,
+                                  aixa::math::DoubleMatrix& dequantized,
+                                  Bands<double>& overlappingTerms,
                                   const FrameHeader& header,
                                   const GranuleChannelSideInfo& channelInfo,
                                   std::size_t startIndex);
-    void jointStereo(const FrameHeader& header);
-    void reorder(unsigned int samplingFreq, const GranuleChannelSideInfo& channelInfo);
-    void antialias(const GranuleChannelSideInfo& channelInfo);
-    void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
+
+    void reorder(aixa::math::DoubleMatrix& dequantized,
+                 unsigned int samplingFreq,
+                 const GranuleChannelSideInfo& channelInfo);
+
+    void antialias(aixa::math::DoubleMatrix& dequantized, const GranuleChannelSideInfo& channelInfo);
+
+    void inverseMDCT(const aixa::math::DoubleMatrix& dequantized,
+                     const GranuleChannelSideInfo& info,
+                     Bands<double>& overlappingTerms);
+
     void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
 
     void resetFIFO();
@@ -65,8 +80,7 @@ private:
     aixa::math::DoubleMatrix synthesisFilter;
     const aixa::math::DoubleMatrix dWindow;
 
-    aixa::math::DoubleMatrix dequantized;
-    std::array<aixa::math::DoubleMatrix, 2> channelDequantized;
+    GranulesDequantized granulesDequantized;
 
     aixa::math::DoubleMatrix timeSamples;
 

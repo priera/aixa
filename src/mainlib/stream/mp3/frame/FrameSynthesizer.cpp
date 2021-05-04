@@ -7,6 +7,12 @@
 
 using namespace aixa::math;
 
+FrameSynthesizer::GranulesDequantized FrameSynthesizer::buildGranulesDequantized() {
+    ChannelsDequantized template_ = {aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+                                     aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS)};
+    return {template_, template_};
+}
+
 FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> longWindowSFComputer,
                                    std::unique_ptr<BlockSynthesisAlgorithms> shortWindowSFComputer,
                                    AntialiasCoefficients antialiasCoefficients,
@@ -18,53 +24,40 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> lon
     shortWindowAlgorithms(std::move(shortWindowSFComputer)), antialiasCoefficients(antialiasCoefficients),
     blockWindows(std::move(blockWindows)), frequencyInversion(std::move(frequencyInversion)),
     synthesisFilter(std::move(synFilter)), dWindow(std::move(dWindow)),
-    dequantized(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    channelDequantized({aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-                        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS)}),
-    timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS), channelOverlappingTerms() {
+    granulesDequantized(buildGranulesDequantized()), timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+    channelOverlappingTerms() {
     resetFIFO();
 }
 
 FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
     auto ret = FrameSamples();
-    auto samples = &ret.channel1;
-    for (unsigned int i = 0; i < NR_GRANULES; i++) {
-        std::size_t startIndex = 0;
 
+    for (unsigned int i = 0; i < NR_GRANULES; i++) {
         for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
             const auto& channelContent = frame.content.granules[i][channel];
 
-            channelDequantized[i] = dequantizeSamples(frame.header.samplingFreq, channelInfo, channelContent);
+            granulesDequantized[i][channel] =
+                dequantizeSamples(frame.header.samplingFreq, channelInfo, channelContent);
         }
+        jointStereo(frame.header, granulesDequantized[i]);
+    }
 
-        jointStereo(frame.header);
-
-        for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
+    auto samples = &ret.channel1;
+    for (unsigned int channel = 0; channel < frame.header.channels(); channel++) {
+        std::size_t startIndex = 0;
+        for (unsigned int i = 0; i < NR_GRANULES; i++) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
 
-            synthesizeGranuleChannel(*samples, channel, frame.header, channelInfo, startIndex);
+            synthesizeGranuleChannel(*samples, granulesDequantized[i][channel],
+                                     channelOverlappingTerms[channel], frame.header, channelInfo, startIndex);
 
-            startIndex = NR_GRANULE_SAMPLES;  // ?
+            startIndex = NR_GRANULE_SAMPLES;
         }
         samples = &ret.channel2;
     }
 
     return ret;
-}
-
-void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
-                                                unsigned int channel,
-                                                const FrameHeader& header,
-                                                const GranuleChannelSideInfo& channelInfo,
-                                                std::size_t startIndex) {
-    reorder(header.samplingFreq, channelInfo);
-
-    antialias(channelInfo);
-
-    inverseMDCT(channelInfo, channelOverlappingTerms[channel]);
-
-    polyphaseSynthesis(samples, startIndex);
 }
 
 aixa::math::DoubleMatrix FrameSynthesizer::dequantizeSamples(unsigned int samplingFreq,
@@ -92,7 +85,53 @@ aixa::math::DoubleMatrix FrameSynthesizer::dequantizeSamples(unsigned int sampli
     return ret;
 }
 
-void FrameSynthesizer::reorder(unsigned int samplingFreq, const GranuleChannelSideInfo& channelInfo) {
+void FrameSynthesizer::jointStereo(const FrameHeader& header, ChannelsDequantized& channelsDequantized) {
+    if (header.mode != FrameHeader::Mode::JOINT_STEREO)
+        return;
+
+    const auto& firstChannel = channelsDequantized[0];
+    const auto& secondChannel = channelsDequantized[1];
+
+    std::array<aixa::math::DoubleMatrix, 2> temp = {
+        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
+        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS)};
+
+    for (std::size_t row = 0; row < NR_FREQ_BANDS; row++) {
+        for (std::size_t col = 0; col < NR_CODED_SAMPLES_PER_BAND; col++) {
+            double firstChannelSample, secondChannelSample;
+            if (header.msStereo) {
+                firstChannelSample = (firstChannel(row, col) + secondChannel(row, col)) / 1.41421356;
+                secondChannelSample = (firstChannel(row, col) - secondChannel(row, col)) / 1.41421356;
+            } else {
+                firstChannelSample = firstChannel(row, col);
+                secondChannelSample = secondChannel(row, col);
+            }
+            temp[0](row, col) = firstChannelSample;
+            temp[1](row, col) = secondChannelSample;
+        }
+    }
+
+    channelsDequantized = std::move(temp);
+}
+
+void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
+                                                aixa::math::DoubleMatrix& dequantized,
+                                                Bands<double>& overlappingTerms,
+                                                const FrameHeader& header,
+                                                const GranuleChannelSideInfo& channelInfo,
+                                                std::size_t startIndex) {
+    reorder(dequantized, header.samplingFreq, channelInfo);
+
+    antialias(dequantized, channelInfo);
+
+    inverseMDCT(dequantized, channelInfo, overlappingTerms);
+
+    polyphaseSynthesis(samples, startIndex);
+}
+
+void FrameSynthesizer::reorder(aixa::math::DoubleMatrix& dequantized,
+                               unsigned int samplingFreq,
+                               const GranuleChannelSideInfo& channelInfo) {
     if (channelInfo.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT) {
         return;
     }
@@ -125,36 +164,8 @@ void FrameSynthesizer::reorder(unsigned int samplingFreq, const GranuleChannelSi
     dequantized = std::move(temp);
 }
 
-void FrameSynthesizer::jointStereo(const FrameHeader& header) {
-    if (header.mode != FrameHeader::Mode::JOINT_STEREO)
-        return;
-
-    const auto& firstChannel = channelDequantized[0];
-    const auto& secondChannel = channelDequantized[1];
-
-    std::array<aixa::math::DoubleMatrix, 2> temp = {
-        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-        aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS)};
-
-    for (std::size_t row = 0; row < NR_FREQ_BANDS; row++) {
-        for (std::size_t col = 0; col < NR_CODED_SAMPLES_PER_BAND; col++) {
-            double firstChannelSample, secondChannelSample;
-            if (header.msStereo) {
-                firstChannelSample = (firstChannel(row, col) + secondChannel(row, col)) / 1.41421356;
-                secondChannelSample = (firstChannel(row, col) - secondChannel(row, col)) / 1.41421356;
-            } else {
-                firstChannelSample = firstChannel(row, col);
-                secondChannelSample = secondChannel(row, col);
-            }
-            temp[0](row, col) = firstChannelSample;
-            temp[1](row, col) = secondChannelSample;
-        }
-    }
-
-    channelDequantized = std::move(temp);
-}
-
-void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
+void FrameSynthesizer::antialias(aixa::math::DoubleMatrix& dequantized,
+                                 const GranuleChannelSideInfo& channelInfo) {
     std::size_t subbands = NR_FREQ_BANDS - 1;
 
     if (channelInfo.windowSwitching &&
@@ -179,7 +190,9 @@ void FrameSynthesizer::antialias(const GranuleChannelSideInfo& channelInfo) {
     }
 }
 
-void FrameSynthesizer::inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms) {
+void FrameSynthesizer::inverseMDCT(const aixa::math::DoubleMatrix& dequantized,
+                                   const GranuleChannelSideInfo& info,
+                                   Bands<double>& overlappingTerms) {
     const auto& window = blockWindows.at(info.blockType);
     auto& transformComputer = (info.blockType != GranuleChannelSideInfo::BlockType::THREE_SHORT)
                                   ? *longWindowAlgorithms
