@@ -92,25 +92,32 @@ void FrameSynthesizer::reorder(unsigned int samplingFreq,
         return;
     }
 
-    if (channelInfo.mixedBlockFlag) {
-    } else {
-        auto temp = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS);
+    std::size_t band = 0;
+    auto temp = aixa::math::DoubleMatrix(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS);
 
-        for (std::size_t band = 0; band < NR_SHORT_WINDOW_RANGES; band++) {
-            for (std::size_t window = 0; window < NR_SHORT_WINDOWS; window++) {
-                auto startLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band];
-                auto finalLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band + 1];
-                auto linesCount = finalLine - startLine;
-                for (std::size_t freqLine = 0; freqLine < linesCount; freqLine++) {
-                    auto srcLine = (startLine * NR_SHORT_WINDOWS) + (window * linesCount) + freqLine;
-                    auto dstLine = (startLine * NR_SHORT_WINDOWS) + window + (freqLine * NR_SHORT_WINDOWS);
-                    temp(dstLine / NR_CODED_SAMPLES_PER_BAND, dstLine % NR_CODED_SAMPLES_PER_BAND) =
-                        dequantized(srcLine / NR_CODED_SAMPLES_PER_BAND, srcLine % NR_CODED_SAMPLES_PER_BAND);
-                }
+    if (channelInfo.mixedBlockFlag) {
+        for (; band < 2; band++) {
+            for (std::size_t col = 0; col < NR_CODED_SAMPLES_PER_BAND; col++) {
+                temp(band, col) = dequantized(band, col);
             }
         }
-        dequantized = std::move(temp);
+        band++;
     }
+
+    for (; band < NR_SHORT_WINDOW_RANGES; band++) {
+        for (std::size_t window = 0; window < NR_SHORT_WINDOWS; window++) {
+            auto startLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band];
+            auto finalLine = samplingFreqBandIndexes[samplingFreq].shortWindow[band + 1];
+            auto linesCount = finalLine - startLine;
+            for (std::size_t freqLine = 0; freqLine < linesCount; freqLine++) {
+                auto srcLine = (startLine * NR_SHORT_WINDOWS) + (window * linesCount) + freqLine;
+                auto dstLine = (startLine * NR_SHORT_WINDOWS) + window + (freqLine * NR_SHORT_WINDOWS);
+                temp(dstLine / NR_CODED_SAMPLES_PER_BAND, dstLine % NR_CODED_SAMPLES_PER_BAND) =
+                    dequantized(srcLine / NR_CODED_SAMPLES_PER_BAND, srcLine % NR_CODED_SAMPLES_PER_BAND);
+            }
+        }
+    }
+    dequantized = std::move(temp);
 }
 
 void FrameSynthesizer::stereo(FrameHeader::Mode mode,
