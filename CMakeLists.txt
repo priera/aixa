@@ -18,8 +18,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 #In order to run, on xubuntu was required: sudo apt install libqt5gui5 .
 
 include(cmake/qt.cmake)
-include(cmake/log4cplus.cmake)
-
 include(cmake/functions.cmake)
 include(cmake/tests.cmake)
 
