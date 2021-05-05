@@ -10,6 +10,11 @@ target_include_directories(${TARGET_NAME} PUBLIC
         ${QT_INCLUDES}
         ${FREETYPE_INCLUDE_DIRS})
 
+if (${MINGW})
+    target_link_directories(${TARGET_NAME} PUBLIC ${FREETYPE_LINK_DIR})
+    target_link_libraries(${TARGET_NAME} opengl32)
+endif()
+
 target_link_libraries(${TARGET_NAME}
         ${QT_LIBS}
         freetype)

@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.14)
 
 cmake_policy(SET CMP0072 NEW)
 
-# set(CMAKE_VERBOSE_MAKEFILE ON)
-
 project(aixa)
 
 enable_testing()
@@ -25,10 +23,9 @@ endif()
 set(DEPS_DIR ${AIXA_DEPENDENCIES_DIR} CACHE PATH "Directory with dependencies")
 
 include(cmake/qt.cmake)
+include(cmake/freetype.cmake)
 include(cmake/functions.cmake)
 include(cmake/tests.cmake)
-
-set(FREETYPE_INCLUDE_DIRS /usr/include/freetype2 /usr/include/libpng16)
 
 add_subdirectory(src)
 

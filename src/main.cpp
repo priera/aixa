@@ -14,7 +14,7 @@ static void setupSystemsForAudioStream(const std::filesystem::path& streamPath,
         eventFilter.removeTransientCommands();
     }
 
-    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath);
+    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath.string());
     audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
 
     graphicsEnvironment.showAudioVisualizations();
