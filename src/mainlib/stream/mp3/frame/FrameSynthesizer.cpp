@@ -25,8 +25,8 @@ FrameSynthesizer::FrameSynthesizer(std::unique_ptr<BlockSynthesisAlgorithms> lon
     blockWindows(std::move(blockWindows)), frequencyInversion(std::move(frequencyInversion)),
     synthesisFilter(std::move(synFilter)), dWindow(std::move(dWindow)),
     granulesDequantized(buildGranulesDequantized()), timeSamples(NR_CODED_SAMPLES_PER_BAND, NR_FREQ_BANDS),
-    channelOverlappingTerms() {
-    resetFIFO();
+    overlappingTerms() {
+    resetFIFOs();
 }
 
 FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
@@ -49,8 +49,8 @@ FrameSamples FrameSynthesizer::synthesize(const Frame& frame) {
         for (unsigned int i = 0; i < NR_GRANULES; i++) {
             const auto& channelInfo = frame.sideInfo.granules[i][channel];
 
-            synthesizeGranuleChannel(*samples, granulesDequantized[i][channel],
-                                     channelOverlappingTerms[channel], frame.header, channelInfo, startIndex);
+            synthesizeGranuleChannel(*samples, granulesDequantized[i][channel], overlappingTerms[channel],
+                                     fifoOfChannel[channel], frame.header, channelInfo, startIndex);
 
             startIndex = NR_GRANULE_SAMPLES;
         }
@@ -116,7 +116,8 @@ void FrameSynthesizer::jointStereo(const FrameHeader& header, ChannelsDequantize
 
 void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
                                                 aixa::math::DoubleMatrix& dequantized,
-                                                Bands<double>& overlappingTerms,
+                                                Bands<double>& overlapping,
+                                                ChannelFifo& fifo,
                                                 const FrameHeader& header,
                                                 const GranuleChannelSideInfo& channelInfo,
                                                 std::size_t startIndex) {
@@ -124,9 +125,9 @@ void FrameSynthesizer::synthesizeGranuleChannel(ChannelSamples& samples,
 
     antialias(dequantized, channelInfo);
 
-    inverseMDCT(dequantized, channelInfo, overlappingTerms);
+    inverseMDCT(dequantized, channelInfo, overlapping);
 
-    polyphaseSynthesis(samples, startIndex);
+    polyphaseSynthesis(samples, fifo, startIndex);
 }
 
 void FrameSynthesizer::reorder(aixa::math::DoubleMatrix& dequantized,
@@ -211,8 +212,10 @@ void FrameSynthesizer::inverseMDCT(const aixa::math::DoubleMatrix& dequantized,
     timeSamples.elemWiseProduct(frequencyInversion);
 }
 
-void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex) {
-    auto buildMatrix = [&]() {
+void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples,
+                                          ChannelFifo& fifo,
+                                          std::size_t startIndex) {
+    auto buildMatrix = [&fifo]() {
         auto ret = DoubleMatrix(D_WINDOW_VECTORS, NR_D_WINDOW_VECTOR_SIZE);
         for (std::size_t row = 0; row < NR_D_WINDOW_VECTOR_SIZE; row++) {
             for (std::size_t col = 0; col < D_WINDOW_VECTORS; col++) {
@@ -248,12 +251,14 @@ void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples, std::size_t s
     }
 }
 
-void FrameSynthesizer::clearState() { resetFIFO(); }
+void FrameSynthesizer::clearState() { resetFIFOs(); }
 
-void FrameSynthesizer::resetFIFO() {
-    fifo.clear();
+void FrameSynthesizer::resetFIFOs() {
+    for (auto& fifo : fifoOfChannel) {
+        fifo.clear();
 
-    for (std::size_t i = 0; i < D_WINDOW_VECTORS; i++) {
-        fifo.emplace_front(NR_D_WINDOW_MATRIXED_VECTOR_SIZE);
+        for (std::size_t i = 0; i < D_WINDOW_VECTORS; i++) {
+            fifo.emplace_front(NR_D_WINDOW_MATRIXED_VECTOR_SIZE);
+        }
     }
 }

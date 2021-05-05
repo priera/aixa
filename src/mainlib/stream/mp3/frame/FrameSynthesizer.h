@@ -37,6 +37,8 @@ public:
 private:
     using ChannelsDequantized = std::array<aixa::math::DoubleMatrix, NR_CHANNELS>;
     using GranulesDequantized = std::array<ChannelsDequantized, NR_GRANULES>;
+    using ChannelsOverlapping = std::array<Bands<double>, NR_CHANNELS>;
+    using ChannelFifo = std::deque<aixa::math::DoubleVector>;
 
     static GranulesDequantized buildGranulesDequantized();
 
@@ -52,7 +54,8 @@ private:
 
     void synthesizeGranuleChannel(ChannelSamples& samples,
                                   aixa::math::DoubleMatrix& dequantized,
-                                  Bands<double>& overlappingTerms,
+                                  Bands<double>& overlapping,
+                                  ChannelFifo& fifo,
                                   const FrameHeader& header,
                                   const GranuleChannelSideInfo& channelInfo,
                                   std::size_t startIndex);
@@ -67,9 +70,9 @@ private:
                      const GranuleChannelSideInfo& info,
                      Bands<double>& overlappingTerms);
 
-    void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
+    void polyphaseSynthesis(ChannelSamples& samples, ChannelFifo& fifo, std::size_t startIndex);
 
-    void resetFIFO();
+    void resetFIFOs();
 
     std::unique_ptr<BlockSynthesisAlgorithms> longWindowAlgorithms;
     std::unique_ptr<BlockSynthesisAlgorithms> shortWindowAlgorithms;
@@ -84,9 +87,9 @@ private:
 
     aixa::math::DoubleMatrix timeSamples;
 
-    std::array<Bands<double>, NR_CHANNELS> channelOverlappingTerms;
+    ChannelsOverlapping overlappingTerms;
 
-    std::deque<aixa::math::DoubleVector> fifo;
+    std::array<ChannelFifo, NR_CHANNELS> fifoOfChannel;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H
