@@ -15,10 +15,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -pthread")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 #install libfreetype6-dev
 #install also: apt install libasound2-dev mesa-common-dev libglu1-mesa-dev
-#In order to run, on xubuntu was required: sudo apt install libqt5gui5
+#In order to run, on xubuntu was required: sudo apt install libqt5gui5 qtmultimedia5-dev
 # I question the following: libqt5multimedia5 libqt5multimedia5-plugins .
 
-set(DEPS_DIR $ENV{DEPENDENCIES_DIR} CACHE PATH "Directory with dependencies")
+set(DEPS_DIR $ENV{AIXA_DEPENDENCIES_DIR} CACHE PATH "Directory with dependencies")
 if (NOT IS_DIRECTORY ${DEPS_DIR})
     message(FATAL_ERROR "Dependencies directory has not been set, or does not point to a valid directory")
 endif()
