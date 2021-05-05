@@ -1,4 +1,8 @@
-set(Qt5_DIR /home/pedro/Qt/5.15.0/gcc_64/lib/cmake/Qt5)
+set(Qt5_VERSION "5.15.0")
+set(Qt5_DIR ${DEPS_DIR}/Qt/${Qt5_VERSION}/gcc_64/lib/cmake/Qt5)
+if (NOT IS_DIRECTORY ${Qt5_DIR})
+    message(FATAL_ERROR "A valid Qt 5 version could not be found under: ${DEPS_DIR}")
+endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
