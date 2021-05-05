@@ -1,7 +1,18 @@
-set(Qt5_VERSION "5.15.0")
-set(Qt5_DIR ${DEPS_DIR}/Qt/${Qt5_VERSION}/gcc_64/lib/cmake/Qt5)
+set(Qt_VERSION "5.15.0")
+
+if (${UNIX})
+    set(INNER_Qt_PLATFORM gcc_64)
+elseif(${MINGW})
+    set(INNER_Qt_PLATFORM mingw81_64)
+else()
+    message(FATAL_ERROR "Not using a supported Qt platform")
+endif()
+
+set(Qt_PLATFORM ${INNER_Qt_PLATFORM} CACHE STRING "Platform used in Qt installation")
+set(Qt5_DIR ${DEPS_DIR}/Qt/${Qt_VERSION}/${Qt_PLATFORM}/lib/cmake/Qt5)
+
 if (NOT IS_DIRECTORY ${Qt5_DIR})
-    message(FATAL_ERROR "A valid Qt 5 version could not be found under: ${DEPS_DIR}")
+    message(FATAL_ERROR "Required CMake files for Qt could not be found on: ${Qt5_DIR}")
 endif()
 
 set(CMAKE_AUTOMOC ON)
