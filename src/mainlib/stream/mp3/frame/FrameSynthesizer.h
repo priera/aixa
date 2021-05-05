@@ -35,28 +35,44 @@ public:
     void clearState();
 
 private:
+    using ChannelsDequantized = std::array<aixa::math::DoubleMatrix, NR_CHANNELS>;
+    using GranulesDequantized = std::array<ChannelsDequantized, NR_GRANULES>;
+    using ChannelsOverlapping = std::array<Bands<double>, NR_CHANNELS>;
+    using ChannelFifo = std::deque<aixa::math::DoubleVector>;
+
+    static GranulesDequantized buildGranulesDequantized();
+
     static constexpr float GAIN_BASE = 210.f;
     static constexpr double SCALE = 1 << 15;
     static constexpr std::size_t D_WINDOW_VECTORS = 16;
     static constexpr double MAX_DECODED_VALUE = 32768.0;
 
-    void synthesizeGranuleChannel(ChannelSamples& samples,
-                                  unsigned int channel,
-                                  unsigned int samplingFreq,
-                                  const GranuleChannelSideInfo& channelInfo,
-                                  const GranuleChannelContent& channelContent,
-                                  std::size_t startIndex);
-    void dequantizeSamples(unsigned int samplingFreq,
-                           const GranuleChannelSideInfo& channelInfo,
-                           const GranuleChannelContent& channelContent);
-    void reorder(unsigned int samplingFreq,
-                 const GranuleChannelSideInfo& channelInfo,
-                 const GranuleChannelContent& channelContent);
-    void antialias(const GranuleChannelSideInfo& channelInfo);
-    void inverseMDCT(const GranuleChannelSideInfo& info, Bands<double>& overlappingTerms);
-    void polyphaseSynthesis(ChannelSamples& samples, std::size_t startIndex);
+    aixa::math::DoubleMatrix dequantizeSamples(unsigned int samplingFreq,
+                                               const GranuleChannelSideInfo& channelInfo,
+                                               const GranuleChannelContent& channelContent);
+    void jointStereo(const FrameHeader& header, ChannelsDequantized& channelsDequantized);
 
-    void resetFIFO();
+    void synthesizeGranuleChannel(ChannelSamples& samples,
+                                  aixa::math::DoubleMatrix& dequantized,
+                                  Bands<double>& overlapping,
+                                  ChannelFifo& fifo,
+                                  const FrameHeader& header,
+                                  const GranuleChannelSideInfo& channelInfo,
+                                  std::size_t startIndex);
+
+    void reorder(aixa::math::DoubleMatrix& dequantized,
+                 unsigned int samplingFreq,
+                 const GranuleChannelSideInfo& channelInfo);
+
+    void antialias(aixa::math::DoubleMatrix& dequantized, const GranuleChannelSideInfo& channelInfo);
+
+    void inverseMDCT(const aixa::math::DoubleMatrix& dequantized,
+                     const GranuleChannelSideInfo& info,
+                     Bands<double>& overlappingTerms);
+
+    void polyphaseSynthesis(ChannelSamples& samples, ChannelFifo& fifo, std::size_t startIndex);
+
+    void resetFIFOs();
 
     std::unique_ptr<BlockSynthesisAlgorithms> longWindowAlgorithms;
     std::unique_ptr<BlockSynthesisAlgorithms> shortWindowAlgorithms;
@@ -67,12 +83,13 @@ private:
     aixa::math::DoubleMatrix synthesisFilter;
     const aixa::math::DoubleMatrix dWindow;
 
-    aixa::math::DoubleMatrix dequantized;
+    GranulesDequantized granulesDequantized;
+
     aixa::math::DoubleMatrix timeSamples;
 
-    std::array<Bands<double>, NR_CHANNELS> channelOverlappingTerms;
+    ChannelsOverlapping overlappingTerms;
 
-    std::deque<aixa::math::DoubleVector> fifo;
+    std::array<ChannelFifo, NR_CHANNELS> fifoOfChannel;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_FRAMESYNTHESIZER_H

@@ -14,9 +14,11 @@ public:
     QAudioFormat getParameters() const override;
     void prepareForFirstRead() override;
     bool ended() override;
-    void storeSamples(InterleavedBuffer &buffer) override;
+    void storeSamples(InterleavedBuffer& buffer) override;
 
 private:
+    void copyFrameSamples(std::size_t count, short* to, std::size_t startOffset = 0) const;
+
     const FrameHeader streamDefinition;
     std::unique_ptr<Mp3Decoder> decoder;
     FrameSamples samples;

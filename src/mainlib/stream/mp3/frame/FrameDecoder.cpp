@@ -62,6 +62,9 @@ void FrameDecoder::decodeHeader(FrameStartToken tok) {
     header.mode = static_cast<FrameHeader::Mode>(reader->nextNBits(2));
     header.msStereo = reader->nextBit();
     header.intensityStereo = reader->nextBit();
+    if (header.mode == FrameHeader::Mode::JOINT_STEREO && header.intensityStereo)
+        throw InvalidStreamFormat("Joint stereo files using intensity jointStereo are not supported");
+
     reader->nextNBits(4);  // Emphasis field is omitted
 
     bytesInHeaders = 4;
