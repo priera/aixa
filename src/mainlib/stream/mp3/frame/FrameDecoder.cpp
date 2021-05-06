@@ -10,7 +10,19 @@ std::vector<std::vector<unsigned char>> FrameDecoder::scaleFactorsCompression = 
 std::vector<std::vector<unsigned int>> FrameDecoder::scaleFactorBandsGroups = {{0, 6, 12},
                                                                                {0, 6, 11, 16, 21}};
 
+static bool init = false;
+static std::ofstream f;
+static int call = 0;
 const Frame& FrameDecoder::decode(FrameStartToken token) {
+    call++;
+    if (!init) {
+        f = std::ofstream("frame_decoder.txt");
+        init = true;
+    } else if (call == 50) {
+        f.close();
+        char a = 3;
+    }
+
     bytesInHeaders = 0;
 
     decodeHeader(token);
@@ -152,6 +164,8 @@ void FrameDecoder::decodeMainData() {
 
     const auto channels = frame.header.channels();
     bool readingSecondGranule = false;
+
+    f << "frame " << call << "\n";
     for (unsigned int i = 0; i < NR_GRANULES; i++) {
         unsigned int channel;
         for (channel = 0; channel < channels; channel++) {
@@ -161,10 +175,12 @@ void FrameDecoder::decodeMainData() {
             readChannelScaleFactors(channelInfo, channelContent, channel, readingSecondGranule);
             entropyDecode(channelInfo, channelStart, channelContent);
         }
+        f << "\n";
 
         readingSecondGranule = true;
     }
 
+    f << std::endl;
     reader->frameEnded(frame.frameSize, bytesInHeaders);
 }
 
@@ -204,13 +220,17 @@ void FrameDecoder::readShortWindowScaleFactors(GranuleChannelContent& channelCon
             unsigned char toRead = (group == 0) ? slen1 : slen2;
             for (unsigned int i = subBandStart; i < subBandEnd; i++) {
                 for (unsigned int window = 0; window < NR_SHORT_WINDOWS; window++) {
-                    channelContent.shortWindowScaleFactorBands[window][i] = reader->nextNBits(toRead);
+                    auto sf = reader->nextNBits(toRead);
+                    channelContent.shortWindowScaleFactorBands[window][i] = sf;
+                    f << sf << " ";
                 }
             }
         }
         for (unsigned int window = 0; window < NR_SHORT_WINDOWS; window++) {
             channelContent.shortWindowScaleFactorBands[window][NR_SHORT_WINDOW_BANDS] = 0;
+            f << 0 << " ";
         }
+        f << "\n";
     }
 }
 
@@ -236,6 +256,10 @@ void FrameDecoder::readLongWindowScaleFactors(GranuleChannelContent& channelCont
             }
         }
     }
+    for (auto sf: channelContent.longWindowScaleFactorBands) {
+        f << sf << " ";
+    }
+    f << "\n";
 }
 
 void FrameDecoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
@@ -286,4 +310,12 @@ void FrameDecoder::entropyDecode(const GranuleChannelSideInfo& channelInfo,
     for (; freqLinesDecoded < NR_GRANULE_SAMPLES; freqLinesDecoded++) {
         storeInContent(0, freqLinesDecoded, content.freqBands);
     }
+
+    for (auto& band: content.freqBands) {
+        for (auto elem: band) {
+            f << elem << " ";
+        }
+    }
+
+    f << "\n";
 }

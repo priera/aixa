@@ -15,7 +15,21 @@ std::shared_ptr<Stream> Mp3StreamFactory::probe() {
     auto decoder = std::unique_ptr<Mp3Decoder>(buildDecoder());
 
     auto header = FrameHeader();
-    probeWithDecoder(*decoder, header);
+    //probeWithDecoder(*decoder, header);
+
+    std::ofstream f = std::ofstream("samples.txt");
+
+    FrameSamples samples;
+    for (int i = 0; i < 50; i++) {
+        decoder->seekToNextFrame();
+        decoder->decodeFrame(samples);
+
+        for (auto sample: samples.channel1) {
+            f << sample << " ";
+        }
+        f << std::endl;
+    }
+    f.close();
 
     return std::make_shared<Mp3Stream>(header, std::move(decoder));
 }
