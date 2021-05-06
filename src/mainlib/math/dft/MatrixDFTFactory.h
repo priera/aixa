@@ -4,7 +4,7 @@
 #include "FourierTransformFactory.h"
 
 namespace aixa::math {
-    class MatrixDFTFactory : public FourierTransformFactory {
+    class LIB_EXPORT MatrixDFTFactory : public FourierTransformFactory {
     public:
 
         FourierTransform *build(unsigned int dimensionality) override;

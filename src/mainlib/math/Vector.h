@@ -9,7 +9,7 @@ template <typename T, class ZeroComparer>
 class ConstVectorProxy;
 
 template <typename T, class ZeroComparer>
-class Vector : public Matrix<T, ZeroComparer> {
+class LIB_EXPORT Vector : public Matrix<T, ZeroComparer> {
 public:
     template <class OtherIt>
     Vector(OtherIt other, std::size_t M, T def = T()) : Matrix<T, ZeroComparer>(1, M, std::true_type(), def) {

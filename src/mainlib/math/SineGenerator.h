@@ -1,6 +1,8 @@
 #ifndef AIXA_SINEGENERATOR_H
 #define AIXA_SINEGENERATOR_H
 
+#include <platform/aixa_export.h>
+
 #include <cmath>
 
 #include "Vector.h"
@@ -8,7 +10,7 @@
 
 namespace aixa::math {
 
-    class SineGenerator {
+    class LIB_EXPORT SineGenerator {
     public:
         SineGenerator(std::size_t signalSize,
                       double samplePeriod,

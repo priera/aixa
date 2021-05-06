@@ -1,10 +1,12 @@
 #ifndef AIXA_SRC_MAINLIB_MATH_DFT_FFTFACTORY_H
 #define AIXA_SRC_MAINLIB_MATH_DFT_FFTFACTORY_H
 
+#include <platform/aixa_export.h>
+
 #include "FourierTransformFactory.h"
 
 namespace aixa::math {
-    class FFTFactory : public FourierTransformFactory {
+    class LIB_EXPORT FFTFactory : public FourierTransformFactory {
     public:
         FourierTransform *build(unsigned int N) override;
 

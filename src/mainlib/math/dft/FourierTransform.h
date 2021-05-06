@@ -3,10 +3,11 @@
 
 #include <cmath>
 
+#include <platform/aixa_export.h>
 #include "mainlib/math/types.h"
 
 namespace aixa::math {
-class FourierTransform {
+class LIB_EXPORT FourierTransform {
 public:
     explicit FourierTransform(unsigned int N) : N(N){};
 
