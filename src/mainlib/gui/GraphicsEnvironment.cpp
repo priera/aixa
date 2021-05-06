@@ -35,6 +35,12 @@ void GraphicsEnvironment::checkProposedStream(const QUrl& url) {
     if (!AudioWorkerFactory::acceptedFormats().contains(extension))
         return;
 
+#ifdef WIN32
+    // Fix for a bug which seems be present only on Windows
+    if (path.startsWith('/')) {
+        path = path.right(path.size() - 1);
+    }
+#endif
     auto stdPath = std::filesystem::path(path.toStdString());
     if (!exists(stdPath))
         return;

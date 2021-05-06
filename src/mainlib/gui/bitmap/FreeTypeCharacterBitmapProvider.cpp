@@ -3,6 +3,7 @@
 #include <GL/gl.h>
 
 #include <stdexcept>
+#include <QStandardPaths>
 
 #include "GlyphMetrics.h"
 
@@ -10,7 +11,14 @@ FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
     if (FT_Init_FreeType(&ft))
         throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
 
-    if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 0, &face))
+    std::string fontPath;
+#ifdef WIN32
+    fontPath = QStandardPaths::locate(QStandardPaths::StandardLocation::FontsLocation, "consola.ttf").toStdString();
+#else
+    fontPath = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf";
+#endif
+
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
 }
 
