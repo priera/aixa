@@ -1,12 +1,14 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_GRAPHICSENVIRONMENTFACTORY_H
 #define AIXA_SRC_MAINLIB_GUI_GRAPHICSENVIRONMENTFACTORY_H
 
+#include <aixa_export.h>
+
 #include <QMainWindow>
 #include <QtCore/QSize>
 
 #include "GraphicsEnvironment.h"
 
-class GraphicsEnvironmentFactory {
+class LIB_EXPORT GraphicsEnvironmentFactory {
 public:
     GraphicsEnvironmentFactory() = delete;
 

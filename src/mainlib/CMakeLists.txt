@@ -1,9 +1,10 @@
-set (SRCS "")
 build_sources_list("${SRCS}")
 
 set(TARGET_NAME mainlib)
-
 add_library(${TARGET_NAME} SHARED ${SRCS})
+
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src/platform)
+target_compile_definitions(${TARGET_NAME} PRIVATE LIB_EXPORTING)
 
 target_include_directories(${TARGET_NAME} PUBLIC
         ${ROOT_INCLUDE_DIR}

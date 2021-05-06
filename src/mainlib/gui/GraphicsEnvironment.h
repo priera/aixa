@@ -1,6 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_GUI_GRAPHICSENVIRONMENT_H
 #define AIXA_SRC_MAINLIB_GUI_GRAPHICSENVIRONMENT_H
 
+#include <aixa_export.h>
 #include <mainlib/audio/note/Note.h>
 #include <mainlib/gui/gl/DrawWidget.h>
 #include <mainlib/gui/gl/DrawingWorker.h>
@@ -9,7 +10,7 @@
 
 #include <memory>
 
-class GraphicsEnvironment : public QObject {
+class LIB_EXPORT GraphicsEnvironment : public QObject {
     Q_OBJECT
 public:
     GraphicsEnvironment(std::unique_ptr<Scene> scene,
@@ -32,7 +33,7 @@ public:
     }
 
 signals:
-    void streamReceived(const std::filesystem::path& path);
+    LIB_EXPORT void streamReceived(const std::filesystem::path& path);
 
 private slots:
     void setupUsingContext(QOpenGLContext* guiContext);

@@ -5,11 +5,12 @@
 #include <thread>
 #include <atomic>
 
+#include <aixa_export.h>
 #include <mainlib/transfer/Observable.h>
 
 #include "Note.h"
 
-class NoteSetter : public NoteNotifier {
+class LIB_EXPORT NoteSetter : public NoteNotifier {
 public:
     NoteSetter();
 

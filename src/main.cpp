@@ -1,3 +1,5 @@
+#include "platform/aixa_export.h"
+
 #include <mainlib/audio/AudioWorkerFactory.h>
 #include <mainlib/audio/note/NoteSetter.h>
 #include <mainlib/gui/GraphicsEnvironmentFactory.h>
