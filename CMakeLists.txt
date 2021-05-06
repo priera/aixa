@@ -20,6 +20,23 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # I question the following: libqt5multimedia5 libqt5multimedia5-plugins .
 # https://www.msys2.org/#installation
 # https://github.com/ubawurinna/freetype-windows-binaries
+# libxcb-xinerama0
+
+#cmake
+#g++ 10.2.0
+#mesa-common-dev
+#libfreetype-dev
+#qtbase5-dev
+#qtmultimedia5-dev
+#
+#download qt
+#only Desktop component is needed
+#
+#cmake -DCMAKE_BUILD_TYPE=Debug -DAIXA_DIR=/home/base/aixa ../../aixa/
+#sudo apt install qt5dxcb-plugin <--- this one!
+#
+#../build/release/src/aixa
+
 
 if ((NOT DEFINED AIXA_DIR) OR (NOT IS_DIRECTORY ${AIXA_DIR}))
     message(FATAL_ERROR "Dependencies directory has not been set, or does not point to a valid directory")
