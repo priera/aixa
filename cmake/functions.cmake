@@ -22,3 +22,18 @@ function(dump_cmake_variables)
         message(STATUS "${_variableName}=${${_variableName}}")
     endforeach()
 endfunction()
+
+function(win_deploy_target TARGET_NAME)
+    set(SRC_BUILD_DIR ${AIXA_DIR}/build/${CMAKE_BUILD_TYPE}/src)
+
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${Qt5_BIN_DIR}/windeployqt.exe --plugindir ${SRC_BUILD_DIR}/plugins ${SRC_BUILD_DIR}/${TARGET_NAME}.exe)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${FREETYPE_LINK_DIR}/freetype.dll ${SRC_BUILD_DIR})
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${Qt5_BIN_DIR}/Qt5Multimedia.dll ${SRC_BUILD_DIR})
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${Qt5_BIN_DIR}/Qt5Network.dll ${SRC_BUILD_DIR})
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${Qt5_BIN_DIR}/../plugins/audio ${SRC_BUILD_DIR}/plugins/audio)
+endfunction()

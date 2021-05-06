@@ -16,11 +16,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 #In order to run, on xubuntu was required: sudo apt install libqt5gui5 qtmultimedia5-dev
 # I question the following: libqt5multimedia5 libqt5multimedia5-plugins .
 
-if ((NOT DEFINED AIXA_DEPENDENCIES_DIR) OR (NOT IS_DIRECTORY ${AIXA_DEPENDENCIES_DIR}))
+if ((NOT DEFINED AIXA_DIR) OR (NOT IS_DIRECTORY ${AIXA_DIR}))
     message(FATAL_ERROR "Dependencies directory has not been set, or does not point to a valid directory")
 endif()
 
-set(DEPS_DIR ${AIXA_DEPENDENCIES_DIR} CACHE PATH "Directory with dependencies")
+set(DEPS_DIR ${AIXA_DIR}/deps CACHE PATH "Directory with dependencies")
 
 include(cmake/qt.cmake)
 include(cmake/freetype.cmake)

@@ -9,7 +9,9 @@ else()
 endif()
 
 set(Qt_PLATFORM ${INNER_Qt_PLATFORM} CACHE STRING "Platform used in Qt installation")
-set(Qt5_DIR ${DEPS_DIR}/Qt/${Qt_VERSION}/${Qt_PLATFORM}/lib/cmake/Qt5)
+set(Qt5_INSTALLATION ${DEPS_DIR}/Qt)
+set(Qt5_BIN_DIR ${Qt5_INSTALLATION}/${Qt_VERSION}/${Qt_PLATFORM}/bin)
+set(Qt5_DIR ${Qt5_INSTALLATION}/${Qt_VERSION}/${Qt_PLATFORM}/lib/cmake/Qt5)
 
 if (NOT IS_DIRECTORY ${Qt5_DIR})
     message(FATAL_ERROR "Required CMake files for Qt could not be found on: ${Qt5_DIR}")
@@ -20,7 +22,7 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt5 COMPONENTS Core Gui Widgets Multimedia Test REQUIRED)
 
-set(QT_INCLUDES ${Qt5Core_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
+set(QT_INCLUDES ${Qt5Core_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Multimedia_INCLUDE_DIRS})
 set(QT_TEST_INCLUDES ${Qt5Test_INCLUDE_DIRS})
 
 set(QT_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Multimedia)

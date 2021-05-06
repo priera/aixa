@@ -20,6 +20,11 @@ target_link_libraries(${TARGET_NAME}
         ${QT_LIBS}
         freetype)
 
+set_target_properties(${TARGET_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${AIXA_DIR}/build/debug/src
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${AIXA_DIR}/build/release/src
+)
+
 # Despite their name, these classes are closer of being auxiliary applications than actual unit tests
 add_subdirectory(math/dft/test)
 add_subdirectory(audio/note/test)
