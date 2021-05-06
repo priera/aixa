@@ -64,7 +64,7 @@ void HuffmanParser::buildTree(Huffman::Tree& tree) {
 std::vector<Huffman::Symbols> HuffmanParser::extractSerializedTree() {
     std::string line;
     std::getline(f, line);
-    line = line.substr(0, line.size() - 1);
+    // line = line.substr(0, line.size() - 1);
     std::vector<Huffman::Symbols> serializedTree;
     unsigned int nodesCaptured;
 
@@ -79,7 +79,7 @@ std::vector<Huffman::Symbols> HuffmanParser::extractSerializedTree() {
             nodesCaptured++;
         }
         std::getline(f, line);
-        line = line.substr(0, line.size() - 1);
+        // line = line.substr(0, line.size() - 1);
     }
 
     return serializedTree;

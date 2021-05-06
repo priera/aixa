@@ -12,7 +12,7 @@ public:
         }
     }
 
-    std::streamsize readNBytes(char *ptr, long n) { return in.read(ptr, n).gcount(); }
+    std::streamsize readNBytes(unsigned char *ptr, long n) { return in.read(reinterpret_cast<char *>(ptr), n).gcount(); }
 
     void skipNBytes(long n) { in.seekg(in.tellg() + n); }
 
