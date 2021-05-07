@@ -29,7 +29,10 @@ And also, because doing it is really fun!
 
 ## Compile and run
 
-Aixa has been tested on GNU/Linux (ubuntu) and Windows. Refer to the docs/ folder for instructions about building for your specific platform.
+Aixa has been tested on GNU/Linux (ubuntu) and Windows. Refer to the `/doc` directory for instructions about building for your specific platform:
+
+* [Linux](/doc/BUILD_Linux.md)
+* [Windows](/doc/BUILD_Windows.md)
 
 It hasn't been tested on macOS, but it should work on it with very minor tweaks. 
 
