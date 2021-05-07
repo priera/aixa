@@ -1,48 +1,70 @@
 #include "FreeTypeCharacterBitmapProvider.h"
 
-#include <iostream>
-#include <sstream>
-#include <exception>
+#include <GL/gl.h>
+
+#include <stdexcept>
+#include <QStandardPaths>
+
+#include "GlyphMetrics.h"
 
 FreeTypeCharacterBitmapProvider::FreeTypeCharacterBitmapProvider() {
     if (FT_Init_FreeType(&ft))
         throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
 
-    if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 0, &face))
+    std::string fontPath;
+#ifdef WIN32
+    fontPath = QStandardPaths::locate(QStandardPaths::StandardLocation::FontsLocation, "consola.ttf").toStdString();
+#else
+    fontPath = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf";
+#endif
+
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
-
-    // Set size to load glyphs as
-    FT_Set_Pixel_Sizes(face, 0, 80);
-
 }
-
 
 FreeTypeCharacterBitmapProvider::~FreeTypeCharacterBitmapProvider() {
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 }
 
-CharacterBitmapProvider::Character FreeTypeCharacterBitmapProvider::getCharacter(char c) {
-    bool blankBuffer = (c == ' ');
-    char actualChar = (blankBuffer) ? 'N' : c;
-
-    if (FT_Load_Char(face, actualChar, FT_LOAD_RENDER))
-        throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
-
-
-
-    if (blankBuffer) {
-        for (int row = 0; row < face->glyph->bitmap.rows; row++) {
-            for (int col = 0; col < face->glyph->bitmap.width; col++) {
-                face->glyph->bitmap.buffer[row * face->glyph->bitmap.width + col] = 0x0F;
-            }
-        }
+Bitmap &FreeTypeCharacterBitmapProvider::getCharacter(char c, unsigned int pixelSize) {
+    Bitmap *cached = cacheLookup(c, pixelSize);
+    if (cached != nullptr) {
+        return *cached;
+    } else {
+        return storeNewGlyph(c, pixelSize);
     }
+}
 
-    return { face->glyph->bitmap.rows,
-             face->glyph->bitmap.width,
-             face->glyph->bitmap_top,
-             face->glyph->bitmap_left,
-             face->glyph->advance.x,
-             face->glyph->bitmap.buffer };
+Bitmap *FreeTypeCharacterBitmapProvider::cacheLookup(char c, unsigned int pixelSize) {
+    auto fontSizeIt = cache.find(pixelSize);
+    if (fontSizeIt == cache.end())
+        return nullptr;
+
+    auto &charCache = fontSizeIt->second;
+    auto charIt = charCache.find(c);
+    if (charIt == charCache.end())
+        return nullptr;
+
+    return &charIt->second;
+}
+
+Bitmap &FreeTypeCharacterBitmapProvider::storeNewGlyph(char c, unsigned int pixelSize) {
+    FT_Set_Pixel_Sizes(face, 0, pixelSize);
+
+    if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        throw std::runtime_error("ERROR::FREETYPE: Failed to load Glyph");
+
+    auto buffer = face->glyph->bitmap.buffer;
+    auto byteSize = face->glyph->bitmap.rows * face->glyph->bitmap.width;
+
+    auto metrics = std::make_shared<GlyphMetrics>(face->glyph->bitmap_top, face->glyph->bitmap_left,
+                                                  face->glyph->bitmap.width, face->glyph->bitmap.rows,
+                                                  face->glyph->advance.x);
+
+    auto bitmapData = std::vector<unsigned char>(buffer, buffer + byteSize);
+    const auto &built = cache[pixelSize].emplace(
+        c, Bitmap{face->glyph->bitmap.rows, face->glyph->bitmap.width, GL_RED, bitmapData, metrics});
+
+    return built.first->second;
 }

@@ -1,26 +1,27 @@
-#ifndef ALSAPLAYGROUND_AUDIOWORKER_H
-#define ALSAPLAYGROUND_AUDIOWORKER_H
+#ifndef AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H
+#define AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H
 
-#include <atomic>
-#include <string>
+#include <aixa_export.h>
+#include <mainlib/CommandListener.h>
+#include <mainlib/threading/WorkerThread.h>
+
 #include <memory>
 
-#include <alsa/asoundlib.h>
+#include "AudioProcessingThread.h"
+#include "StreamReader.h"
 
-#include "mainlib/CommandBuilder.h"
+using namespace aixa::math;
 
-#include "mainlib/audio/note/Note.h"
-
-#include "AudioDefinitions.h"
-
-class SineGenerator;
-
-class AudioWorker : public CommandBuilder, public NotesListener {
+class LIB_EXPORT AudioWorker : public CommandListener {
 public:
-    AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment);
-    virtual ~AudioWorker();
+    AudioWorker(std::unique_ptr<StreamReader> reader,
+                std::unique_ptr<AudioProcessingThread> processingThread);
 
-    CommandCollection buildCommandCollection() override;
+    ~AudioWorker() override = default;
+
+    CommandCollection getCommandCollection() override;
+
+    SpectrogramGenerator &getSpectrogramGenerator() { return processingThread->getSpectrogramGenerator(); }
 
     void start();
     void stop();
@@ -28,28 +29,18 @@ public:
     void increaseVolume();
     void decreaseVolume();
 
-    void notifyNewValue(const Note& newNote) override;
-
 private:
-    static constexpr unsigned int MIN_VOLUME = 0;
+    using ReadingThread = WorkerThread<StreamReader>;
 
-    static constexpr int FORMAT_BITS = 16; //snd_pcm_format_width(SND_PCM_FORMAT_S16);
-    static constexpr unsigned int MAX_VOLUME = (1 << (FORMAT_BITS - 1)) - 1;
-    static constexpr unsigned int VOLUME_STEP = (MAX_VOLUME - MIN_VOLUME) / 20;
+    std::unique_ptr<StreamReader> reader;
 
-    void writeLoop();
-
-    std::unique_ptr<AudioEnvironment> environment;
-
-    std::atomic<unsigned int> volume;
-    std::atomic<double> freq;
+    ReadingThread readingThread;
+    std::unique_ptr<AudioProcessingThread> processingThread;
 
     CommandCollection myCommands;
+    std::condition_variable cvProcessingThread;
 
-    std::atomic<bool> stopValue;
-
-    std::unique_ptr<SineGenerator> sineGenerator;
+    bool processingThreadStopped;
 };
 
-
-#endif //ALSAPLAYGROUND_AUDIOWORKER_H
+#endif  // AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKER_H

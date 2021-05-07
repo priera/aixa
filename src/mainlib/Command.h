@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_ICOMMAND_H
-#define ALSAPLAYGROUND_ICOMMAND_H
+#ifndef AIXA_ICOMMAND_H
+#define AIXA_ICOMMAND_H
 
 #include <string>
 #include <unordered_map>
@@ -12,6 +12,7 @@ public:
     virtual std::string getName() const = 0;
 };
 
+//FIXME: memory leaks!!!!
 using CommandCollection = std::unordered_map<std::string, Command *>;
 
-#endif //ALSAPLAYGROUND_ICOMMAND_H
+#endif //AIXA_ICOMMAND_H

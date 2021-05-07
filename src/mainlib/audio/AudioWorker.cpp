@@ -1,109 +1,40 @@
 #include "AudioWorker.h"
 
-#include <math.h>
-
-#include <sstream>
-#include <exception>
-
-#include <iostream>
-
 #include "Commands.h"
-#include "SineGenerator.h"
 
-static int xrun_recovery(snd_pcm_t *handle, int err) {
-    std::cout << "stream recovery\n";
-
-    if (err == -EPIPE) {    /* under-run */
-        err = snd_pcm_prepare(handle);
-        if (err < 0)
-            printf("Can't recovery from underrun, prepare failed: %s\n", snd_strerror(err));
-        return 0;
-    } else if (err == -ESTRPIPE) {
-        while ((err = snd_pcm_resume(handle)) == -EAGAIN)
-            sleep(1);   /* wait until the suspend flag is released */
-        if (err < 0) {
-            err = snd_pcm_prepare(handle);
-            if (err < 0)
-                printf("Can't recovery from suspend, prepare failed: %s\n", snd_strerror(err));
-        }
-        return 0;
-    }
-    return err;
-}
-
-AudioWorker::AudioWorker(std::unique_ptr<AudioEnvironment> &paramEnvironment) :
-    freq(0),
-    environment(std::move(paramEnvironment)),
-    volume(MAX_VOLUME/3),
-    stopValue(false)
-{
+AudioWorker::AudioWorker(std::unique_ptr<StreamReader> reader,
+                         std::unique_ptr<AudioProcessingThread> processingThread) :
+    reader(std::move(reader)),
+    readingThread(*this->reader), processingThread(std::move(processingThread)),
+    processingThreadStopped(false) {
     auto volumeUp = new VolumeUp(*this);
     auto volumeDown = new VolumeDown(*this);
 
     myCommands.insert(std::make_pair(volumeUp->getName(), volumeUp));
     myCommands.insert(std::make_pair(volumeDown->getName(), volumeDown));
 
-    sineGenerator = std::make_unique<SineGenerator>(environment->buffers, environment->platform.frame_size, environment->params.rate);
-}
-
-AudioWorker::~AudioWorker() {
-}
-
-void AudioWorker::increaseVolume() {
-    volume += VOLUME_STEP;
-    if (volume > MAX_VOLUME) volume = MAX_VOLUME;
-}
-
-void AudioWorker::decreaseVolume() {
-    unsigned int newVolume = volume - VOLUME_STEP;
-
-    if (newVolume >= MAX_VOLUME) //overflow condition
-        volume = MIN_VOLUME;
-    else
-        volume = newVolume;
-}
-
-CommandCollection AudioWorker::buildCommandCollection() {
-    return myCommands;
-}
-
-void AudioWorker::notifyNewValue(const Note& newNote) {
-    freq = computeFrequency(newNote);
-
-    //std::cout << freq << std::endl;
+    QObject::connect(this->processingThread.get(), &QThread::finished, [this]() {
+        processingThreadStopped = true;
+        cvProcessingThread.notify_one();
+    });
 }
 
 void AudioWorker::start() {
-    while (!stopValue) {
-        writeLoop();
-    }
+    readingThread.start();
+    processingThread->start();
 }
 
 void AudioWorker::stop() {
-    stopValue = true;
+    readingThread.stopAndWait();
+    processingThread->requestInterruption();
+
+    std::mutex m;
+    std::unique_lock<std::mutex> l(m);
+    cvProcessingThread.wait(l, [this]() { return processingThreadStopped; });
 }
 
-void AudioWorker::writeLoop() {
-    signed short *ptr;
-    int err, cptr;
+void AudioWorker::increaseVolume() { processingThread->increaseVolume(); }
 
-    sineGenerator->fillFrame(freq, volume);
+void AudioWorker::decreaseVolume() { processingThread->decreaseVolume(); }
 
-    cptr = environment->platform.frame_size;
-
-    while (cptr > 0) {
-        err = snd_pcm_writei(environment->platform.handle, environment->buffers.frame(), cptr);
-        if (err == -EAGAIN)
-            continue;
-
-        if (err < 0) {
-            if (xrun_recovery(environment->platform.handle, err) < 0) {
-                printf("Write error: %s\n", snd_strerror(err));
-                exit(EXIT_FAILURE);
-            }
-            break;
-        }
-        ptr += err * environment->params.channels;
-        cptr -= err;
-    }
-}
+CommandCollection AudioWorker::getCommandCollection() { return myCommands; }

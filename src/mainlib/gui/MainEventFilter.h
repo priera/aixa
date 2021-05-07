@@ -1,30 +1,35 @@
-#ifndef ALSAPLAYGROUND_MAINEVENTFILTER_H
-#define ALSAPLAYGROUND_MAINEVENTFILTER_H
-
-#include <unordered_map>
+#ifndef AIXA_MAINEVENTFILTER_H
+#define AIXA_MAINEVENTFILTER_H
 
 #include <QObject>
+#include <unordered_map>
 
-#include "mainlib/Command.h"
+#include <aixa_export.h>
+#include <mainlib/Command.h>
+#include <mainlib/audio/note/Note.h>
+#include <mainlib/audio/note/NoteSetter.h>
 
-#include "mainlib/audio/note/Note.h"
-
-class NoteSetter;
-
-class QEvent;
-
-class MainEventFilter : public QObject {
-Q_OBJECT
+class LIB_EXPORT MainEventFilter : public QObject {
+    Q_OBJECT
 public:
-    MainEventFilter(const CommandCollection &commandCollection, NoteSetter &noteSetter);
+    explicit MainEventFilter(NoteSetter &noteSetter);
+
+    void addCommandsFromCollection(const CommandCollection &commandCollection);
+    void removeTransientCommands();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
+    static void tryToRun(Command *command) {
+        if (command) {
+            command->execute();
+        }
+    }
+
     bool checkNote(int key, Note::Pitch &pitch);
     bool checkOctave(int key, int &octave);
-    bool checkModifier(int key, Note::Modifier & modifier);
+    bool checkModifier(int key, Note::Modifier &modifier);
 
     Command *volumeUp;
     Command *volumeDown;
@@ -34,5 +39,4 @@ private:
     std::unordered_map<int, Note::Pitch> keysToPitchMap;
 };
 
-
-#endif //ALSAPLAYGROUND_MAINEVENTFILTER_H
+#endif  // AIXA_MAINEVENTFILTER_H

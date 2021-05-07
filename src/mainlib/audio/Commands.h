@@ -1,5 +1,5 @@
-#ifndef ALSAPLAYGROUND_COMMANDS_H
-#define ALSAPLAYGROUND_COMMANDS_H
+#ifndef AIXA_COMMANDS_H
+#define AIXA_COMMANDS_H
 
 #include "mainlib/Command.h"
 
@@ -7,25 +7,25 @@
 
 class VolumeUp : public Command {
 public:
-    VolumeUp(AudioWorker & audioWorker) : Command(), worker(&audioWorker) {}
+    VolumeUp(AudioWorker &audioWorker) : Command(), worker(audioWorker) {}
 
     void execute() override;
     std::string getName() const override;
 
 private:
-    AudioWorker *worker;
+    AudioWorker &worker;
 };
 
 
 class VolumeDown : public Command {
 public:
-    VolumeDown(AudioWorker & audioWorker) : Command(), worker(&audioWorker) {}
+    VolumeDown(AudioWorker &audioWorker) : Command(), worker(audioWorker) {}
 
     void execute() override;
     std::string getName() const override;
 
 private:
-    AudioWorker *worker;
+    AudioWorker &worker;
 };
 
-#endif //ALSAPLAYGROUND_COMMANDS_H
+#endif //AIXA_COMMANDS_H

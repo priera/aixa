@@ -1,84 +1,63 @@
+#include "platform/aixa_export.h"
 
-//#include "examples/AlsaExamples.h"
-
-#include <thread>
-#include <memory>
-#include <chrono>
+#include <mainlib/audio/AudioWorkerFactory.h>
+#include <mainlib/audio/note/NoteSetter.h>
+#include <mainlib/gui/GraphicsEnvironmentFactory.h>
+#include <mainlib/gui/MainEventFilter.h>
 
 #include <QApplication>
 
-#include "mainlib/gui/MainEventFilter.h"
+static void setupSystemsForAudioStream(const std::filesystem::path& streamPath,
+                                       GraphicsEnvironment& graphicsEnvironment,
+                                       MainEventFilter& eventFilter,
+                                       std::unique_ptr<AudioWorker>& audioWorker) {
+    if (audioWorker) {
+        audioWorker->stop();
+        eventFilter.removeTransientCommands();
+    }
 
-#include "mainlib/gui/gl/OpenGLTask.h"
-#include "mainlib/gui/gl/OpenGLWindow.h"
-#include "mainlib/gui/CentralNoteManager.h"
+    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath.string());
+    audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
 
-#include "mainlib/gui/gl/GLContextManager.h"
+    graphicsEnvironment.showAudioVisualizations();
+    audioWorker->getSpectrogramGenerator().setReceiver(graphicsEnvironment.getSpectrogramConsumer());
 
-#include "mainlib/audio/AudioWorker.h"
-#include "mainlib/audio/AudioBuilder.h"
+    auto commandCollection = audioWorker->getCommandCollection();
+    eventFilter.addCommandsFromCollection(commandCollection);
 
-#include "mainlib/audio/note/NoteSetter.h"
-
-using namespace std::chrono_literals;
-
-std::thread * buildAudioThread(AudioWorker & worker)
-{
-    auto f = [&worker](){
-        worker.start();
-    };
-
-    return new std::thread(f);
+    audioWorker->start();
 }
 
-int main(int argc, char *argv[]) {
-  /*  AlsaExamples examples(argc, argv);
-    examples.run(); */
-
+int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
-    OpenGLWindow win;
-    float w = 1920 * 3.0 / 4;
-    float h = 1080 * 3.0 / 4;
-    win.resize(w, h);
-    win.show();
+    const auto w = static_cast<int>(1920 * 3.0 / 4);
+    const auto h = static_cast<int>(1080 * 3.0 / 4);
+    const auto appSize = QSize(w, h);
 
-    OpenGLTask openGLTask(win);
+    std::unique_ptr<AudioWorker> audioWorker = nullptr;
+    auto graphicsEnvironment = GraphicsEnvironmentFactory::build(appSize);
 
     NoteSetter noteSetter;
+    noteSetter.addObserver(graphicsEnvironment->getNotesListener());
 
-    QObject::connect(&openGLTask, &OpenGLTask::sceneBuilt, [&win, &openGLTask, &noteSetter]() {
-        win.setScene(openGLTask.getScene());
-        win.setReady();
-        noteSetter.addObserver(openGLTask.getCentralNoteManager());
-    });
-
-    AudioBuilder audioBuilder;
-    auto basicParameters = getDefaultAudioParameters();
-    auto environment_p = audioBuilder.setupAudioEnvironment(basicParameters);
-    auto environment = std::unique_ptr<AudioEnvironment>(environment_p);
-
-    AudioWorker worker(environment);
-    auto commandCollection = worker.buildCommandCollection();
-
-    noteSetter.addObserver(&worker);
-
-    MainEventFilter mainEventFilter(commandCollection, noteSetter);
+    MainEventFilter mainEventFilter(noteSetter);
     app.installEventFilter(&mainEventFilter);
 
-    auto audioThread = buildAudioThread(worker);
+    auto audioSetupCallback = [&graphicsEnvironment, &audioWorker,
+                               &mainEventFilter](const std::filesystem::path& streamPath) {
+        setupSystemsForAudioStream(streamPath, *graphicsEnvironment, mainEventFilter, audioWorker);
+    };
+    QObject::connect(graphicsEnvironment.get(), &GraphicsEnvironment::streamReceived, audioSetupCallback);
 
-    openGLTask.start();
+    graphicsEnvironment->start();
 
     int ret = app.exec();
 
-    worker.stop();
-
-    openGLTask.quit();
-    audioThread->join();
-
-    GLContextManager::getInstance().release();
+    if (audioWorker) {
+        audioWorker->stop();
+    }
+    graphicsEnvironment->stop();
 
     return ret;
 }
-

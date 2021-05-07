@@ -10,6 +10,7 @@
 using namespace std::chrono_literals;
 
 NoteSetter::NoteSetter() :
+    NoteNotifier(),
     buffer(std::make_unique<NotesBuffer>(10)),
     noteSeen(false),
     stopWorker(false) {
@@ -35,7 +36,6 @@ void NoteSetter::workerLoop() {
         }
 
         mergeNewNote(n);
-        //auto diff = NotesBuffer::timeDiffInMs(pts, previousPts);
 
         previousPts = pts;
 
@@ -49,17 +49,9 @@ void NoteSetter::mergeNewNote(const Note &incomingNote) {
         lastNote = incomingNote;
         if (lastNote.octave == 0)
             lastNote.octave = 4;
-        return;
+    } else {
+        lastNote = incomingNote;
     }
-
-    if (incomingNote.pitch != Note::Pitch::NONE)
-        lastNote.pitch = incomingNote.pitch;
-
-    if (incomingNote.octave != 0) {
-        lastNote.octave = incomingNote.octave;
-    }
-
-    lastNote.modifier = incomingNote.modifier;
 }
 
 void NoteSetter::setPitch(Note::Pitch pitch) {

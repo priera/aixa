@@ -1,21 +1,20 @@
-#ifndef ALSAPLAYGROUND_NOTESETTER_H
-#define ALSAPLAYGROUND_NOTESETTER_H
+#ifndef AIXA_NOTESETTER_H
+#define AIXA_NOTESETTER_H
 
 #include <memory>
 #include <thread>
 #include <atomic>
 
-#include "mainlib/observer/Observable.h"
+#include <aixa_export.h>
+#include <mainlib/transfer/Observable.h>
 
 #include "Note.h"
 
-using NoteNotifier = Observable<Note>;
-
-class NoteSetter : public NoteNotifier {
+class LIB_EXPORT NoteSetter : public NoteNotifier {
 public:
     NoteSetter();
 
-    ~NoteSetter();
+    ~NoteSetter() override;
 
     void setPitch(Note::Pitch pitch);
 
@@ -40,4 +39,4 @@ private:
     Note lastNote;
 };
 
-#endif //ALSAPLAYGROUND_NOTESETTER_H
+#endif //AIXA_NOTESETTER_H
