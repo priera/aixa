@@ -129,7 +129,7 @@ private:
         char bytes[4];
     };
 
-    std::streamsize privNextByte(unsigned char& ret) { return ops.readNBytes(&ret, 1); }
+    std::streamsize privNextByte(unsigned char& ret) { return ops.readNBytes(reinterpret_cast<char *>(&ret), 1); }
 
     WordType wt;
 
