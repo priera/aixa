@@ -44,9 +44,11 @@ cmake -DCMAKE_BUILD_TYPE=Release -DAIXA_DIR="$AIXA_DIR" "$AIXA_DIR/aixa/"
 make
 ```
 
+Or just pick up your favorite IDE, set up the environment and build from there.
+
 ## Execute
 
-**From the `$AIXA_DIR` directory** run this command for the build just compiled:
+**From the `$AIXA_DIR/aixa` directory** run this command for the build just compiled:
 
 ```shell
 $AIXA_DIR/build/release/src/aixa

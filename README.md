@@ -76,6 +76,6 @@ Distributed under the MIT License. See `LICENSE.txt`
 
 ## Contact
 
-[Pedro Riera](mailto:mail@rieramartorell.cat)
+Pedro Riera - [mail@rieramartorell.cat](mailto:mail@rieramartorell.cat)
 
 Project: [Aixa](https://github.com/priera/aixa)
