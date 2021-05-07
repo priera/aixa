@@ -15,3 +15,6 @@ target_link_libraries(${TARGET_NAME}
         mainlib
         ${QT_LIBS})
 
+if(${MINGW})
+    win_deploy_target(${TARGET_NAME})
+endif()

@@ -1,6 +1,7 @@
 #ifndef AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKERFACTORY_H
 #define AIXA_SRC_MAINLIB_AUDIO_AUDIOWORKERFACTORY_H
 
+#include <aixa_export.h>
 #include <mainlib/stream/Stream.h>
 
 #include <QStringList>
@@ -12,7 +13,7 @@
 using namespace aixa::math;
 using namespace std::chrono_literals;
 
-class AudioWorkerFactory {
+class LIB_EXPORT AudioWorkerFactory {
 public:
     AudioWorkerFactory() = default;
 

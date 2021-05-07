@@ -1,6 +1,4 @@
 function(add_qtest)
-    #yet again: AAndaluz, you rock!!!!!
-
     set(options OPTIONAL "")
     set(oneValueArgs ID SRC_FOLDER)
     set(multiValueArgs SOURCES TARGET_LINK)

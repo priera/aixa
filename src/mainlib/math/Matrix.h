@@ -6,10 +6,12 @@
 #include <stdexcept>
 #include <vector>
 
+#include <platform/aixa_export.h>
+
 namespace aixa::math {
 
 template <typename T, class TypeAxioms>
-class Matrix {
+class LIB_EXPORT Matrix {
 public:
     // N columns, M rows
     Matrix(std::size_t N, std::size_t M, T def = T()) : Matrix(N, M, std::true_type(), def){};

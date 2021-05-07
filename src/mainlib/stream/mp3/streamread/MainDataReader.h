@@ -57,7 +57,7 @@ public:
 
     bool ended() const override { return inStream->ended(); }
 
-    unsigned long bitsRead() const override { return frameBitsRead; }
+    std::size_t bitsRead() const override { return frameBitsRead; }
 
     void skipBytes(long count) override {
         frameBitsRead += count * S_BYTE;
@@ -110,7 +110,7 @@ private:
 
     unsigned long inStreamAtStartFrame;
     BitInputReader* currentReader;
-    unsigned long frameBitsRead;
+    std::size_t frameBitsRead;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_MP3_MAINDATAREADER_H

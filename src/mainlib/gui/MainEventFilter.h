@@ -4,11 +4,12 @@
 #include <QObject>
 #include <unordered_map>
 
-#include "mainlib/Command.h"
-#include "mainlib/audio/note/Note.h"
-#include "mainlib/audio/note/NoteSetter.h"
+#include <aixa_export.h>
+#include <mainlib/Command.h>
+#include <mainlib/audio/note/Note.h>
+#include <mainlib/audio/note/NoteSetter.h>
 
-class MainEventFilter : public QObject {
+class LIB_EXPORT MainEventFilter : public QObject {
     Q_OBJECT
 public:
     explicit MainEventFilter(NoteSetter &noteSetter);

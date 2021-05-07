@@ -111,7 +111,7 @@ public:
         return ret;
     }
 
-    unsigned long bitsRead() const override { return totalBits; }
+    std::size_t bitsRead() const override { return totalBits; }
 
     bool ended() const override { return ops.ended() && lastByteRemBits == 0; }
 
@@ -136,7 +136,7 @@ private:
     unsigned char lastByte;
     unsigned char lastByteRemBits;
 
-    unsigned long totalBits;
+    std::size_t totalBits;
 };
 
 #endif  // AIXA_SRC_MAINLIB_STREAM_BYTEREADER_H

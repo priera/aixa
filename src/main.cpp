@@ -1,3 +1,5 @@
+#include "platform/aixa_export.h"
+
 #include <mainlib/audio/AudioWorkerFactory.h>
 #include <mainlib/audio/note/NoteSetter.h>
 #include <mainlib/gui/GraphicsEnvironmentFactory.h>
@@ -14,7 +16,7 @@ static void setupSystemsForAudioStream(const std::filesystem::path& streamPath,
         eventFilter.removeTransientCommands();
     }
 
-    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath);
+    auto audioWorker_p = AudioWorkerFactory().buildWithInputStream(streamPath.string());
     audioWorker = std::unique_ptr<AudioWorker>(audioWorker_p);
 
     graphicsEnvironment.showAudioVisualizations();

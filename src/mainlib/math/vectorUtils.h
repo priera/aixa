@@ -9,8 +9,10 @@
 #include "Complex.h"
 #include "Vector.h"
 
+#include <platform/aixa_export.h>
+
 namespace aixa::math {
-    void printVector(const std::vector<Complex> & v);
+    void LIB_EXPORT printVector(const std::vector<Complex> & v);
 
     template<typename T, class ZeroComparer>
     void printVector(const Vector<T, ZeroComparer>& v) {
@@ -36,7 +38,7 @@ namespace aixa::math {
         f.close();
     }
 
-    void storeVector(const std::string& name, const std::filesystem::path& dir, const std::vector<Complex>& v);
+    void LIB_EXPORT storeVector(const std::string& name, const std::filesystem::path& dir, const std::vector<Complex>& v);
 }
 
 #endif //AIXA_SRC_MAINLIB_MATH_VECTORUTILS_H

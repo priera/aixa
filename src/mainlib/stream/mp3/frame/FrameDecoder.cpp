@@ -152,6 +152,7 @@ void FrameDecoder::decodeMainData() {
 
     const auto channels = frame.header.channels();
     bool readingSecondGranule = false;
+
     for (unsigned int i = 0; i < NR_GRANULES; i++) {
         unsigned int channel;
         for (channel = 0; channel < channels; channel++) {
@@ -204,7 +205,8 @@ void FrameDecoder::readShortWindowScaleFactors(GranuleChannelContent& channelCon
             unsigned char toRead = (group == 0) ? slen1 : slen2;
             for (unsigned int i = subBandStart; i < subBandEnd; i++) {
                 for (unsigned int window = 0; window < NR_SHORT_WINDOWS; window++) {
-                    channelContent.shortWindowScaleFactorBands[window][i] = reader->nextNBits(toRead);
+                    auto sf = reader->nextNBits(toRead);
+                    channelContent.shortWindowScaleFactorBands[window][i] = sf;
                 }
             }
         }

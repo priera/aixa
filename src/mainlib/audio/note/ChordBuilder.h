@@ -3,10 +3,12 @@
 
 #include <utility>
 
+#include <platform/aixa_export.h>
+
 #include "Note.h"
 #include "Chord.h"
 
-class ChordBuilder {
+class LIB_EXPORT ChordBuilder {
 public:
     static ChordBuilder triad(Note tonic);
     static ChordBuilder seventh(Note tonic);

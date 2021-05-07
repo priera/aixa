@@ -16,7 +16,7 @@ public:
             reservoir(reservoir),
             currentPos(startPos), toRead(toRead), processed(0) {}
 
-        std::streamsize readNBytes(char *ptr, long n) {
+        std::streamsize readNBytes(unsigned char *ptr, long n) {
             if (ended())
                 return 0;
 
