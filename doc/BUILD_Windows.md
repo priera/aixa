@@ -2,7 +2,7 @@
 
 This project uses `MinGW` as compiler, as provided by the [MSYS2](https://www.msys2.org/) package system. Follow the instructions on the previous link in order to have the environment ready in a few minutes.
 
-Other toolchains, like `MSVC`, haven't been tested.
+One of the dependencies requires [this](https://www.microsoft.com/en-us/download/details.aspx?id=52685) specific version of MSVC redistributable to be installed.
 
 You should also install [cmake](https://cmake.org/download/).
 
