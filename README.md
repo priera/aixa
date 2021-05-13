@@ -2,7 +2,7 @@
 
 Aixa is a multiplatform audio player. It can reproduce `wav` and `mp3` files, and displays a spectrogram of what is being played. 
 
-![aixa screenshot](contrib/images/screenshot.png)
+![aixa screenshot](doc/images/screenshot.png)
 *I do not own any rights of the sound displayed in this image*
 
 The whole project has been written from scratch, using C++17. Qt is the main dependency, but its usage has been restricted to provide a cross-platform compatibility layer. 
@@ -31,8 +31,8 @@ And also, because doing it is really fun!
 
 Aixa has been tested on GNU/Linux (ubuntu) and Windows. Refer to the `/doc` directory for instructions about building for your specific platform:
 
-* [Linux](/doc/BUILD_Linux.md)
-* [Windows](/doc/BUILD_Windows.md)
+* [Linux](doc/BUILD_Linux.md)
+* [Windows](doc/BUILD_Windows.md)
 
 It hasn't been tested on macOS, but it should work on it with very minor tweaks. 
 
