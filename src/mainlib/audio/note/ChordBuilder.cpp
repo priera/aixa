@@ -41,7 +41,7 @@ Chord ChordBuilder::build() const {
     std::vector<double> notes;
     int tonicSemis = static_cast<signed int>(tonic.pitch) + static_cast<signed int>(tonic.modifier);
     int tonicOctave = tonic.octave;
-    std::transform(semitones.begin(), semitones.end(), std::back_inserter(notes),
+    std::ranges::transform(semitones, std::back_inserter(notes),
                    [tonicOctave, tonicSemis](int semis) -> double {
         int noteSemis = tonicSemis + semis;
         return computeFrequency(tonicOctave, noteSemis);

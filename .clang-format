@@ -2,10 +2,10 @@ Language:        Cpp
 BasedOnStyle:  Google
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
-AlignConsecutiveMacros: false
-AlignConsecutiveAssignments: false
-AlignConsecutiveBitFields: false
-AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveAssignments: AcrossComments
+AlignConsecutiveBitFields: None
+AlignConsecutiveDeclarations: None
 AlignEscapedNewlines: Left
 AlignOperands:   Align
 AlignTrailingComments: true
@@ -145,7 +145,7 @@ RawStringFormats:
     CanonicalDelimiter: ''
     BasedOnStyle:    google
 ReflowComments:  true
-SortIncludes:    true
+SortIncludes:    CaseInsensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false

@@ -228,7 +228,7 @@ void FrameSynthesizer::polyphaseSynthesis(ChannelSamples& samples,
     };
 
     auto clip = [](DoubleMatrix& result) {
-        std::for_each(result.content().begin(), result.content().end(), [](double& d) {
+        std::ranges::for_each(result.content(), [](double& d) {
             if (d >= MAX_DECODED_VALUE) {
                 d = MAX_DECODED_VALUE - 1;
             } else if (d < -MAX_DECODED_VALUE) {

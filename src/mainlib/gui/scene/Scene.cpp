@@ -47,6 +47,6 @@ void Scene::waitUntilModificationDone() {
 
 void Scene::remove(const std::shared_ptr<ShadedRenderableObject> &object) {
     beingModified = true;
-    std::remove(objects.begin(), objects.end(), object);
+    std::ranges::remove(objects, object);
     beingModified = false;
 }

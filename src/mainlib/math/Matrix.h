@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <stdexcept>
 #include <vector>
+#include <algorithm>
 
 #include <platform/aixa_export.h>
 
@@ -19,7 +20,7 @@ public:
     template <std::size_t ArrayDim>
     Matrix(std::size_t N, std::size_t M, const std::array<T, ArrayDim>& content) :
         Matrix(N, M, std::false_type()) {
-        std::copy(content.begin(), content.end(), std::back_inserter(this->content_));
+        std::ranges::copy(content, std::back_inserter(this->content_));
     }
 
     Matrix(const Matrix<T, TypeAxioms>& other) = default;

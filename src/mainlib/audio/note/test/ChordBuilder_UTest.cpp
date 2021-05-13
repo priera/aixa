@@ -5,7 +5,7 @@
 #include <mainlib/audio/note/ChordBuilder.h>
 
 bool compareVectorDoubles(const std::vector<double> &lhs, const std::vector<double> &rhs) {
-    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), [](double l, double r) {
+    return std::ranges::equal(lhs, rhs, [](double l, double r) {
         return std::abs(l - r) < 5e-3;
     });
 }
