@@ -5,9 +5,10 @@
 #include <fstream>
 
 #include "AbstractBitInputReader.h"
+#include "BitReaderSource.h"
 #include "sizes.h"
 
-template <class ReadOperations>
+template <BitReaderSource ReadOperations>
 class BasicBitReader : public AbstractBitInputReader {
 public:
     explicit BasicBitReader(ReadOperations ops) : ops(std::move(ops)), lastByteRemBits(0), totalBits(0) {}

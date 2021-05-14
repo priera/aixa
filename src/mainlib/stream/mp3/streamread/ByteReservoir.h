@@ -29,13 +29,12 @@ public:
             return n;
         }
 
-        std::streamsize skipNBytes(long n) {
+        void skipNBytes(long n) {
             if (ended())
-                return 0;
+                return;
 
             currentPos = (currentPos + n) % RESERVOIR_SIZE;
             processed += n;
-            return n;
         }
 
         bool ended() const { return processed >= toRead; }
