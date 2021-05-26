@@ -96,9 +96,7 @@ public:
             throw std::runtime_error("Invalid matrix operation");
 
         TypeAxioms axioms;
-        auto diff = (*this) + (other * axioms.inverter());
-
-        return std::move(diff);
+        return (*this) + (other * axioms.inverter());
     }
 
     bool operator==(const Matrix<T, TypeAxioms>& other) const {
